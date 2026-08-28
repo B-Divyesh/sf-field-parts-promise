@@ -1,0 +1,9 @@
+dist/
+node_modules/
+server/target/
+playwright-report/
+test-results/
+package-lock.json
+server/Cargo.lock
+.factory/
+AGENTS.md

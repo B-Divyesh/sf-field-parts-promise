@@ -1,0 +1,9 @@
+.git
+.github
+.factory
+dist
+node_modules
+server/target
+test-results
+playwright-report
+*.log

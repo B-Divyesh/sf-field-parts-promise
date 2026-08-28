@@ -1,0 +1,123 @@
+@import './lib/design/tokens.css';
+
+:root {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+a {
+  color: var(--color-blueprint);
+  text-underline-offset: 0.2em;
+}
+
+a:focus-visible {
+  border-radius: var(--radius-sm);
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 10;
+  inset-block-start: var(--space-2);
+  inset-inline-start: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
+  transform: translateY(-150%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.site-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  min-height: 64px;
+  padding: var(--space-4);
+  border-block-end: 1px solid var(--color-line);
+}
+
+.wordmark,
+h1,
+.drawing-label,
+.revision {
+  font-family: var(--font-display);
+}
+
+.wordmark {
+  font-size: var(--type-lg);
+  font-weight: 700;
+}
+
+.revision,
+.drawing-label {
+  color: var(--color-text-muted);
+  font-size: var(--type-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+main {
+  width: min(100% - 2 * var(--space-4), 70rem);
+  margin-inline: auto;
+  padding-block: clamp(var(--space-7), 12vw, var(--space-9));
+}
+
+h1 {
+  max-width: 16ch;
+  margin: var(--space-3) 0 var(--space-5);
+  font-size: var(--type-2xl);
+  line-height: 1;
+}
+
+main p:not(.drawing-label) {
+  max-width: 64ch;
+  margin-block: 0 var(--space-5);
+  font-size: var(--type-md);
+  line-height: 1.5;
+}
+
+.plan-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  font-weight: 700;
+}
+
+@media (min-width: 45rem) {
+  .site-header {
+    padding-inline: var(--space-6);
+  }
+
+  main {
+    width: min(100% - 2 * var(--space-6), 70rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
