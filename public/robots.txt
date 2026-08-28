@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://field-parts-promise.sociobot.in/sitemap.xml

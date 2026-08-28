@@ -1,0 +1,13 @@
+# M1 demo sandbox
+
+Demo URL: `/?demo=1`
+
+The bundled sample is Riverside Dental job `RD-1042`, with a visit date of 2026-09-02. It contains a warehouse-held 24V contactor, four return air filters split between Warehouse A and Van 2, and one missing condensate pump.
+
+Allocate the pump from Van 2 to make the job **Parts in hand**. The calculation leaves Van 2 with 0 pumps against its minimum of 1 and shows a reorder suggestion. The suggestion never creates a supplier order.
+
+The demo reads and writes only `parts-promise-demo-v1` in IndexedDB. It never opens the M1 API, billing, or a cross-origin connection. The live local workspace is `parts-promise-live-v1` and starts empty.
+
+- **Reset demo** writes the bundled fixture back into the demo database.
+- **Start for real** confirms the boundary, deletes the demo database, and opens `/jobs` in the empty live database.
+- The service worker caches the shell and sample fixture on the first online visit. Reloading `/?demo=1` and allocating the pump works while offline.

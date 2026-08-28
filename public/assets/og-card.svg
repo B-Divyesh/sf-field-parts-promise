@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title">
+  <title id="title">Parts Promise: promise dates from parts held for the job</title>
+  <rect width="1200" height="630" fill="#F3F0E7"/>
+  <g fill="none" stroke="#075A78" stroke-width="5"><path d="M90 110H1110M90 518H1110M130 70V560M1070 70V560"/><path d="M265 170H487L557 292M940 170H714L647 292M930 448H718L647 352M253 448H480L555 352"/></g>
+  <g fill="#FFFDF8" stroke="#132633" stroke-width="6"><path d="M144 162h150l28 55-28 55H144l-28-55z"/><path d="M882 146h106l32 72-32 72H882l-32-72z"/><path d="M489 260h222v126H489z"/><path d="M153 403h163v82H153z"/><path d="M874 394h151v96H874z"/></g>
+  <path d="M520 414h160v74H520z" fill="#FFFDF8" stroke="#132633" stroke-width="5"/><path d="M552 442h98v11h-98zm0 22h65v11h-65z" fill="#A83A08"/>
+  <g fill="#132633" font-family="Arial, sans-serif"><text x="90" y="595" font-size="28" letter-spacing="6">PARTS PROMISE / REV 01</text><text x="503" y="300" font-size="24" letter-spacing="4">JOB DATUM</text></g>
+  <text x="92" y="86" fill="#132633" font-family="Arial, sans-serif" font-weight="700" font-size="56">Promise dates from parts held for the job</text>
+  <path d="M483 386h234" stroke="#A83A08" stroke-width="8"/><circle cx="476" cy="390" r="10" fill="#A83A08"/><circle cx="724" cy="390" r="10" fill="#A83A08"/>
+</svg>

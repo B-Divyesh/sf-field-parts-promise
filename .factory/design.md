@@ -101,7 +101,21 @@ Camera access starts only after **Scan barcode** and includes **Enter barcode in
 
 ## Asset provenance
 
-No visual asset was generated or copied during planning. M1 creates the hero, status marks, 404 fragment, SVG favicon, touch icon, and 1200×630 Open Graph image as original hand-authored vector geometry in this repository, derived from generic geometric depictions of service parts rather than a manufacturer's drawing. Those assets are released under the repository MIT license. Record creator, date, source file, exports, and any reference material in this section when added.
+M1 assets were created by the Param Factory builder on 2026-08-28. They are original hand-authored SVG geometry derived from generic service parts, not a manufacturer's drawing or stock art. No image-generation model, reference image, or third-party artwork was used. They are released under this repository's MIT license.
 
-Font provenance to record in M1: exact upstream release URLs/checksums and included OFL licenses for Barlow Condensed and Atkinson Hyperlegible Next. No Google Fonts CSS or other CDN is allowed.
+| Source file / export | Purpose | Notes |
+| --- | --- | --- |
+| `public/assets/blueprint-hero.svg` | Landing hero | 1200×900 exploded-parts drawing: generic contactor, filter, pump, van drawer, warehouse bin, and supplier sheet. |
+| `public/assets/og-card.svg`, `public/assets/og-card.png` | Social preview | Original 1200×630 drawing derived from the hero geometry; the PNG is the 1200×630 locally rendered social export. |
+| `public/assets/favicon.svg` | Browser icon | Original 64×64 job/source leader mark. |
+| `public/assets/apple-touch-icon.png` | Touch icon | 180×180 raster export of `favicon.svg`, rendered locally with Playwright Chromium. |
+| `public/404.html` | Static fallback | Original detached-leader treatment, styled from `public/site-fallback.css`. |
 
+Fonts are self-hosted Latin WOFF2 subsets. They are fetched only during source preparation; no Google Fonts CSS, remote font, or runtime CDN is shipped.
+
+| Font | Upstream release / license | Included file | SHA-256 |
+| --- | --- | --- | --- |
+| Barlow Condensed 700 | [Google Fonts upstream](https://github.com/google/fonts/tree/main/ofl/barlowcondensed), [OFL 1.1](https://raw.githubusercontent.com/google/fonts/main/ofl/barlowcondensed/OFL.txt) | `public/fonts/barlow-condensed-latin.woff2`, `public/licenses/OFL-Barlow-Condensed.txt` | `3787a5a419171630e6890cfa47c4da067474d005cd0ff8dc11ec090fdc3ee2b8` |
+| Atkinson Hyperlegible Next 400–700 | [upstream repository](https://github.com/googlefonts/atkinson-hyperlegible-next), [OFL 1.1](https://raw.githubusercontent.com/googlefonts/atkinson-hyperlegible-next/main/OFL.txt) | `public/fonts/atkinson-hyperlegible-next-latin.woff2`, `public/licenses/OFL-Atkinson-Hyperlegible-Next.txt` | `18b2a1a39a2fa298b0ba5390aca68462669826c90925656f1c1f6796e0e1bbaf` |
+
+The two WOFF2 files total 56 KB. Their source subset URLs were the Chrome Latin entries published by Google Fonts on 2026-08-28; the upstream source and OFL licenses above record the authoritative provenance.

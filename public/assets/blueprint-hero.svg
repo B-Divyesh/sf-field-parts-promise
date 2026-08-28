@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-labelledby="title description">
+  <title id="title">Exploded service parts drawing</title>
+  <desc id="description">A contactor, filter, pump, van drawer, warehouse bin, and supplier slip connect to a central job plate with thin leader lines.</desc>
+  <rect width="1200" height="900" fill="#FFFDF8"/>
+  <g fill="none" stroke="#AAB8BF" stroke-width="2">
+    <path d="M42 82H1158M42 818H1158M82 42V858M1118 42V858"/>
+    <path d="M120 165H1080M120 732H1080" stroke-dasharray="6 10"/>
+    <path d="M84 116h24m-12-12v24M1092 116h24m-12-12v24M84 784h24m-12-12v24M1092 784h24m-12-12v24"/>
+  </g>
+  <g fill="none" stroke="#075A78" stroke-width="5" stroke-linecap="square">
+    <path d="M283 275H478L548 390"/>
+    <path d="M876 269H747L652 394"/>
+    <path d="M842 647H727L653 522"/>
+    <path d="M258 643H466L549 521"/>
+  </g>
+  <g fill="#FFFDF8" stroke="#132633" stroke-width="7" stroke-linejoin="round">
+    <path d="M154 208h174l35 67-35 67H154l-35-67z"/>
+    <path d="M870 174h122l40 95-40 95H870l-40-95z"/>
+    <path d="M157 590h195v106H157z"/>
+    <path d="M864 578h174v145H864z"/>
+    <path d="M480 350h240v214H480z"/>
+  </g>
+  <g fill="none" stroke="#075A78" stroke-width="5">
+    <path d="M175 245h130m-130 31h130m-130 31h130"/>
+    <path d="M886 225h96m-68-22v130m40-130v130"/>
+    <path d="M181 620h147m-147 26h147m-147 26h147"/>
+    <path d="M887 615h128m-128 30h128m-128 30h128"/>
+    <path d="M517 394h165v126H517zM547 424h106M547 460h106M547 496h76"/>
+  </g>
+  <g fill="#FFFDF8" stroke="#132633" stroke-width="5">
+    <path d="M506 595h188v88H506z"/>
+  </g>
+  <g fill="#A83A08">
+    <path d="M547 627h105v12H547zM547 651h73v12H547z"/>
+    <circle cx="568" cy="702" r="10"/><circle cx="635" cy="702" r="10"/>
+  </g>
+  <g fill="#132633" font-family="Arial, sans-serif" font-size="20" letter-spacing="3">
+    <text x="122" y="144">SOURCE / WAREHOUSE</text>
+    <text x="826" y="144">REQUIRED PART</text>
+    <text x="122" y="765">SOURCE / VAN</text>
+    <text x="829" y="765">SUPPLIER EVIDENCE</text>
+    <text x="488" y="326">JOB DATUM</text>
+  </g>
+  <g fill="#A83A08">
+    <rect x="477" y="562" width="246" height="9"/>
+    <circle cx="471" cy="566" r="11"/><circle cx="728" cy="566" r="11"/>
+  </g>
+</svg>
