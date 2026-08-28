@@ -78,13 +78,24 @@ Package/consumer, CIAM, billing, AI live-path, and non-health API rate-limit tes
 
 ## Deployment and live verification
 
-Use the work-order container configuration:
+The work-order container deployment completed with:
 
 ```sh
 /opt/fleet/lib/deploy-container.sh field-parts-promise /work/repo Dockerfile 8080
 ```
 
-The factory build receives the final source commit as `BUILD_SHA`, runs the image as `nonroot`, and supplies only `PORT=8080`. After the final commit, the worker verifies that live `/health.build_sha` equals `git rev-parse HEAD`, the unknown path is 404, valid deep links are 200, response headers match the local evidence, and the live JS/CSS/service-worker hashes match `dist/`.
+ACR run `chn9` built image `sf-field-parts-promise:0ae9257c2492`. The container app reached `Succeeded`, its managed certificate reached `Succeeded`, and the custom HTTPS endpoint returned 200.
+
+Post-deployment evidence for repair commit `0ae9257c249289196aa9e2a7f71b588ea2d2cdf6`:
+
+- `/health` returned `{"status":"ok","build_sha":"0ae9257c249289196aa9e2a7f71b588ea2d2cdf6"}`.
+- `/`, `/demo`, `/jobs`, `/jobs/job-rd-1042`, `/privacy`, and `/terms` returned 200. GET and HEAD for `/not-on-this-drawing` returned 404 with the designed page and document no-cache policy.
+- Live/local SHA-256 matched exactly: JS `da2351a538456b0f8e8ee911a54ada5a8ca92de543edc874d8405089e9c76f59`, CSS `a5e0129a99c0e3a29dc47fdfef71ac773b95ba2ab5558360628b623c3f38f04e`, service worker `20b094a62028697b578fb9c9be69d60a0393b5814ea57f9ca11d31d7588e1391`.
+- Live mobile Chromium completed the offline pump allocation as **Parts in hand**. The current worker controlled the page with no installing/waiting update. Requests were same-origin GETs. The unknown screen had no serious/critical axe finding.
+- Live `verify-url.sh` found no landing console/page errors and confirmed title, language, one H1, main landmark, image alts, and button labels.
+- A fresh 100-request, 20-way live `/health` smoke returned 100 x 200.
+
+The handoff update is documentation-only. The worker rebuilds it once after this file is committed so the final live `/health.build_sha` remains equal to final `main`; the artifact hashes above remain unchanged.
 
 ## Known gaps and next steps
 
