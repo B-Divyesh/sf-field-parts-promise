@@ -1,31 +1,35 @@
-# Parts Promise handoff
+# Parts Promise handoff — independent verification
 
-Latest milestone: M1 — Local promise check and one-click demo
+## Status: **FAIL**
 
-M1 is implemented, locally verified, and pushed to `main` at `4fd6c5d` (with `c27cbd7`). The detailed delivery record is [handoff-m1.md](handoff-m1.md).
+Independent QA tested candidate
+`4d9c65f0b260cb9c81f47322b2cef7d84fe9be89` at
+<https://field-parts-promise.sociobot.in> on 2026-08-28 UTC. The live
+`/health` build SHA and the SHA-256 hashes of live JS, CSS, and service worker
+match this candidate exactly.
 
-## Current product state
+The M1 product workflow itself is working: all five declared demo claims,
+unit/API tests, browser e2e, type/format checks, and the production package
+build pass; desktop/mobile allocation, recovery, demo isolation, persistence,
+offline reload, keyboard flow, and axe scans passed.
 
-The product now has a real local-first job and parts allocation flow, an isolated one-click demo at `/?demo=1`, deterministic promise and reorder rules, browser persistence, offline reload support, responsive task screens, legal pages, and a container that serves both the compiled app and `/health`.
+It cannot be accepted yet because of four high-severity release blockers:
 
-Shared accounts, PostgreSQL persistence/migrations, CIAM, billing, multi-device sync, server rate limits, and payment are intentionally M2 scope under the approved venture plan. M1 contains no stubs that imply they work.
+1. Unlisted, unproven public privacy claims in `src/App.svelte:934-938`.
+2. 36 px (and 32 px toast) live mobile touch targets, below the 44 px
+   requirement.
+3. No production `Cache-Control` headers for fingerprinted assets, fonts,
+   hero, or service worker.
+4. Dockerfile pins `rust:1.98-bookworm`, prohibited by the factory backend
+   build contract.
 
-## Run and verify
+There is also a medium-severity deployment mismatch: the live response lacks
+the `Permissions-Policy` declared in `staticwebapp.config.json`.
 
-```sh
-npm ci
-npm test
-npm run test:e2e
-npm run build
-```
+The Docker image itself was not built here because this disposable verifier
+environment has no `docker` command. This is an evidence gap in addition to,
+not a substitute for, the Dockerfile policy defect.
 
-The release binary can be checked locally with:
-
-```sh
-PORT=8080 server/target/release/parts-promise-api
-curl http://127.0.0.1:8080/health
-```
-
-## Deployment status
-
-The M1 commits were pushed successfully. Deployment is not complete: this repository has no deployment workflow/configuration and the production hostname failed DNS resolution during the cold probe on 2026-08-28. The factory must deploy the pushed container build and then rerun the cold URL check before treating M1 as live.
+Full commands, observed results, workflow evidence, and required repairs are
+in [verification.md](verification.md). Do not mark M1 accepted or release it
+until those findings are repaired and independently retested.
