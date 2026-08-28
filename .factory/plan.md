@@ -1,6 +1,6 @@
 # Parts Promise venture plan
 
-Status: foundation complete; M1 is next.
+Status: M1 built and pushed; factory deployment and review/polish are pending.
 
 Product: `field-parts-promise` · artifact: offline-first PWA with a backend
 
@@ -239,7 +239,7 @@ Each milestone is one focused 3–4 hour builder session followed by an independ
 
 ### M1 — Local promise check and one-click demo
 
-Status: **next**. Goal: a stranger can see the wedge and complete the core job locally without an account.
+Status: **built locally and pushed; factory deployment and review/polish pending**. Goal: a stranger can see the wedge and complete the core job locally without an account.
 
 Routes/screens: `/`, `/?demo=1`, `/jobs`, `/jobs/:jobId`, `/privacy`, `/terms`, and designed 404. The landing page follows the mandated standard skeleton. The demo fixture is Riverside Dental job `RD-1042`, visit 2026-09-02, with a warehouse contactor allocation, four filters split between warehouse and van, and one unallocated condensate pump. Allocating the pump from Van 2 changes the job from **Date at risk** to **Parts in hand** and creates a reorder suggestion because the van falls below its minimum.
 

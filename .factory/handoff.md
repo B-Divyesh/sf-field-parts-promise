@@ -1,44 +1,31 @@
-# Planning handoff
+# Parts Promise handoff
 
-Work order: `venture-field-parts-promise-plan`
+Latest milestone: M1 — Local promise check and one-click demo
 
-Completed: 2026-08-28
+M1 is implemented, locally verified, and pushed to `main` at `4fd6c5d` (with `c27cbd7`). The detailed delivery record is [handoff-m1.md](handoff-m1.md).
 
-Next work order: `venture-field-parts-promise-m1`
+## Current product state
 
-## What was done
+The product now has a real local-first job and parts allocation flow, an isolated one-click demo at `/?demo=1`, deterministic promise and reorder rules, browser persistence, offline reload support, responsive task screens, legal pages, and a container that serves both the compiled app and `/health`.
 
-- Wrote `.factory/plan.md` as the venture delivery contract: customer, promise, three jobs, pricing, evidence, architecture, data/tenancy model, offline conflict rules, authentication, billing boundary, rate limits, observability/recovery, five shippable milestones, claim/test/DoD contracts, and risk-retiring experiments.
-- Wrote `.factory/design.md` for the product-specific **exploded-parts blueprint** system, including light/dark palettes, type, spacing, shape, motion, state, accessibility, responsive, and original-asset provenance rules.
-- Added `.factory/claims.json` with the five M1 claims. Their Playwright tests are deliberately M1 work because this planner did not build or pretend to build the product.
-- Added a 20-component inventory in `.factory/component-inventory.md` and a compile-checked TypeScript inventory.
-- Scaffolded Svelte 5/Vite/strict TypeScript, pinned Playwright 1.58.2, Vitest, formatting/type checks, and patched dependency versions. The current page explicitly identifies itself as a planning skeleton.
-- Scaffolded the Rust/axum API with JSON logs, graceful shutdown, `PORT=8080` default, build identity, `/health`, tests, migration location, and a non-root multi-stage Dockerfile. Shared API routes and PostgreSQL begin in M2; no fake persistence was added.
-- Added GitHub Actions for clean npm install, formatting, TypeScript/Rust tests, Svelte check, web build, and release API build.
-- Updated the researched brief state to the admitted state supplied by the work order. Kept the existing MIT license and expanded README run/test/build/deploy guidance.
+Shared accounts, PostgreSQL persistence/migrations, CIAM, billing, multi-device sync, server rate limits, and payment are intentionally M2 scope under the approved venture plan. M1 contains no stubs that imply they work.
 
-## Verification
+## Run and verify
 
-- `npm audit --audit-level=moderate` — passed, 0 vulnerabilities.
-- `npm run format:check` — passed.
-- `npm test` — passed: 2 Vitest tests and 1 Rust API test.
-- `npm run build` — passed: Svelte check reported 0 errors/warnings; Vite wrote `dist/`; release Rust binary built.
-- Web bundle at foundation: 10.21 KB JS gzip and 1.36 KB CSS gzip.
-- Started the release API with `PORT=18080`; `GET /health` returned `{"status":"ok","build_sha":"dev"}`.
-- `jq` parsed the JSON contracts and `git diff --check` passed.
-- A Docker engine was not available in this worker, so the Dockerfile itself was not built locally. The exact release binary copied by it was built and run.
+```sh
+npm ci
+npm test
+npm run test:e2e
+npm run build
+```
 
-Lighthouse, axe, Playwright claim tests, service-worker/offline checks, route crawling, and mobile screenshots do not apply to this non-product planning skeleton; they are explicit M1 acceptance gates.
+The release binary can be checked locally with:
 
-## Known gaps / M1 starting point
+```sh
+PORT=8080 server/target/release/parts-promise-api
+curl http://127.0.0.1:8080/health
+```
 
-- No product flow, routing, IndexedDB, service worker, demo data, production metadata/assets, legal pages, or claim E2E tests exist yet. This is intentional. Implement exactly M1 in `.factory/plan.md` and do not pull M2 accounts/backend persistence into it.
-- The starter uses system fallbacks. M1 must self-host and license the two specified font subsets within the 120 KB budget.
-- M1 must author the original vector hero/status/404/social/favicon assets and append their provenance to `.factory/design.md`.
-- The placeholder page links to the repository; it must be replaced by the standard landing/app route shell in M1.
+## Deployment status
 
-## Needs operator action before M2 acceptance
-
-- Register `https://field-parts-promise.sociobot.in/auth/callback` on the shared Entra SPA application and confirm it with a staging redirect.
-- Register a recurring Sociobot test product for **Workshop base — $39/month** and **Technician seat — $8/month per active technician**.
-- Confirm the Sociobot recurring checkout/verification or event contract supports exact seat quantities, cancellation, and refunds. The attached paid-unlock contract documents only one-time licenses; builders must not bypass Sociobot or call Dodo directly.
+The M1 commits were pushed successfully. Deployment is not complete: this repository has no deployment workflow/configuration and the production hostname failed DNS resolution during the cold probe on 2026-08-28. The factory must deploy the pushed container build and then rerun the cold URL check before treating M1 as live.
