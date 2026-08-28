@@ -1,0 +1,37 @@
+[
+  {
+    "id": "promise-status-from-allocation",
+    "claim": "The promise status changes from Date at risk to Parts in hand only after every required quantity has an allocation.",
+    "where": "M1 demo job status plate and README",
+    "test": "npm run test:e2e -- --grep @claim:promise-status-from-allocation",
+    "sandbox": "fresh browser context at /?demo=1; use bundled RD-1042 data; allocate the missing pump and assert the status reason before and after"
+  },
+  {
+    "id": "allocation-keeps-source",
+    "claim": "Each allocation keeps its job, source, quantity, unit, updater, and checked time after reload.",
+    "where": "M1 required-part row and allocation review",
+    "test": "npm run test:e2e -- --grep @claim:allocation-keeps-source",
+    "sandbox": "fresh browser context at /?demo=1; allocate from Van 2, reload, and assert all six displayed fields from IndexedDB"
+  },
+  {
+    "id": "reorder-after-allocation",
+    "claim": "Using the last spare in Van 2 suggests a reorder but never places one.",
+    "where": "M1 allocation result and landing live preview",
+    "test": "npm run test:e2e -- --grep @claim:reorder-after-allocation",
+    "sandbox": "fresh browser context at /?demo=1; allocate the pump, assert the below-minimum calculation and suggestion, and assert no supplier order or network write exists"
+  },
+  {
+    "id": "demo-reset-isolated",
+    "claim": "Demo changes reset to the bundled sample and never appear in the live local workspace.",
+    "where": "M1 demo banner and privacy page",
+    "test": "npm run test:e2e -- --grep @claim:demo-reset-isolated",
+    "sandbox": "fresh browser context; change RD-1042 in demo, reset it, then leave demo and assert the separate live database is empty and no cross-origin request occurred"
+  },
+  {
+    "id": "offline-reload",
+    "claim": "The sample job and allocation flow work offline after the first visit.",
+    "where": "M1 landing fact, offline plate, and README",
+    "test": "npm run test:e2e -- --grep @claim:offline-reload",
+    "sandbox": "fresh browser context at /?demo=1; wait for service-worker readiness, set the context offline, reload, allocate the sample pump, and assert the updated status"
+  }
+]
