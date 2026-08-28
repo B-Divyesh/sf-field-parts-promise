@@ -1,18 +1,16 @@
 # Parts Promise
 
-Parts Promise is for small electrical, HVAC, and repair firms. It checks whether a required part is held before the firm agrees a job's visit date.
+Parts Promise helps a solo tradesperson check whether a required part is held before agreeing a visit date. This browser-only release keeps jobs in one browser.
 
-M1 is a local, offline-capable job card. One person can create a job and record a van or warehouse source. They can allocate and undo quantities, attach supplier-date evidence, and review the promise status. Claim `local-workspace-flow` covers this work.
+## Try the sample job
 
-This release has no sign-in, team sync, barcode scan, supplier-order action, or checkout. Records stay in one browser. Claim `m1-feature-boundaries` checks those limits in the shipped interface.
+Open `/?demo=1` (for example, <http://127.0.0.1:4173/?demo=1> while developing). Riverside Dental job `RD-1042` opens with one missing condensate pump.
 
-## Try it
+Allocate the pump from Van 2 to change the job from **Date at risk** to **Parts in hand**. The app suggests a reorder when Van 2 reaches zero pumps. It never places an order.
 
-Open `/?demo=1` (for example, <http://127.0.0.1:4173/?demo=1> while developing). The sample opens Riverside Dental job `RD-1042` with one missing condensate pump.
+The sample uses the separate `parts-promise-demo-v1` IndexedDB workspace. **Reset demo** restores the bundled sample. **Start for real** discards sample changes and reopens the unchanged `parts-promise-live-v1` workspace.
 
-Allocate that pump from Van 2 to move the job from **Date at risk** to **Parts in hand**. The van then reaches zero pumps against a minimum of one, so Parts Promise suggests a reorder and never places one.
-
-The demo uses the `parts-promise-demo-v1` IndexedDB database. **Reset demo** restores the bundled fixture. **Start for real** deletes the demo database and opens the separate, empty `parts-promise-live-v1` database. Claims `indexeddb-local-storage` and `demo-reset-isolated` cover these boundaries.
+The sample job and allocation flow work offline after the first visit. This browser-only release is free. It has no sign-in, team sync, barcode scan, supplier-order action, or checkout.
 
 ## Run and verify
 
@@ -23,7 +21,7 @@ npm ci
 npm run dev
 ```
 
-Use these checks before shipping:
+Run the complete local suite before shipping:
 
 ```sh
 npm test
@@ -31,26 +29,19 @@ npm run test:e2e
 npm run build
 ```
 
-`npm test` runs the deterministic TypeScript rules and Rust server tests. `npm run test:e2e` runs every browser claim, accessibility checks, mobile keyboard/history coverage, and the offline reload. `npm run build` type-checks the Svelte app, writes `dist/`, and creates the release server binary.
+`npm run build` writes `dist/`.
 
-## Architecture and privacy
+## Privacy and deployment
 
-- Jobs, required parts, sources, and allocations use the named browser IndexedDB databases. Claim `indexeddb-local-storage` reads the stored allocation directly.
-- The service worker keeps the sample allocation flow working after an offline reload. Claim `offline-reload` performs that flow without a network.
-- The demo makes only same-origin GET requests and never asks for camera access. Claim `demo-network-privacy` records the full request and permission flow.
-- The Rust server serves `/health` and the compiled app. It has no job-data endpoint in M1. Claim `container-runtime` starts it with only `PORT` and probes these responses.
+Jobs, required parts, sources, and allocations use browser IndexedDB. The demo makes only same-origin GET requests and never asks for camera access. Browser site-data controls remove local records.
 
-The app includes privacy and terms routes at `/privacy` and `/terms`.
+The Rust server starts with `PORT` only, defaults to `8080`, and serves `/health`. Unknown paths return HTTP 404 with a designed recovery page.
 
-## Deployment
+The factory deploys the product to <https://field-parts-promise.sociobot.in>.
 
-The factory deploys the product. The multi-stage image runs as a non-root user and listens on `PORT`, which defaults to `8080`. The server needs no secret or other environment variable. Unknown paths keep the designed page and return HTTP 404.
+## Claim tests
 
-```sh
-curl http://127.0.0.1:8080/health
-```
-
-The production URL is <https://field-parts-promise.sociobot.in>.
+Every visitor-facing claim has one sandbox test. Run the commands recorded in [.factory/claims.json](.factory/claims.json) after `npm ci`.
 
 ## License
 

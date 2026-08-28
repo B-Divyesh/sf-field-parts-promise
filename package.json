@@ -20,7 +20,6 @@
     "format:check": "prettier --check . && cargo fmt --manifest-path server/Cargo.toml -- --check"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.0",
     "@axe-core/playwright": "4.11.0",
     "@playwright/test": "1.58.2",
     "@sveltejs/vite-plugin-svelte": "7.3.0",

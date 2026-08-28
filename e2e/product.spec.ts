@@ -50,6 +50,94 @@ test('public routes load without console errors and internal links resolve', asy
   expect(pageErrors).toEqual([]);
 });
 
+test('each route owns one correct metadata set', async ({ page }) => {
+  const routes = [
+    {
+      path: '/',
+      title: 'Parts Promise — Hold parts for each job',
+      description: 'Promise job dates from parts held for the job.',
+      canonical: 'https://field-parts-promise.sociobot.in/'
+    },
+    {
+      path: '/privacy',
+      title: 'Privacy — Parts Promise',
+      description: 'How Parts Promise handles local data.',
+      canonical: 'https://field-parts-promise.sociobot.in/privacy'
+    },
+    {
+      path: '/demo',
+      title: 'Demo — Parts Promise',
+      description: 'Sample job card for Parts Promise.',
+      canonical: 'https://field-parts-promise.sociobot.in/demo'
+    }
+  ];
+  for (const route of routes) {
+    await page.goto(route.path);
+    await expect(page).toHaveTitle(route.title);
+    for (const selector of [
+      'meta[name="description"]',
+      'link[rel="canonical"]',
+      'meta[property="og:title"]',
+      'meta[property="og:description"]',
+      'meta[name="twitter:title"]',
+      'meta[name="twitter:description"]'
+    ]) {
+      await expect(page.locator(selector)).toHaveCount(1);
+    }
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      'content',
+      route.description
+    );
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      'href',
+      route.canonical
+    );
+    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+      'content',
+      route.title
+    );
+    await expect(
+      page.locator('meta[name="twitter:description"]')
+    ).toHaveAttribute('content', route.description);
+  }
+});
+
+test('forward and browser-history route changes focus the new heading', async ({
+  page
+}) => {
+  const headingHasFocus = () =>
+    page.evaluate(
+      () => document.activeElement === document.querySelector('main h1')
+    );
+  await page.goto('/');
+  await page
+    .getByLabel('Main navigation')
+    .getByRole('link', { name: 'Privacy' })
+    .click();
+  await expect(page.locator('h1')).toHaveText('How Parts Promise handles data');
+  await expect.poll(headingHasFocus).toBe(true);
+  await page.goBack();
+  await expect(page.locator('h1')).toHaveText(
+    'Promise dates from parts held for the job'
+  );
+  await expect.poll(headingHasFocus).toBe(true);
+  await page
+    .getByLabel('Main navigation')
+    .getByRole('link', { name: 'Demo' })
+    .click();
+  await expect(page.locator('h1')).toHaveText('Riverside Dental parts');
+  await expect.poll(headingHasFocus).toBe(true);
+  await page
+    .getByLabel('Main navigation')
+    .getByRole('link', { name: 'Jobs' })
+    .click();
+  await page.getByRole('link', { name: 'Review parts' }).click();
+  await expect.poll(headingHasFocus).toBe(true);
+  await page.goBack();
+  await expect(page.locator('h1')).toHaveText('Jobs and their parts status');
+  await expect.poll(headingHasFocus).toBe(true);
+});
+
 test('demo deep link, history focus, keyboard allocation, and reset work on a phone', async ({
   page
 }, testInfo) => {
@@ -63,8 +151,18 @@ test('demo deep link, history focus, keyboard allocation, and reset work on a ph
   ).toBeVisible();
   await page.getByRole('link', { name: 'Review parts' }).click();
   await expect(page.locator('h1')).toHaveText('Riverside Dental parts');
+  expect(
+    await page.evaluate(
+      () => document.activeElement === document.querySelector('main h1')
+    )
+  ).toBe(true);
   await page.goBack();
   await expect(page.locator('h1')).toHaveText('Jobs and their parts status');
+  expect(
+    await page.evaluate(
+      () => document.activeElement === document.querySelector('main h1')
+    )
+  ).toBe(true);
   await page.getByRole('link', { name: 'Review parts' }).press('Enter');
   await page.getByTestId('allocate-pump').press('Enter');
   await page.getByLabel(/Van 2/).check();

@@ -79,20 +79,14 @@
   $: activeJobId = page === 'job' ? jobIdFromPath(currentPath, demo) : '';
   $: activeJob = workspace?.jobs.find((job) => job.id === activeJobId);
   $: metadata = pageMetadata(page, activeJob);
+  $: updateDocumentMetadata(metadata);
   $: activeStatus =
     activeJob && workspace ? promiseStatus(workspace, activeJob) : undefined;
   $: suggestions = workspace ? reorderSuggestions(workspace) : [];
   $: document.documentElement.dataset.theme = theme;
 
   onMount(() => {
-    const updateRoute = () => {
-      currentPath = window.location.pathname;
-      demo =
-        new URLSearchParams(window.location.search).get('demo') === '1' ||
-        currentPath === '/demo';
-      void loadCurrentWorkspace();
-      void focusPageHeading();
-    };
+    const updateRoute = () => void syncRoute(true);
     const updateOnline = () => (online = navigator.onLine);
     currentPath = window.location.pathname;
     demo =
@@ -128,40 +122,78 @@
   }
 
   function pageMetadata(currentPage: Page, job?: Job) {
+    const canonical =
+      demo && (currentPath === '/' || currentPath === '/demo')
+        ? '/demo'
+        : currentPath;
     if (currentPage === 'jobs')
       return {
         title: 'Jobs — Parts Promise',
-        description: 'Jobs and their parts status.'
+        description: 'Jobs and their parts status.',
+        canonical
       };
-    if (currentPage === 'job' && demo && currentPath === '/')
+    if (
+      currentPage === 'job' &&
+      demo &&
+      (currentPath === '/' || currentPath === '/demo')
+    )
       return {
         title: 'Demo — Parts Promise',
-        description: 'Sample job card for Parts Promise.'
+        description: 'Sample job card for Parts Promise.',
+        canonical: '/demo'
       };
     if (currentPage === 'job')
       return {
         title: `${job?.number ?? 'Job'} parts — Parts Promise`,
-        description: 'Parts held for this job.'
+        description: 'Parts held for this job.',
+        canonical
       };
     if (currentPage === 'privacy')
       return {
         title: 'Privacy — Parts Promise',
-        description: 'How Parts Promise handles local data.'
+        description: 'How Parts Promise handles local data.',
+        canonical
       };
     if (currentPage === 'terms')
       return {
         title: 'Terms — Parts Promise',
-        description: 'Terms for using Parts Promise.'
+        description: 'Terms for using Parts Promise.',
+        canonical
       };
     if (currentPage === 'not-found')
       return {
         title: 'Page not found — Parts Promise',
-        description: 'The requested Parts Promise page is not available.'
+        description: 'The requested Parts Promise page is not available.',
+        canonical
       };
     return {
       title: 'Parts Promise — Hold parts for each job',
-      description: 'Promise job dates from parts held for the job.'
+      description: 'Promise job dates from parts held for the job.',
+      canonical
     };
+  }
+
+  function updateDocumentMetadata(next: ReturnType<typeof pageMetadata>) {
+    if (typeof document === 'undefined') return;
+    const origin = 'https://field-parts-promise.sociobot.in';
+    const absoluteCanonical = `${origin}${next.canonical}`;
+    document.title = next.title;
+    const attributes: Array<[string, string]> = [
+      ['description', next.description],
+      ['canonical', absoluteCanonical],
+      ['og:title', next.title],
+      ['og:description', next.description],
+      ['og:url', absoluteCanonical],
+      ['twitter:title', next.title],
+      ['twitter:description', next.description]
+    ];
+    for (const [name, value] of attributes) {
+      const element = document.getElementById(`route-${name}`);
+      if (element) {
+        if (element instanceof HTMLLinkElement) element.href = value;
+        else element.setAttribute('content', value);
+      }
+    }
   }
 
   function mode(): WorkspaceMode {
@@ -202,29 +234,30 @@
     return `${path}${path.includes('?') ? '&' : '?'}demo=1`;
   }
 
-  function navigate(path: string) {
-    history.pushState({}, '', path);
+  async function syncRoute(shouldFocus: boolean) {
     currentPath = window.location.pathname;
     demo =
       new URLSearchParams(window.location.search).get('demo') === '1' ||
       currentPath === '/demo';
-    void loadCurrentWorkspace();
-    void focusPageHeading();
+    await loadCurrentWorkspace();
+    if (shouldFocus) await focusPageHeading();
   }
 
-  function follow(event: MouseEvent, path: string) {
+  async function navigate(path: string) {
+    history.pushState({}, '', path);
+    await syncRoute(true);
+  }
+
+  async function follow(event: MouseEvent, path: string) {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0)
       return;
     event.preventDefault();
-    navigate(path);
+    await navigate(path);
   }
 
   async function focusPageHeading() {
     await tick();
-    window.setTimeout(
-      () => document.querySelector<HTMLElement>('main h1')?.focus(),
-      0
-    );
+    document.querySelector<HTMLElement>('main h1')?.focus();
   }
 
   function changeTheme() {
@@ -242,9 +275,8 @@
   async function confirmExitDemo() {
     await deleteWorkspace('demo');
     exitPending = false;
-    navigate('/jobs');
-    toast =
-      'You are in an empty local workspace. Sample changes were discarded.';
+    await navigate('/jobs');
+    toast = 'Your local workspace is open. Sample changes were discarded.';
   }
 
   function requirementsFor(job: Job): PartRequirement[] {
@@ -531,15 +563,6 @@
   }
 </script>
 
-<svelte:head>
-  <title>{metadata.title}</title>
-  <meta name="description" content={metadata.description} />
-  <link
-    rel="canonical"
-    href={`https://field-parts-promise.sociobot.in${currentPath}`}
-  />
-</svelte:head>
-
 <a class="skip-link" href="#main">Skip to main content</a>
 
 <header class="site-header">
@@ -567,7 +590,7 @@
     type="button"
     aria-label={`Use ${theme === 'light' ? 'dark' : 'light'} theme`}
     on:click={changeTheme}
-    >{theme === 'light' ? 'Night sheet' : 'Day sheet'}</button
+    >Use {theme === 'light' ? 'dark' : 'light'} theme</button
   >
 </header>
 
@@ -615,8 +638,7 @@
   <dialog open aria-labelledby="exit-title">
     <h2 id="exit-title">Leave the sample workspace?</h2>
     <p>
-      Sample changes are discarded. Your new local workspace starts empty and
-      never includes the demo records.
+      Sample changes are discarded. Your local workspace will reopen unchanged.
     </p>
     <div class="dialog-actions">
       <button class="button danger" type="button" on:click={confirmExitDemo}
@@ -649,12 +671,12 @@
   {:else if page === 'home'}
     <section class="landing-hero" aria-labelledby="landing-title">
       <div class="hero-copy">
-        <p class="drawing-label">Parts allocation / revision 01</p>
+        <p class="drawing-label">Allocate parts to a job</p>
         <h1 id="landing-title" tabindex="-1">
           Promise dates from parts held for the job
         </h1>
         <p class="hero-summary">
-          For trade firms that need a clear parts check before agreeing a visit
+          For solo tradespeople who need a parts check before agreeing a visit
           date.
         </p>
         <div class="hero-actions">
@@ -666,9 +688,11 @@
           ><span>Opens Riverside Dental with one missing pump.</span>
         </div>
         <ul class="plain-facts">
-          <li>Works offline after your first visit.</li>
+          <li>
+            The sample job and allocation work offline after your first visit.
+          </li>
           <li>Sample changes stay in this browser.</li>
-          <li>No sign-in or checkout in this release.</li>
+          <li>Free for one browser in this release.</li>
         </ul>
       </div>
       <BlueprintHero />
@@ -676,8 +700,8 @@
 
     <section class="preview-section" aria-labelledby="preview-title">
       <div>
-        <p class="drawing-label">Live sample / job datum</p>
-        <h2 id="preview-title">See what blocks a date</h2>
+        <p class="drawing-label">Sample job status</p>
+        <h2 id="preview-title">See why a visit date is at risk</h2>
         <p>
           RD-1042 needs one condensate pump. The job stays at risk until a
           source holds it.
@@ -693,19 +717,21 @@
     </section>
 
     <section class="how-section" aria-labelledby="how-title">
-      <p class="drawing-label">Three drawing marks</p>
-      <h2 id="how-title">Check the parts before the promise</h2>
+      <p class="drawing-label">How it works</p>
+      <h2 id="how-title">Check parts before agreeing a visit date</h2>
       <ol>
         <li>
-          <strong>List</strong><span>Add each required part to the job.</span>
+          <strong>List required parts</strong><span
+            >Add each required part to the job.</span
+          >
         </li>
         <li>
-          <strong>Hold</strong><span
+          <strong>Allocate each part</strong><span
             >Allocate it from a van or warehouse source.</span
           >
         </li>
         <li>
-          <strong>Review</strong><span
+          <strong>Review the visit date</strong><span
             >Read the reason before you agree the visit date.</span
           >
         </li>
@@ -724,7 +750,7 @@
     </section>
   {:else if page === 'jobs'}
     <section class="page-heading">
-      <p class="drawing-label">Job board / local workspace</p>
+      <p class="drawing-label">Jobs in this browser</p>
       <h1 tabindex="-1">Jobs and their parts status</h1>
       <p>Each job shows the one fact that still needs attention.</p>
     </section>
@@ -775,7 +801,7 @@
   {:else if page === 'job' && activeJob && workspace && activeStatus}
     <section class="job-datum">
       <div>
-        <p class="drawing-label">Job datum / local record</p>
+        <p class="drawing-label">Sample job</p>
         <h1 tabindex="-1">{activeJob.site} parts</h1>
         <p>
           <strong>{activeJob.number}</strong> · Visit
@@ -792,7 +818,7 @@
     <section class="required-parts" aria-labelledby="parts-heading">
       <div class="section-heading">
         <div>
-          <p class="drawing-label">Required parts / source leaders</p>
+          <p class="drawing-label">Required parts and their sources</p>
           <h2 id="parts-heading">Parts held for this job</h2>
         </div>
         <button
@@ -909,9 +935,9 @@
     </section>
   {:else if page === 'privacy'}
     <section class="legal-copy">
-      <p class="drawing-label">Privacy / revision 01</p>
+      <p class="drawing-label">Privacy</p>
       <h1 tabindex="-1">How Parts Promise handles data</h1>
-      <h2>Local data in M1</h2>
+      <h2>Local data in this browser</h2>
       <p>
         Jobs, required parts, sources, and allocations are stored in IndexedDB
         on this browser. The live workspace uses
@@ -933,7 +959,7 @@
     </section>
   {:else if page === 'terms'}
     <section class="legal-copy">
-      <p class="drawing-label">Terms / M1 local release</p>
+      <p class="drawing-label">Terms</p>
       <h1 tabindex="-1">Terms for using Parts Promise</h1>
       <h2>Use the evidence, not a guarantee</h2>
       <p>
@@ -948,15 +974,19 @@
     </section>
   {:else}
     <section class="not-found">
-      <p class="drawing-label">Drawing 404 / detached leader</p>
-      <h1 tabindex="-1">This page is not on the drawing</h1>
+      <p class="drawing-label">404</p>
+      <h1 tabindex="-1">Page not found</h1>
       <p>
-        The leader for this page ends outside this revision. Return to the job
-        board and keep the parts record together.
+        This address does not match a Parts Promise page. Return to your jobs or
+        the home page.
       </p>
-      <a class="button" href="/" on:click={(event) => follow(event, '/')}
-        >Return to Parts Promise</a
-      >
+      <div class="hero-actions">
+        <a
+          class="button"
+          href="/jobs"
+          on:click={(event) => follow(event, '/jobs')}>Open jobs</a
+        ><a href="/" on:click={(event) => follow(event, '/')}>Go to home</a>
+      </div>
     </section>
   {/if}
 
@@ -1237,5 +1267,5 @@
       on:click={(event) => follow(event, href('/terms'))}>Terms</a
     ><a href="https://sociobot.in" rel="external">Built by Param Factory</a>
   </div>
-  <small>Revision M1 · local-first</small>
+  <small>Browser-only release</small>
 </footer>

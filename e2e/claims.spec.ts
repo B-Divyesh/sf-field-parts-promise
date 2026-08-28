@@ -78,7 +78,7 @@ test('@claim:reorder-after-allocation The last spare suggests review and never o
   ).toBe(true);
 });
 
-test('@claim:demo-reset-isolated Demo reset restores the fixture and leaving starts empty', async ({
+test('@claim:demo-reset-isolated Demo reset restores the fixture and leaving preserves live records', async ({
   browser
 }, testInfo) => {
   test.skip(
@@ -89,6 +89,15 @@ test('@claim:demo-reset-isolated Demo reset restores the fixture and leaving sta
   const page = await context.newPage();
   const requests: string[] = [];
   page.on('request', (request) => requests.push(request.url()));
+  await page.goto('/jobs');
+  await page.getByRole('button', { name: 'Add a job' }).click();
+  await page.getByLabel('Job number').fill('LIVE-1');
+  await page.getByLabel('Site or customer name').fill('Existing Live Customer');
+  await page.getByLabel('Visit date').fill('2026-09-20');
+  await page.getByLabel('Required part', { exact: true }).fill('Fuse');
+  await page.getByLabel('Quantity', { exact: true }).fill('1');
+  await page.getByRole('button', { name: 'Save job and part' }).click();
+  await expect(page.locator('h1')).toHaveText('Existing Live Customer parts');
   await openPumpAllocation(page);
   await page.getByRole('button', { name: 'Reset demo' }).first().click();
   await page
@@ -105,10 +114,11 @@ test('@claim:demo-reset-isolated Demo reset restores the fixture and leaving sta
     .click();
   await expect(page).toHaveURL(/\/jobs$/);
   await expect(
-    page.getByRole('heading', {
-      name: 'Jobs with required parts will appear here'
-    })
+    page.getByRole('heading', { name: 'Existing Live Customer' })
   ).toBeVisible();
+  await expect(page.locator('.toast')).toContainText(
+    'Your local workspace is open. Sample changes were discarded.'
+  );
   expect(
     requests.every((url) => new URL(url).origin === new URL(page.url()).origin)
   ).toBe(true);
@@ -212,7 +222,7 @@ test('@claim:local-workspace-flow A local job can be created, sourced, allocated
   );
 });
 
-test('@claim:m1-feature-boundaries M1 has no account, sync, scan, ordering, or checkout action', async ({
+test('@claim:m1-feature-boundaries This browser-only release has no account, sync, scan, ordering, or checkout action', async ({
   page
 }, testInfo) => {
   test.skip(
@@ -220,9 +230,6 @@ test('@claim:m1-feature-boundaries M1 has no account, sync, scan, ordering, or c
     'Claim evidence runs once on desktop Chromium.'
   );
   await page.goto('/');
-  await expect(
-    page.getByText('No sign-in or checkout in this release.')
-  ).toBeVisible();
   await expect(page.locator('.plain-language-section')).toContainText(
     'does not sync between people, scan barcodes, place supplier orders, or take payment'
   );
@@ -241,6 +248,25 @@ test('@claim:m1-feature-boundaries M1 has no account, sync, scan, ordering, or c
       page.getByRole('link', { name: unavailableAction })
     ).toHaveCount(0);
   }
+});
+
+test('@claim:free-browser-release The browser-only release is visibly free and has no payment action', async ({
+  page
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Claim evidence runs once on desktop Chromium.'
+  );
+  await page.goto('/');
+  await expect(
+    page.getByText('Free for one browser in this release.')
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: /checkout|buy/i })).toHaveCount(
+    0
+  );
+  await expect(page.getByRole('link', { name: /checkout|buy/i })).toHaveCount(
+    0
+  );
 });
 
 test('@claim:indexeddb-local-storage Workspace records are written to the named local databases', async ({

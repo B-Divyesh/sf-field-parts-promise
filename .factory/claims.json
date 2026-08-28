@@ -22,10 +22,10 @@
   },
   {
     "id": "demo-reset-isolated",
-    "claim": "Demo changes reset to the bundled sample and never appear in the live local workspace.",
+    "claim": "Demo changes reset to the bundled sample, and leaving demo reopens the unchanged live local workspace.",
     "where": "M1 demo banner, privacy page, demo guide, and README",
     "test": "npm run test:e2e -- --grep @claim:demo-reset-isolated",
-    "sandbox": "fresh browser context; change RD-1042 in demo, reset it, then leave demo and assert the separate live database is empty"
+    "sandbox": "fresh browser context; create a live job, change RD-1042 in demo, reset it, then leave demo and assert the live job survives unchanged"
   },
   {
     "id": "offline-reload",
@@ -43,10 +43,17 @@
   },
   {
     "id": "m1-feature-boundaries",
-    "claim": "This release has no sign-in, team sync, barcode scan, supplier-order action, or checkout.",
-    "where": "landing facts and scope section, terms, and README",
+    "claim": "This browser-only release has no sign-in, team sync, barcode scan, supplier-order action, or checkout.",
+    "where": "landing scope section, terms, and README",
     "test": "npm run test:e2e -- --grep @claim:m1-feature-boundaries",
     "sandbox": "fresh browser context; assert the shipped scope copy and the absence of sign-in, invite, scan, order, buy, and checkout actions"
+  },
+  {
+    "id": "free-browser-release",
+    "claim": "This browser-only release is free.",
+    "where": "landing first-screen facts and README",
+    "test": "npm run test:e2e -- --grep @claim:free-browser-release",
+    "sandbox": "fresh browser context; assert the free first-screen fact and README-equivalent UI fact, then assert no checkout or buy action is shipped"
   },
   {
     "id": "indexeddb-local-storage",

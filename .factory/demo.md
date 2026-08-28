@@ -1,4 +1,4 @@
-# M1 demo sandbox
+# Demo sandbox
 
 Demo URL: `/?demo=1`
 
@@ -6,8 +6,8 @@ The bundled sample is Riverside Dental job `RD-1042`, with a visit date of 2026-
 
 Allocate the pump from Van 2 to make the job **Parts in hand**. The calculation leaves Van 2 with 0 pumps against its minimum of 1 and shows a reorder suggestion. The suggestion never creates a supplier order.
 
-The demo reads and writes `parts-promise-demo-v1` in IndexedDB. Its browser traffic uses same-origin GET requests and never asks for camera access. The live local workspace is `parts-promise-live-v1` and starts empty.
+The demo reads and writes `parts-promise-demo-v1` in IndexedDB. Its browser traffic uses same-origin GET requests and never asks for camera access. The live local workspace is `parts-promise-live-v1`.
 
 - **Reset demo** writes the bundled fixture back into the demo database.
-- **Start for real** confirms the boundary, deletes the demo database, and opens `/jobs` in the empty live database.
+- **Start for real** confirms the boundary, deletes the demo database, and opens `/jobs` with live records unchanged.
 - The service worker caches the shell and sample fixture on the first online visit. Reloading `/?demo=1` and allocating the pump works while offline.

@@ -199,7 +199,7 @@ mod tests {
         let root = tempfile::tempdir().unwrap();
         fs::write(
             root.path().join("index.html"),
-            "<main><h1>This page is not on the drawing</h1></main>",
+            "<main><h1>Page not found</h1></main>",
         )
         .unwrap();
 
@@ -234,6 +234,6 @@ mod tests {
             "no-cache, max-age=0, must-revalidate"
         );
         let body = response.into_body().collect().await.unwrap().to_bytes();
-        assert!(String::from_utf8_lossy(&body).contains("This page is not on the drawing"));
+        assert!(String::from_utf8_lossy(&body).contains("Page not found"));
     }
 }

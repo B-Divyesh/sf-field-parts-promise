@@ -11,7 +11,8 @@
   />
   {#if !compact}
     <figcaption>
-      Every leader ends at the source that holds the part for the job.
+      Each required part shows the van, warehouse, or supplier record that
+      covers it.
     </figcaption>
   {/if}
 </figure>
