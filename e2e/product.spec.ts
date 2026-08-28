@@ -74,6 +74,59 @@ test('demo deep link, history focus, keyboard allocation, and reset work on a ph
   );
 });
 
+test('all verifier-reported phone controls provide 44px touch targets', async ({
+  page
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'mobile-chromium',
+    'Touch geometry runs at the phone viewport.'
+  );
+  await page.goto('/?demo=1');
+
+  const assertTouchTarget = async (
+    locator: import('@playwright/test').Locator,
+    name: string
+  ) => {
+    const box = await locator.boundingBox();
+    expect(box, `${name} is visible`).not.toBeNull();
+    expect(box!.width, `${name} width`).toBeGreaterThanOrEqual(44);
+    expect(box!.height, `${name} height`).toBeGreaterThanOrEqual(44);
+  };
+
+  await assertTouchTarget(page.locator('.theme-toggle'), 'theme');
+  await assertTouchTarget(
+    page.getByRole('button', { name: 'Reset demo' }).first(),
+    'Reset demo'
+  );
+  await assertTouchTarget(
+    page.getByRole('button', { name: 'Start for real' }),
+    'Start for real'
+  );
+  for (const [index, control] of (
+    await page.getByRole('button', { name: 'Remove allocation' }).all()
+  ).entries()) {
+    await assertTouchTarget(control, `Remove allocation ${index + 1}`);
+  }
+
+  await page.getByTestId('allocate-pump').click();
+  await page.getByLabel(/Van 2/).check();
+  await page.getByRole('button', { name: 'Hold this quantity' }).click();
+  await assertTouchTarget(page.locator('.toast button'), 'toast dismiss');
+});
+
+test('privacy copy states only the network behavior covered by the claim', async ({
+  page
+}) => {
+  await page.goto('/privacy');
+  await expect(
+    page.getByRole('heading', { name: 'Demo requests' })
+  ).toBeVisible();
+  await expect(page.getByText(/only same-origin requests/)).toBeVisible();
+  await expect(
+    page.getByText(/no account|no telemetry|camera request/i)
+  ).toHaveCount(0);
+});
+
 test('reduced motion declares an instant transition path', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/?demo=1');

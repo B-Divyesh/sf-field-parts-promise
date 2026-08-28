@@ -931,10 +931,9 @@
         Demo records never enter the live local workspace. Reset restores the
         bundled sample. Leaving demo deletes its browser database.
       </p>
-      <h2>Network and permissions</h2>
+      <h2>Demo requests</h2>
       <p>
-        M1 has no account, telemetry, supplier connection, checkout, or camera
-        request. The demo makes no API or cross-origin request.
+        The demo makes only same-origin requests while you use and reset it.
       </p>
       <h2>Your control</h2>
       <p>

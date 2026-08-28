@@ -22,8 +22,8 @@
   },
   {
     "id": "demo-reset-isolated",
-    "claim": "Demo changes reset to the bundled sample and never appear in the live local workspace.",
-    "where": "M1 demo banner and privacy page",
+    "claim": "Demo changes reset to the bundled sample, never appear in the live local workspace, and make only same-origin requests.",
+    "where": "M1 demo banner, privacy page, and README",
     "test": "npm run test:e2e -- --grep @claim:demo-reset-isolated",
     "sandbox": "fresh browser context; change RD-1042 in demo, reset it, then leave demo and assert the separate live database is empty and no cross-origin request occurred"
   },

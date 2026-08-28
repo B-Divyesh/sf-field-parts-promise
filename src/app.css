@@ -163,7 +163,7 @@ time,
 .theme-toggle {
   grid-column: 1 / -1;
   width: fit-content;
-  min-height: 36px;
+  min-height: 44px;
   padding: var(--space-1) var(--space-2);
   color: var(--color-text);
   border: 1px solid var(--color-line);
@@ -186,7 +186,7 @@ time,
   font-weight: 700;
 }
 .demo-banner button {
-  min-height: 36px;
+  min-height: 44px;
   padding-inline: var(--space-2);
   color: var(--color-accent-contrast);
   border: 1px solid var(--color-accent);
@@ -236,7 +236,7 @@ main {
   background: transparent;
 }
 .text-button {
-  min-height: 36px;
+  min-height: 44px;
   padding: var(--space-1);
   color: var(--color-blueprint);
   border: 0;
@@ -713,7 +713,8 @@ dialog::backdrop {
   box-shadow: var(--shadow-sheet);
 }
 .toast button {
-  min-height: 32px;
+  min-width: 44px;
+  min-height: 44px;
   color: var(--color-text);
   border: 0;
   background: transparent;

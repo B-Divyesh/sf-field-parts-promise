@@ -8,7 +8,7 @@ COPY src ./src
 COPY public ./public
 RUN npm run build:web
 
-FROM rust:1.98-bookworm AS api-builder
+FROM rust:1-slim AS api-builder
 
 ARG BUILD_SHA=dev
 ENV BUILD_SHA=${BUILD_SHA}
