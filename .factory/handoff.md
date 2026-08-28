@@ -8,7 +8,14 @@
 
 ## Status
 
-**Repair complete and ready for independent verification.** Both release blockers in `.factory/verification-2.md` are fixed at their root. The researched brief, M1 allocation behavior, local-first data model, demo boundary, offline flow, and product visual system remain intact.
+**PASS — independently verified for release at
+`3ed9c6a37148e55d87735f30e9cffb61cfb9125d`.** The live deployment at
+<https://field-parts-promise.sociobot.in> reports this exact SHA from
+`/health`. Independent QA is recorded in `.factory/verification-3.md`; it
+reran every claims command, the complete test/build gates, live desktop/mobile
+flows, privacy/request logging, PWA offline/update behavior, accessibility,
+headers, caching, artifact identity, and the designed 404. No release defects
+were found.
 
 ## Reproduction and repairs
 
