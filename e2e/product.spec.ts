@@ -1,0 +1,90 @@
+import { AxeBuilder } from '@axe-core/playwright';
+import { expect, test } from '@playwright/test';
+
+test('public and app routes have no serious accessibility findings', async ({
+  page
+}) => {
+  for (const route of [
+    '/',
+    '/?demo=1',
+    '/jobs',
+    '/privacy',
+    '/terms',
+    '/not-on-this-drawing'
+  ]) {
+    await page.goto(route);
+    await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('h1')).toHaveCount(1);
+    const results = await new AxeBuilder({ page }).analyze();
+    expect(
+      results.violations
+        .filter((issue) => ['serious', 'critical'].includes(issue.impact ?? ''))
+        .map((issue) => issue.id)
+    ).toEqual([]);
+  }
+});
+
+test('public routes load without console errors and internal links resolve', async ({
+  page,
+  request
+}) => {
+  const consoleErrors: string[] = [];
+  const pageErrors: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error') consoleErrors.push(message.text());
+  });
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  const links = await page
+    .locator('a[href]')
+    .evaluateAll((anchors) =>
+      anchors.map((anchor) => (anchor as HTMLAnchorElement).href)
+    );
+  const origin = new URL(page.url()).origin;
+  for (const link of links.filter((link) => new URL(link).origin === origin)) {
+    const response = await request.get(link);
+    expect(response.ok(), link).toBe(true);
+  }
+  expect(consoleErrors).toEqual([]);
+  expect(pageErrors).toEqual([]);
+});
+
+test('demo deep link, history focus, keyboard allocation, and reset work on a phone', async ({
+  page
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'mobile-chromium',
+    'Phone behavior runs on the mobile project.'
+  );
+  await page.goto('/jobs?demo=1');
+  await expect(
+    page.getByRole('heading', { name: 'Jobs and their parts status' })
+  ).toBeVisible();
+  await page.getByRole('link', { name: 'Review parts' }).click();
+  await expect(page.locator('h1')).toHaveText('Riverside Dental parts');
+  await page.goBack();
+  await expect(page.locator('h1')).toHaveText('Jobs and their parts status');
+  await page.getByRole('link', { name: 'Review parts' }).press('Enter');
+  await page.getByTestId('allocate-pump').press('Enter');
+  await page.getByLabel(/Van 2/).check();
+  await page.getByRole('button', { name: 'Hold this quantity' }).press('Enter');
+  await expect(page.locator('.status-plate').first()).toContainText(
+    'Parts in hand'
+  );
+});
+
+test('reduced motion declares an instant transition path', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/?demo=1');
+  await expect(page.locator('h1')).toBeVisible();
+  expect(
+    await page
+      .locator('html')
+      .evaluate(() =>
+        getComputedStyle(document.documentElement)
+          .getPropertyValue('--motion-row')
+          .trim()
+      )
+  ).toBe('0s');
+});
