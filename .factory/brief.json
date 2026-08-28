@@ -1,0 +1,36 @@
+{
+  "slug": "field-parts-promise",
+  "title": "Parts Promise",
+  "territory": "utilities",
+  "user": "Solo-to-20-person electricians, HVAC, and repair firms that must promise a job date only when the required part is truly allocated to that job.",
+  "evidence": [
+    {
+      "url": "https://hn.algolia.com/api/v1/items/47294092",
+      "date": "2026-03-08",
+      "quote_or_summary": "A solo carpenter says Jobber cost $150+/month and was bloated for the three needs they actually had: invoicing, scheduling, and client management."
+    },
+    {
+      "url": "https://hn.algolia.com/api/v1/items/48681023",
+      "date": "2026-06-26",
+      "quote_or_summary": "An Ask HN thread specifically asks what has worked when deploying tools in trade or field-service businesses; a responder describes electrical-job workflows across job finding and qualified worker coordination."
+    },
+    {
+      "url": "https://github.com/inventree/InvenTree/issues/11226",
+      "date": "2026-01-30",
+      "quote_or_summary": "The request says aggregate 'on order' quantities do not show whether a specific build/job is covered, forcing manual notes, PO checks, memory, and risking duplicate orders."
+    }
+  ],
+  "recurrence": "Tradespeople report price/bloat pressure while a production-inventory user details the same allocation ambiguity that causes repeat purchases and broken customer promises. It arises on every parts-dependent job.",
+  "current_workaround": "Keep job schedules in field-service software, call suppliers, track parts in spreadsheets or notes, and infer whether generic stock/on-order totals cover the job.",
+  "incumbents_and_gap": "Jobber, Tradify, ServiceTitan, and ERPs cover broad field service or inventory. The wedge is job-level parts commitment and supplier ETA evidence without buying an enterprise dispatch/ERP stack.",
+  "smallest_useful_product": "Mobile job card with required-part list, scan/manual allocation from van/warehouse/supplier PO, ETA confidence, customer-date warning, and reorder suggestion. Non-goals: payroll, dispatch optimization, full inventory accounting, or marketplace lead generation.",
+  "success_measure": "Pilot firms reduce duplicate part orders by 25% and log an attributable parts status for 90% of jobs that require a non-stock item.",
+  "artifact_class": "pwa-offline",
+  "monetization": "subscription — $39/month base plus $8/technician is tied to daily field use and avoided repeat materials/visits.",
+  "constraints": "Offline conflict handling, barcode/device permissions, supplier-data licensing, no inaccurate availability guarantees, and regional tax/unit support.",
+  "est_build_effort": "L",
+  "scale": "venture",
+  "why_distinct": "It protects a customer promise through part-to-job attribution rather than cloning a full field-service suite.",
+  "confidence": 4,
+  "state": "RESEARCHED"
+}
