@@ -22,10 +22,10 @@
   },
   {
     "id": "demo-reset-isolated",
-    "claim": "Demo changes reset to the bundled sample, never appear in the live local workspace, and make only same-origin requests.",
-    "where": "M1 demo banner, privacy page, and README",
+    "claim": "Demo changes reset to the bundled sample and never appear in the live local workspace.",
+    "where": "M1 demo banner, privacy page, demo guide, and README",
     "test": "npm run test:e2e -- --grep @claim:demo-reset-isolated",
-    "sandbox": "fresh browser context; change RD-1042 in demo, reset it, then leave demo and assert the separate live database is empty and no cross-origin request occurred"
+    "sandbox": "fresh browser context; change RD-1042 in demo, reset it, then leave demo and assert the separate live database is empty"
   },
   {
     "id": "offline-reload",
@@ -33,5 +33,47 @@
     "where": "M1 landing fact, offline plate, and README",
     "test": "npm run test:e2e -- --grep @claim:offline-reload",
     "sandbox": "fresh browser context at /?demo=1; wait for service-worker readiness, set the context offline, reload, allocate the sample pump, and assert the updated status"
+  },
+  {
+    "id": "local-workspace-flow",
+    "claim": "One person can create a local job and required part, then record a van or warehouse source. They can allocate and undo a quantity, attach supplier-date evidence, and review the promise status.",
+    "where": "landing how-it-works section and README M1 description",
+    "test": "npm run test:e2e -- --grep @claim:local-workspace-flow",
+    "sandbox": "fresh browser context; create a live local job and source, allocate then undo it, then attach supplier evidence in the isolated sample"
+  },
+  {
+    "id": "m1-feature-boundaries",
+    "claim": "This release has no sign-in, team sync, barcode scan, supplier-order action, or checkout.",
+    "where": "landing facts and scope section, terms, and README",
+    "test": "npm run test:e2e -- --grep @claim:m1-feature-boundaries",
+    "sandbox": "fresh browser context; assert the shipped scope copy and the absence of sign-in, invite, scan, order, buy, and checkout actions"
+  },
+  {
+    "id": "indexeddb-local-storage",
+    "claim": "Jobs, required parts, sources, and allocations are stored in the named browser IndexedDB workspaces.",
+    "where": "privacy page and README architecture section",
+    "test": "npm run test:e2e -- --grep @claim:indexeddb-local-storage",
+    "sandbox": "fresh browser context; allocate the sample pump, read the stored workspace from parts-promise-demo-v1, then open live mode and assert parts-promise-live-v1 exists"
+  },
+  {
+    "id": "demo-network-privacy",
+    "claim": "The demo makes only same-origin GET requests and never asks for camera access.",
+    "where": "privacy page, demo guide, and README architecture section",
+    "test": "npm run test:e2e -- --grep @claim:demo-network-privacy",
+    "sandbox": "fresh browser context with a camera-call sentinel and full request log; allocate and reset the sample, then assert every request is a same-origin GET or HEAD and camera was never requested"
+  },
+  {
+    "id": "clear-local-records",
+    "claim": "Browser site-data controls remove local workspace records.",
+    "where": "privacy page",
+    "test": "npm run test:e2e -- --grep @claim:clear-local-records",
+    "sandbox": "fresh Chromium context; create a live job, clear IndexedDB and local storage through the browser storage controls, reload, and assert the live workspace is empty"
+  },
+  {
+    "id": "container-runtime",
+    "claim": "The production server starts with only PORT, serves its build identity and compiled app, has no job-data endpoint, and returns HTTP 404 for unknown paths.",
+    "where": "README architecture and deployment sections",
+    "test": "npm run test:e2e -- --grep @claim:container-runtime",
+    "sandbox": "build and spawn the real Rust server with an environment containing only PORT; probe /health, /, a job-data request, and an unknown path; inspect the shipped image user and base contract"
   }
 ]

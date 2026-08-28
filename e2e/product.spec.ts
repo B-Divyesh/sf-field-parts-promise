@@ -114,17 +114,36 @@ test('all verifier-reported phone controls provide 44px touch targets', async ({
   await assertTouchTarget(page.locator('.toast button'), 'toast dismiss');
 });
 
-test('privacy copy states only the network behavior covered by the claim', async ({
+test('how-it-works descriptions use the mobile card width', async ({
+  page
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'mobile-chromium',
+    'Mobile layout geometry runs at 390px.'
+  );
+  await page.goto('/');
+  for (const card of await page.locator('.how-section li').all()) {
+    const cardBox = await card.boundingBox();
+    const descriptionBox = await card.locator('span').boundingBox();
+    expect(cardBox).not.toBeNull();
+    expect(descriptionBox).not.toBeNull();
+    expect(descriptionBox!.width).toBeGreaterThan(cardBox!.width * 0.75);
+  }
+});
+
+test('privacy copy states the registered network and camera behavior', async ({
   page
 }) => {
   await page.goto('/privacy');
   await expect(
     page.getByRole('heading', { name: 'Demo requests' })
   ).toBeVisible();
-  await expect(page.getByText(/only same-origin requests/)).toBeVisible();
-  await expect(
-    page.getByText(/no account|no telemetry|camera request/i)
-  ).toHaveCount(0);
+  await expect(page.locator('.legal-copy')).toContainText(
+    'The demo makes only same-origin GET requests'
+  );
+  await expect(page.locator('.legal-copy')).toContainText(
+    'never asks for camera access'
+  );
 });
 
 test('reduced motion declares an instant transition path', async ({ page }) => {
@@ -140,4 +159,39 @@ test('reduced motion declares an instant transition path', async ({ page }) => {
           .trim()
       )
   ).toBe('0s');
+});
+
+test('the current service worker controls the app without a pending update', async ({
+  page
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Service-worker update evidence runs once on desktop Chromium.'
+  );
+  await page.goto('/?demo=1');
+  const state = await page.evaluate(async () => {
+    const registration = await navigator.serviceWorker.ready;
+    if (!navigator.serviceWorker.controller) {
+      await new Promise<void>((resolve) =>
+        navigator.serviceWorker.addEventListener(
+          'controllerchange',
+          () => resolve(),
+          {
+            once: true
+          }
+        )
+      );
+    }
+    await registration.update();
+    return {
+      controlled: Boolean(navigator.serviceWorker.controller),
+      installing: Boolean(registration.installing),
+      waiting: Boolean(registration.waiting),
+      caches: await caches.keys()
+    };
+  });
+  expect(state.controlled).toBe(true);
+  expect(state.installing).toBe(false);
+  expect(state.waiting).toBe(false);
+  expect(state.caches).toContain('parts-promise-shell-v2');
 });

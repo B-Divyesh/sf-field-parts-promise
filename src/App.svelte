@@ -668,7 +668,7 @@
         <ul class="plain-facts">
           <li>Works offline after your first visit.</li>
           <li>Sample changes stay in this browser.</li>
-          <li>Accounts and payment are not available in M1.</li>
+          <li>No sign-in or checkout in this release.</li>
         </ul>
       </div>
       <BlueprintHero />
@@ -716,20 +716,11 @@
       <h2 id="privacy-title">What this first release does not do</h2>
       <p>
         It does not sync between people, scan barcodes, place supplier orders,
-        or take payment. It keeps a single local workspace and an isolated demo.
+        or take payment. It keeps one local workspace and a separate demo.
       </p>
       <a href="/privacy" on:click={(event) => follow(event, '/privacy')}
         >Read how local data works</a
       >
-    </section>
-
-    <section class="pricing-section" aria-labelledby="pricing-title">
-      <p class="drawing-label">Next milestone / not for sale yet</p>
-      <h2 id="pricing-title">Workshop base: $39 per month</h2>
-      <p>
-        Future firm accounts include one owner. Active technician seats are
-        planned at $8 per month. There is no checkout in this release.
-      </p>
     </section>
   {:else if page === 'jobs'}
     <section class="page-heading">
@@ -922,9 +913,10 @@
       <h1 tabindex="-1">How Parts Promise handles data</h1>
       <h2>Local data in M1</h2>
       <p>
-        Jobs, required parts, sources, and allocations stay in this browser's
-        IndexedDB. The live workspace uses <code>parts-promise-live-v1</code>.
-        The sample uses <code>parts-promise-demo-v1</code>.
+        Jobs, required parts, sources, and allocations are stored in IndexedDB
+        on this browser. The live workspace uses
+        <code>parts-promise-live-v1</code>. The sample uses
+        <code>parts-promise-demo-v1</code>.
       </p>
       <h2>The demo is separate</h2>
       <p>
@@ -933,13 +925,11 @@
       </p>
       <h2>Demo requests</h2>
       <p>
-        The demo makes only same-origin requests while you use and reset it.
+        The demo makes only same-origin GET requests and never asks for camera
+        access.
       </p>
       <h2>Your control</h2>
-      <p>
-        Clear browser site data to remove local records. Export and deletion
-        controls arrive with shared firm accounts in M4.
-      </p>
+      <p>Use your browser's site-data controls to remove local records.</p>
     </section>
   {:else if page === 'terms'}
     <section class="legal-copy">
@@ -952,13 +942,8 @@
       </p>
       <h2>This release</h2>
       <p>
-        M1 runs in one browser. It does not provide cloud backup, team access,
-        checkout, or supplier ordering.
-      </p>
-      <h2>Changes</h2>
-      <p>
-        Future paid firm accounts will have updated terms before checkout is
-        available.
+        This release has no sign-in, team sync, barcode scan, supplier-order
+        action, or checkout. Records stay in one browser.
       </p>
     </section>
   {:else}
@@ -1253,7 +1238,4 @@
     ><a href="https://sociobot.in" rel="external">Built by Param Factory</a>
   </div>
   <small>Revision M1 · local-first</small>
-  <p class="generated-note">
-    The service drawing is original hand-authored vector artwork.
-  </p>
 </footer>

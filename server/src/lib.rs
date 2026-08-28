@@ -35,7 +35,16 @@ pub fn app(build_sha: impl Into<String>) -> Router {
 async fn security_headers(request: Request, next: Next) -> Response {
     let path = request.uri().path().to_owned();
     let mut response = next.run(request).await;
+    let is_html = response
+        .headers()
+        .get("content-type")
+        .and_then(|value| value.to_str().ok())
+        .is_some_and(|value| value.starts_with("text/html"));
+    if response.status() == StatusCode::OK && is_html && !is_document_path(&path) {
+        *response.status_mut() = StatusCode::NOT_FOUND;
+    }
     let is_success = response.status() == StatusCode::OK;
+    let is_html_not_found = response.status() == StatusCode::NOT_FOUND && is_html;
     let headers = response.headers_mut();
     headers.insert(
         HeaderName::from_static("x-content-type-options"),
@@ -59,7 +68,7 @@ async fn security_headers(request: Request, next: Next) -> Response {
             "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'",
         ),
     );
-    if is_success {
+    if is_success || is_html_not_found {
         let cache_policy = if path == "/sw.js" {
             "no-cache, max-age=0, must-revalidate"
         } else if path.starts_with("/assets/") || path.starts_with("/fonts/") {
@@ -72,6 +81,14 @@ async fn security_headers(request: Request, next: Next) -> Response {
         headers.insert(CACHE_CONTROL, HeaderValue::from_static(cache_policy));
     }
     response
+}
+
+fn is_document_path(path: &str) -> bool {
+    matches!(path, "/" | "/demo" | "/jobs" | "/privacy" | "/terms")
+        || path
+            .strip_prefix("/jobs/")
+            .is_some_and(|job_id| !job_id.is_empty() && !job_id.contains('/'))
+        || path.ends_with(".html")
 }
 
 async fn health(State(state): State<AppState>) -> Json<HealthResponse> {
@@ -175,5 +192,48 @@ mod tests {
             worker.headers().get(CACHE_CONTROL).unwrap(),
             "no-cache, max-age=0, must-revalidate"
         );
+    }
+
+    #[tokio::test]
+    async fn unknown_document_path_returns_real_http_404_with_designed_shell() {
+        let root = tempfile::tempdir().unwrap();
+        fs::write(
+            root.path().join("index.html"),
+            "<main><h1>This page is not on the drawing</h1></main>",
+        )
+        .unwrap();
+
+        let app = Router::new()
+            .fallback_service(
+                ServeDir::new(root.path()).fallback(ServeFile::new(root.path().join("index.html"))),
+            )
+            .layer(middleware::from_fn(security_headers));
+
+        for path in ["/", "/demo", "/jobs", "/jobs/job-1", "/privacy", "/terms"] {
+            let response = app
+                .clone()
+                .oneshot(Request::builder().uri(path).body(Body::empty()).unwrap())
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::OK, "{path}");
+        }
+
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/not-on-this-drawing")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        assert_eq!(
+            response.headers().get(CACHE_CONTROL).unwrap(),
+            "no-cache, max-age=0, must-revalidate"
+        );
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        assert!(String::from_utf8_lossy(&body).contains("This page is not on the drawing"));
     }
 }

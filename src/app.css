@@ -387,6 +387,7 @@ main {
   font-size: var(--type-lg);
 }
 .how-section span {
+  grid-column: 1 / -1;
   color: var(--color-text-muted);
 }
 .plain-language-section {
