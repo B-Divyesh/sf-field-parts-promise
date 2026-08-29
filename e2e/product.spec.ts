@@ -314,15 +314,13 @@ test('demo confirmation dialogs are modal and restore keyboard focus', async ({
   }
 });
 
-test('all verifier-reported phone controls provide 44px touch targets', async ({
+test('all phone links and verifier-reported controls provide separated 44px touch targets', async ({
   page
 }, testInfo) => {
   test.skip(
     testInfo.project.name !== 'mobile-chromium',
     'Touch geometry runs at the phone viewport.'
   );
-  await page.goto('/?demo=1');
-
   const assertTouchTarget = async (
     locator: import('@playwright/test').Locator,
     name: string
@@ -333,6 +331,73 @@ test('all verifier-reported phone controls provide 44px touch targets', async ({
     expect(box!.height, `${name} height`).toBeGreaterThanOrEqual(44);
   };
 
+  for (const theme of ['light', 'dark']) {
+    await page.goto('/');
+    await page.evaluate((nextTheme) => {
+      localStorage.setItem('parts-promise-theme', nextTheme);
+    }, theme);
+    for (const route of [
+      '/',
+      '/?demo=1',
+      '/jobs',
+      '/privacy',
+      '/terms',
+      '/not-on-this-drawing'
+    ]) {
+      await page.goto(route);
+      await expect(page.locator('main')).toBeVisible();
+      await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+
+      for (const [index, link] of (
+        await page.locator('a[href]:visible').all()
+      ).entries()) {
+        const label = (await link.textContent())?.trim() || `link ${index + 1}`;
+        await assertTouchTarget(link, `${theme} ${route} ${label}`);
+      }
+
+      for (const group of await page
+        .locator('.site-header, .site-footer div, .hero-actions')
+        .all()) {
+        const targets = await group
+          .locator('a[href], button')
+          .evaluateAll((items) =>
+            items.map((item) => {
+              const rect = item.getBoundingClientRect();
+              return {
+                label:
+                  item.textContent?.trim() ||
+                  item.getAttribute('aria-label') ||
+                  'control',
+                left: rect.left,
+                right: rect.right,
+                top: rect.top,
+                bottom: rect.bottom
+              };
+            })
+          );
+        for (let first = 0; first < targets.length; first += 1) {
+          for (let second = first + 1; second < targets.length; second += 1) {
+            const horizontalGap = Math.max(
+              targets[first].left - targets[second].right,
+              targets[second].left - targets[first].right,
+              0
+            );
+            const verticalGap = Math.max(
+              targets[first].top - targets[second].bottom,
+              targets[second].top - targets[first].bottom,
+              0
+            );
+            expect(
+              Math.hypot(horizontalGap, verticalGap),
+              `${theme} ${route} ${targets[first].label} and ${targets[second].label} spacing`
+            ).toBeGreaterThanOrEqual(8);
+          }
+        }
+      }
+    }
+  }
+
+  await page.goto('/?demo=1');
   await assertTouchTarget(page.locator('.theme-toggle'), 'theme');
   await assertTouchTarget(
     page.getByRole('button', { name: 'Reset demo' }).first(),
