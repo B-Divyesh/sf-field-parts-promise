@@ -1,9 +1,11 @@
-const CACHE = 'parts-promise-shell-v2';
+const CACHE = 'parts-promise-shell-v3';
 const SHELL = [
   '/',
   '/manifest.webmanifest',
   '/assets/blueprint-hero.svg',
-  '/assets/favicon.svg'
+  '/assets/favicon.svg',
+  '/fonts/barlow-condensed-latin.woff2',
+  '/fonts/atkinson-hyperlegible-next-latin.woff2'
 ];
 
 async function cacheShell() {
@@ -63,22 +65,35 @@ self.addEventListener('fetch', (event) => {
   )
     return;
   event.respondWith(
-    caches.open(CACHE).then(async (cache) => {
-      const cached = await cache.match(event.request.url);
-      if (cached) return cached;
-      try {
-        const response = await fetch(event.request);
-        if (response.ok) {
-          await cache.put(event.request, response.clone());
-        }
-        return response;
-      } catch (error) {
-        if (event.request.mode === 'navigate') {
-          const shell = await cache.match('/');
-          if (shell) return shell;
-        }
-        throw error;
-      }
-    })
+    caches.open(CACHE).then((cache) => respond(cache, event.request))
   );
 });
+
+async function respond(cache, request) {
+  const url = new URL(request.url);
+  const fingerprintedAsset =
+    url.pathname.startsWith('/assets/') &&
+    /-[A-Za-z0-9_-]{8,}\.(?:css|js)$/.test(url.pathname);
+
+  if (fingerprintedAsset) {
+    const cached = await cache.match(request.url);
+    if (cached) return cached;
+  }
+
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      await cache.put(
+        request.mode === 'navigate' ? '/' : request,
+        response.clone()
+      );
+    }
+    return response;
+  } catch (error) {
+    const cached = await cache.match(
+      request.mode === 'navigate' ? '/' : request.url
+    );
+    if (cached) return cached;
+    throw error;
+  }
+}

@@ -172,6 +172,49 @@ test('demo deep link, history focus, keyboard allocation, and reset work on a ph
   );
 });
 
+test('demo confirmation dialogs are modal and restore keyboard focus', async ({
+  page
+}) => {
+  await page.goto('/?demo=1');
+
+  for (const confirmation of [
+    {
+      trigger: 'Reset demo',
+      heading: 'Reset the sample job?',
+      cancel: 'Keep changes'
+    },
+    {
+      trigger: 'Start for real',
+      heading: 'Leave the sample workspace?',
+      cancel: 'Stay in demo'
+    }
+  ]) {
+    const trigger = page
+      .getByRole('button', { name: confirmation.trigger })
+      .first();
+    await trigger.focus();
+    await trigger.press('Enter');
+    const dialog = page.getByRole('dialog', { name: confirmation.heading });
+    await expect(dialog).toBeVisible();
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.activeElement?.closest('dialog') !== null)
+      )
+      .toBe(true);
+    for (let step = 0; step < 5; step += 1) {
+      await page.keyboard.press('Tab');
+      expect(
+        await page.evaluate(
+          () => document.activeElement?.closest('dialog') !== null
+        )
+      ).toBe(true);
+    }
+    await dialog.getByRole('button', { name: confirmation.cancel }).click();
+    await expect(dialog).toBeHidden();
+    await expect(trigger).toBeFocused();
+  }
+});
+
 test('all verifier-reported phone controls provide 44px touch targets', async ({
   page
 }, testInfo) => {
@@ -291,5 +334,5 @@ test('the current service worker controls the app without a pending update', asy
   expect(state.controlled).toBe(true);
   expect(state.installing).toBe(false);
   expect(state.waiting).toBe(false);
-  expect(state.caches).toContain('parts-promise-shell-v2');
+  expect(state.caches).toEqual(['parts-promise-shell-v3']);
 });

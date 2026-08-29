@@ -44,10 +44,7 @@ export function addAllocation(
       error: `Only ${missing} ${requirement.unit} is still needed for this job.`
     };
   }
-  if (
-    allocation.kind === 'on_hand' &&
-    allocation.quantity > availableQuantity(workspace, source.id)
-  ) {
+  if (allocation.quantity > availableQuantity(workspace, source.id)) {
     return {
       workspace,
       error: `Only ${availableQuantity(workspace, source.id)} ${source.unit} is available at ${source.name}.`

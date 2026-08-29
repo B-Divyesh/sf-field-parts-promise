@@ -71,7 +71,7 @@ async fn security_headers(request: Request, next: Next) -> Response {
     if is_success || is_html_not_found {
         let cache_policy = if path == "/sw.js" {
             "no-cache, max-age=0, must-revalidate"
-        } else if path.starts_with("/assets/") || path.starts_with("/fonts/") {
+        } else if is_fingerprinted_asset(&path) {
             "public, max-age=31536000, immutable"
         } else if path == "/" || path.ends_with(".html") || !path.contains('.') {
             "no-cache, max-age=0, must-revalidate"
@@ -81,6 +81,22 @@ async fn security_headers(request: Request, next: Next) -> Response {
         headers.insert(CACHE_CONTROL, HeaderValue::from_static(cache_policy));
     }
     response
+}
+
+fn is_fingerprinted_asset(path: &str) -> bool {
+    if !path.starts_with("/assets/") {
+        return false;
+    }
+    let Some(file_name) = path.rsplit('/').next() else {
+        return false;
+    };
+    let Some((stem, _extension)) = file_name.rsplit_once('.') else {
+        return false;
+    };
+    let Some((_name, fingerprint)) = stem.rsplit_once('-') else {
+        return false;
+    };
+    fingerprint.len() >= 8 && fingerprint.bytes().all(|byte| byte.is_ascii_alphanumeric())
 }
 
 fn is_document_path(path: &str) -> bool {
@@ -142,13 +158,13 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn production_cache_policy_keeps_assets_immutable_and_worker_fresh() {
+    async fn production_cache_policy_only_makes_fingerprinted_assets_immutable() {
         let root = tempfile::tempdir().unwrap();
         fs::create_dir(root.path().join("assets")).unwrap();
         fs::create_dir(root.path().join("fonts")).unwrap();
         fs::write(root.path().join("index.html"), "index").unwrap();
-        fs::write(root.path().join("assets/index-a1b2c3.js"), "asset").unwrap();
-        fs::write(root.path().join("assets/index-a1b2c3.css"), "asset").unwrap();
+        fs::write(root.path().join("assets/index-a1b2c3d4.js"), "asset").unwrap();
+        fs::write(root.path().join("assets/index-a1b2c3d4.css"), "asset").unwrap();
         fs::write(root.path().join("assets/blueprint-hero.svg"), "asset").unwrap();
         fs::write(root.path().join("fonts/body.woff2"), "font").unwrap();
         fs::write(root.path().join("sw.js"), "worker").unwrap();
@@ -159,12 +175,7 @@ mod tests {
             )
             .layer(middleware::from_fn(security_headers));
 
-        for path in [
-            "/assets/index-a1b2c3.js",
-            "/assets/index-a1b2c3.css",
-            "/assets/blueprint-hero.svg",
-            "/fonts/body.woff2",
-        ] {
+        for path in ["/assets/index-a1b2c3d4.js", "/assets/index-a1b2c3d4.css"] {
             let asset = app
                 .clone()
                 .oneshot(Request::builder().uri(path).body(Body::empty()).unwrap())
@@ -174,6 +185,20 @@ mod tests {
             assert_eq!(
                 asset.headers().get(CACHE_CONTROL).unwrap(),
                 "public, max-age=31536000, immutable",
+                "{path}"
+            );
+        }
+
+        for path in ["/assets/blueprint-hero.svg", "/fonts/body.woff2"] {
+            let asset = app
+                .clone()
+                .oneshot(Request::builder().uri(path).body(Body::empty()).unwrap())
+                .await
+                .unwrap();
+            assert_eq!(asset.status(), StatusCode::OK, "{path}");
+            assert_eq!(
+                asset.headers().get(CACHE_CONTROL).unwrap(),
+                "public, max-age=3600",
                 "{path}"
             );
         }

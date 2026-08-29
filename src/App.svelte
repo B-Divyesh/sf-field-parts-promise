@@ -45,8 +45,8 @@
   let toast = '';
   let online = true;
   let theme: 'light' | 'dark' = 'light';
-  let resetPending = false;
-  let exitPending = false;
+  let resetDialog: HTMLDialogElement | undefined;
+  let exitDialog: HTMLDialogElement | undefined;
   let showAddJob = false;
   let showEditJob = false;
   let showPartForm = false;
@@ -265,16 +265,41 @@
     localStorage.setItem('parts-promise-theme', theme);
   }
 
+  async function openDialog(dialog: HTMLDialogElement | undefined) {
+    if (!dialog || dialog.open) return;
+    dialog.showModal();
+    await tick();
+    dialog.querySelector<HTMLElement>('[data-dialog-cancel]')?.focus();
+  }
+
+  function containDialogFocus(event: KeyboardEvent) {
+    if (event.key !== 'Tab') return;
+    const dialog = event.currentTarget as HTMLDialogElement;
+    const controls = Array.from(
+      dialog.querySelectorAll<HTMLElement>('button:not([disabled]), [href]')
+    );
+    const first = controls[0];
+    const last = controls.at(-1);
+    if (!first || !last) return;
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
   async function confirmReset() {
     workspace = await resetDemo();
-    resetPending = false;
     allocationRequirementId = '';
+    resetDialog?.close();
     toast = 'The sample job is back to its starting state.';
   }
 
   async function confirmExitDemo() {
     await deleteWorkspace('demo');
-    exitPending = false;
+    exitDialog?.close();
     await navigate('/jobs');
     toast = 'Your local workspace is open. Sample changes were discarded.';
   }
@@ -291,9 +316,7 @@
     if (!workspace) return;
     allocationRequirementId = requirement.id;
     const source = sourcesForRequirement(workspace, requirement).find(
-      (item) =>
-        item.type === 'supplier_order' ||
-        availableQuantity(workspace!, item.id) > 0
+      (item) => availableQuantity(workspace!, item.id) > 0
     );
     allocationSourceId = source?.id ?? '';
     allocationQuantity = Math.max(
@@ -542,6 +565,7 @@
       `Supplier evidence ${supplierReference.trim()} was attached to ${requirement.description}.`
     );
     showSupplierForm = false;
+    allocationRequirementId = '';
     supplierReference = '';
     supplierDate = '';
     formError = '';
@@ -598,25 +622,20 @@
   <aside class="demo-banner" aria-label="Demo workspace">
     <strong>Demo — sample data, nothing is saved to a firm.</strong>
     <span>Changes stay in this browser until you reset or leave.</span>
-    <button type="button" on:click={() => (resetPending = true)}
+    <button type="button" on:click={() => openDialog(resetDialog)}
       >Reset demo</button
     >
     <button
       class="quiet-button"
       type="button"
-      on:click={() => (exitPending = true)}>Start for real</button
+      on:click={() => openDialog(exitDialog)}>Start for real</button
     >
   </aside>
-{/if}
-
-{#if !online}
-  <aside class="offline-plate" role="status">
-    Offline — changes are kept on this device.
-  </aside>
-{/if}
-
-{#if resetPending}
-  <dialog open aria-labelledby="reset-title">
+  <dialog
+    bind:this={resetDialog}
+    aria-labelledby="reset-title"
+    on:keydown={containDialogFocus}
+  >
     <h2 id="reset-title">Reset the sample job?</h2>
     <p>
       This removes sample changes and restores Riverside Dental exactly as
@@ -627,15 +646,17 @@
         >Reset demo</button
       ><button
         class="button secondary"
+        data-dialog-cancel
         type="button"
-        on:click={() => (resetPending = false)}>Keep changes</button
+        on:click={() => resetDialog?.close()}>Keep changes</button
       >
     </div>
   </dialog>
-{/if}
-
-{#if exitPending}
-  <dialog open aria-labelledby="exit-title">
+  <dialog
+    bind:this={exitDialog}
+    aria-labelledby="exit-title"
+    on:keydown={containDialogFocus}
+  >
     <h2 id="exit-title">Leave the sample workspace?</h2>
     <p>
       Sample changes are discarded. Your local workspace will reopen unchanged.
@@ -645,11 +666,18 @@
         >Leave demo</button
       ><button
         class="button secondary"
+        data-dialog-cancel
         type="button"
-        on:click={() => (exitPending = false)}>Stay in demo</button
+        on:click={() => exitDialog?.close()}>Stay in demo</button
       >
     </div>
   </dialog>
+{/if}
+
+{#if !online}
+  <aside class="offline-plate" role="status">
+    Offline — changes are kept on this device.
+  </aside>
 {/if}
 
 <main id="main" tabindex="-1">
@@ -878,15 +906,17 @@
                 : undefined}
               type="button"
               on:click={() => openAllocation(requirement)}>Allocate part</button
-            >{#if requirement.id === 'req-pump'}<button
-                class="button secondary"
-                type="button"
-                on:click={() => {
-                  allocationRequirementId = requirement.id;
-                  allocationQuantity = requirement.quantity - covered;
-                  showSupplierForm = true;
-                }}>Check supplier date</button
-              >{/if}
+            ><button
+              class="button secondary"
+              type="button"
+              disabled={covered >= requirement.quantity}
+              on:click={() => {
+                allocationRequirementId = requirement.id;
+                allocationQuantity = requirement.quantity - covered;
+                formError = '';
+                showSupplierForm = true;
+              }}>Check supplier date</button
+            >
           </div>
         </article>
       {/each}
@@ -1124,13 +1154,10 @@
                 type="radio"
                 bind:group={allocationSourceId}
                 value={source.id}
-                disabled={source.type !== 'supplier_order' &&
-                  availableQuantity(workspace!, source.id) <= 0}
+                disabled={availableQuantity(workspace!, source.id) <= 0}
               /><span
                 ><strong>{source.name}</strong> · {formatQuantity(
-                  source.type === 'supplier_order'
-                    ? source.onHand
-                    : availableQuantity(workspace!, source.id),
+                  availableQuantity(workspace!, source.id),
                   source.unit
                 )} available · checked {formatTime(source.lastCheckedAt)}</span
               ></label
@@ -1206,7 +1233,10 @@
         <button
           class="text-button"
           type="button"
-          on:click={() => (showSupplierForm = false)}>Close</button
+          on:click={() => {
+            showSupplierForm = false;
+            allocationRequirementId = '';
+          }}>Close</button
         >
       </div>
       <p>This marks an expected date. It does not guarantee arrival.</p>

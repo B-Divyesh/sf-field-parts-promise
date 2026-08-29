@@ -14,6 +14,13 @@
     "sandbox": "fresh browser context at /?demo=1; allocate from Van 2, reload, and assert all six displayed fields from IndexedDB"
   },
   {
+    "id": "supplier-quantity-conserved",
+    "claim": "One supplier-order unit can be held for only one job.",
+    "where": "supplier allocation picker and promise status",
+    "test": "npm run test:e2e -- --grep @claim:supplier-quantity-conserved",
+    "sandbox": "fresh browser context at /?demo=1; attach a one-unit supplier order to RD-1042, add a second job requiring the same part, and assert the consumed order is unavailable and only the first job is covered"
+  },
+  {
     "id": "reorder-after-allocation",
     "claim": "Using the last spare in Van 2 suggests a reorder but never places one.",
     "where": "M1 allocation result and landing live preview",
@@ -39,7 +46,7 @@
     "claim": "One person can create a local job and required part, then record a van or warehouse source. They can allocate and undo a quantity, attach supplier-date evidence, and review the promise status.",
     "where": "landing how-it-works section and README M1 description",
     "test": "npm run test:e2e -- --grep @claim:local-workspace-flow",
-    "sandbox": "fresh browser context; create a live local job and source, allocate then undo it, then attach supplier evidence in the isolated sample"
+    "sandbox": "fresh browser context; create a live local job and source, allocate then undo it, attach supplier evidence to that same user-created required part, and review its promise status"
   },
   {
     "id": "m1-feature-boundaries",

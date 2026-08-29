@@ -57,6 +57,77 @@ test('@claim:allocation-keeps-source Allocation evidence survives a reload', asy
   );
 });
 
+test('@claim:supplier-quantity-conserved One supplier-order unit cannot cover two jobs', async ({
+  page
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Claim evidence runs once on desktop Chromium.'
+  );
+  await page.goto('/?demo=1');
+  await page
+    .getByTestId('part-req-pump')
+    .getByRole('button', { name: 'Check supplier date' })
+    .click();
+  await page.getByLabel('Supplier order reference').fill('PO-SINGLE-1');
+  await page.getByLabel('Expected date').fill('2026-09-01');
+  await page.getByLabel('Confidence').selectOption('Confirmed by supplier');
+  await page.getByLabel('Quantity held').fill('1');
+  await page.getByRole('button', { name: 'Attach supplier evidence' }).click();
+  await expect(page.locator('.status-plate').first()).toContainText(
+    'Expected before visit'
+  );
+
+  await page.goto('/jobs?demo=1');
+  await page.getByRole('button', { name: 'Add a job' }).click();
+  await page.getByLabel('Job number').fill('SECOND-1');
+  await page.getByLabel('Site or customer name').fill('Second Customer');
+  await page.getByLabel('Visit date').fill('2026-09-02');
+  await page
+    .getByRole('textbox', { name: 'Required part', exact: true })
+    .fill('Condensate pump');
+  await page
+    .getByRole('spinbutton', { name: 'Quantity', exact: true })
+    .fill('1');
+  await page.getByRole('button', { name: 'Save job and part' }).click();
+  await page.getByRole('button', { name: 'Allocate part' }).click();
+
+  const consumedOrder = page.getByLabel(/Supplier order PO-SINGLE-1/);
+  await expect(consumedOrder).toBeDisabled();
+  await expect(consumedOrder.locator('..')).toContainText('0 each available');
+  await expect(page.locator('.status-plate').first()).toContainText(
+    'Date at risk'
+  );
+
+  const supplierState = await page.evaluate(async () => {
+    const request = indexedDB.open('parts-promise-demo-v1', 1);
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const workspace = await new Promise<{
+      sources: Array<{ id: string; onHand: number; reference?: string }>;
+      allocations: Array<{ sourceId: string; quantity: number }>;
+    }>((resolve, reject) => {
+      const transaction = database.transaction('workspace', 'readonly');
+      const read = transaction.objectStore('workspace').get('current');
+      read.onsuccess = () => resolve(read.result);
+      read.onerror = () => reject(read.error);
+    });
+    database.close();
+    const source = workspace.sources.find(
+      (item) => item.id && item.onHand === 1 && item.id !== 'source-van-pump'
+    );
+    return {
+      onHand: source?.onHand,
+      allocated: workspace.allocations
+        .filter((item) => item.sourceId === source?.id)
+        .reduce((total, item) => total + item.quantity, 0)
+    };
+  });
+  expect(supplierState).toEqual({ onHand: 1, allocated: 1 });
+});
+
 test('@claim:reorder-after-allocation The last spare suggests review and never orders', async ({
   page
 }, testInfo) => {
@@ -133,6 +204,14 @@ test('@claim:offline-reload The sample allocation works after an offline reload'
   const isolatedBrowser = await chromium.launch();
   const context = await isolatedBrowser.newContext();
   const page = await context.newPage();
+  const consoleErrors: string[] = [];
+  const pageErrors: string[] = [];
+  const failedRequests: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error') consoleErrors.push(message.text());
+  });
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  page.on('requestfailed', (request) => failedRequests.push(request.url()));
   try {
     await page.goto('http://127.0.0.1:4173/?demo=1');
     await page.evaluate(async () => {
@@ -148,13 +227,45 @@ test('@claim:offline-reload The sample allocation works after an offline reload'
       });
     });
     await page.waitForFunction(async () => {
-      const cache = await caches.open('parts-promise-shell-v2');
-      return (await cache.keys()).some((request) =>
-        /\/assets\/index-.*\.js$/.test(new URL(request.url).pathname)
+      const cache = await caches.open('parts-promise-shell-v3');
+      const paths = (await cache.keys()).map(
+        (request) => new URL(request.url).pathname
+      );
+      return (
+        paths.includes('/') &&
+        paths.includes('/fonts/barlow-condensed-latin.woff2') &&
+        paths.includes('/fonts/atkinson-hyperlegible-next-latin.woff2') &&
+        paths.some((path) => /\/assets\/index-.*\.js$/.test(path)) &&
+        paths.some((path) => /\/assets\/index-.*\.css$/.test(path))
       );
     });
     await context.setOffline(true);
     await page.reload();
+    const offlineDiagnostics = await page.evaluate(async () => {
+      const cache = await caches.open('parts-promise-shell-v3');
+      const entries = await Promise.all(
+        (await cache.keys()).map(async (request) => {
+          const response = await cache.match(request);
+          return {
+            path: new URL(request.url).pathname,
+            status: response?.status,
+            size: (await response?.clone().arrayBuffer())?.byteLength
+          };
+        })
+      );
+      return {
+        url: location.href,
+        title: document.title,
+        body: document.body.innerText.slice(0, 120),
+        controlled: Boolean(navigator.serviceWorker.controller),
+        caches: await caches.keys(),
+        entries
+      };
+    });
+    expect(
+      offlineDiagnostics.body,
+      `offline reload diagnostics: ${JSON.stringify({ ...offlineDiagnostics, consoleErrors, pageErrors, failedRequests })}`
+    ).not.toBe('');
     await expect(page.locator('.status-plate').first()).toContainText(
       'Date at risk'
     );
@@ -165,6 +276,9 @@ test('@claim:offline-reload The sample allocation works after an offline reload'
     await expect(page.locator('.status-plate').first()).toContainText(
       'Parts in hand'
     );
+    expect(consoleErrors).toEqual([]);
+    expect(pageErrors).toEqual([]);
+    expect(failedRequests).toEqual([]);
   } finally {
     await isolatedBrowser.close();
   }
@@ -211,14 +325,16 @@ test('@claim:local-workspace-flow A local job can be created, sourced, allocated
     'Date at risk'
   );
 
-  await page.goto('/?demo=1');
   await page.getByRole('button', { name: 'Check supplier date' }).click();
   await page.getByLabel('Supplier order reference').fill('SUP-447');
   await page.getByLabel('Expected date').fill('2026-09-01');
   await page.getByLabel('Confidence').selectOption('Confirmed by supplier');
   await page.getByRole('button', { name: 'Attach supplier evidence' }).click();
-  await expect(page.getByTestId('part-req-pump')).toContainText(
-    'Supplier order SUP-447'
+  await expect(
+    page.locator('.required-part').filter({ hasText: 'Isolation valve' })
+  ).toContainText('Supplier order SUP-447');
+  await expect(page.locator('.status-plate').first()).toContainText(
+    'Expected before visit'
   );
 });
 

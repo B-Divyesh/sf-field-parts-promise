@@ -129,4 +129,91 @@ describe('promise rules', () => {
       ).toBeGreaterThanOrEqual(0);
     }
   });
+
+  it('never allocates one supplier-order unit to two jobs', () => {
+    const workspace = createDemoWorkspace();
+    const checkedAt = '2026-08-28T08:00:00.000Z';
+    workspace.jobs.push({
+      id: 'job-second',
+      number: 'SECOND-1',
+      site: 'Second customer',
+      visitDate: '2026-09-02',
+      notes: '',
+      createdAt: checkedAt,
+      updatedAt: checkedAt
+    });
+    workspace.requirements.push({
+      id: 'req-second-pump',
+      jobId: 'job-second',
+      description: 'Condensate pump',
+      unit: 'each',
+      quantity: 1
+    });
+    workspace.sources.push({
+      id: 'supplier-single-pump',
+      name: 'Supplier order PO-SINGLE-1',
+      type: 'supplier_order',
+      partDescription: 'Condensate pump',
+      unit: 'each',
+      onHand: 1,
+      minimum: 0,
+      lastCheckedAt: checkedAt,
+      lastCheckedBy: 'Test',
+      supplierOrder: {
+        reference: 'PO-SINGLE-1',
+        expectedDate: '2026-09-01',
+        confidence: 'Confirmed by supplier'
+      }
+    });
+
+    const first = addAllocation(workspace, {
+      id: 'supplier-first',
+      jobId: workspace.jobs[0].id,
+      requirementId: 'req-pump',
+      sourceId: 'supplier-single-pump',
+      sourceName: 'Supplier order PO-SINGLE-1',
+      kind: 'supplier_order',
+      quantity: 1,
+      unit: 'each',
+      updater: 'Test',
+      checkedAt,
+      createdAt: checkedAt
+    });
+    const second = addAllocation(first.workspace, {
+      id: 'supplier-second',
+      jobId: 'job-second',
+      requirementId: 'req-second-pump',
+      sourceId: 'supplier-single-pump',
+      sourceName: 'Supplier order PO-SINGLE-1',
+      kind: 'supplier_order',
+      quantity: 1,
+      unit: 'each',
+      updater: 'Test',
+      checkedAt,
+      createdAt: checkedAt
+    });
+
+    expect(first.error).toBeUndefined();
+    expect(availableQuantity(first.workspace, 'supplier-single-pump')).toBe(0);
+    expect(second.error).toBe(
+      'Only 0 each is available at Supplier order PO-SINGLE-1.'
+    );
+    expect(second.workspace.allocations).toHaveLength(
+      first.workspace.allocations.length
+    );
+    expect(
+      promiseStatus(
+        second.workspace,
+        second.workspace.jobs[0],
+        new Date('2026-08-29T08:00:00.000Z')
+      ).label
+    ).toBe('Expected before visit');
+    expect(
+      promiseStatus(
+        second.workspace,
+        second.workspace.jobs[1],
+        new Date('2026-08-29T08:00:00.000Z')
+      ).label
+    ).toBe('Date at risk');
+  });
 });
