@@ -1,0 +1,228 @@
+{
+  "testedAt": "2026-08-29T15:19:21.511Z",
+  "url": "https://field-parts-promise.sociobot.in",
+  "views": [
+    {
+      "name": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "status": 200,
+      "headers": {
+        "accept-ranges": "bytes",
+        "cache-control": "no-cache, max-age=0, must-revalidate",
+        "content-length": "2491",
+        "content-security-policy": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'",
+        "content-type": "text/html",
+        "date": "Sat, 29 Aug 2026 15:19:21 GMT",
+        "last-modified": "Sat, 29 Aug 2026 14:54:19 GMT",
+        "permissions-policy": "camera=(), microphone=(), geolocation=()",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY"
+      },
+      "title": "Parts Promise — Hold parts for each job",
+      "lang": "en",
+      "h1": [
+        "Promise dates from parts held for the job"
+      ],
+      "firstViewportText": [
+        "Parts Promise",
+        "Demo",
+        "Jobs",
+        "Privacy",
+        "Use dark theme",
+        "Parts Promise — Hold parts for each job",
+        "ALLOCATE PARTS TO A JOB",
+        "Promise dates from parts held for the job",
+        "For solo tradespeople who need a parts check before agreeing a visit date.",
+        "Try it with sample data",
+        "Opens Riverside Dental with one missing pump.",
+        "The sample job and allocation work offline after your first visit.",
+        "Sample changes stay in this browser.",
+        "Free for one browser in this release.",
+        "Each required part shows the van, warehouse, or supplier record that covers it.",
+        "SAMPLE JOB STATUS",
+        "See why a visit date is at risk",
+        "RD-1042 · RIVERSIDE DENTAL",
+        "Date at risk"
+      ],
+      "firstViewportActions": [
+        {
+          "text": "Parts Promise",
+          "tag": "A",
+          "href": "https://field-parts-promise.sociobot.in/"
+        },
+        {
+          "text": "Demo",
+          "tag": "A",
+          "href": "https://field-parts-promise.sociobot.in/?demo=1"
+        },
+        {
+          "text": "Jobs",
+          "tag": "A",
+          "href": "https://field-parts-promise.sociobot.in/jobs"
+        },
+        {
+          "text": "Privacy",
+          "tag": "A",
+          "href": "https://field-parts-promise.sociobot.in/privacy"
+        },
+        {
+          "text": "Use dark theme",
+          "tag": "BUTTON",
+          "href": null
+        },
+        {
+          "text": "Try it with sample data",
+          "tag": "A",
+          "href": "https://field-parts-promise.sociobot.in/?demo=1"
+        }
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/",
+          "resourceType": "document"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2",
+          "resourceType": "font"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2",
+          "resourceType": "font"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/assets/index-BZXKYKR1.js",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/assets/index-BPxxStax.css",
+          "resourceType": "stylesheet"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg",
+          "resourceType": "image"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "name": "mobile-390",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "isMobile": true,
+      "status": 200,
+      "headers": {
+        "accept-ranges": "bytes",
+        "cache-control": "no-cache, max-age=0, must-revalidate",
+        "content-length": "2491",
+        "content-security-policy": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'",
+        "content-type": "text/html",
+        "date": "Sat, 29 Aug 2026 15:19:22 GMT",
+        "last-modified": "Sat, 29 Aug 2026 14:54:19 GMT",
+        "permissions-policy": "camera=(), microphone=(), geolocation=()",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY"
+      },
+      "title": "Parts Promise — Hold parts for each job",
+      "lang": "en",
+      "h1": [
+        "Promise dates from parts held for the job"
+      ],
+      "firstViewportText": [
+        "Parts Promise",
+        "Demo",
+        "Jobs",
+        "Privacy",
+        "Use dark theme",
+        "Parts Promise — Hold parts for each job",
+        "ALLOCATE PARTS TO A JOB",
+        "Promise dates from parts held for the job",
+        "For solo tradespeople who need a parts check before agreeing a visit date.",
+        "Try it with sample data",
+        "Opens Riverside Dental with one missing pump.",
+        "The sample job and allocation work offline after your first visit.",
+        "Sample changes stay in this browser.",
+        "Free for one browser in this release."
+      ],
+      "firstViewportActions": [
+        {
+          "text": "Parts Promise",
+          "tag": "A",
+          "href": "https://field-parts-promise.sociobot.in/"
+        },
+        {
+          "text": "Demo",
+          "tag": "A",
+          "href": "https://field-parts-promise.sociobot.in/?demo=1"
+        },
+        {
+          "text": "Jobs",
+          "tag": "A",
+          "href": "https://field-parts-promise.sociobot.in/jobs"
+        },
+        {
+          "text": "Privacy",
+          "tag": "A",
+          "href": "https://field-parts-promise.sociobot.in/privacy"
+        },
+        {
+          "text": "Use dark theme",
+          "tag": "BUTTON",
+          "href": null
+        },
+        {
+          "text": "Try it with sample data",
+          "tag": "A",
+          "href": "https://field-parts-promise.sociobot.in/?demo=1"
+        }
+      ],
+      "requests": [
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/",
+          "resourceType": "document"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2",
+          "resourceType": "font"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2",
+          "resourceType": "font"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/assets/index-BZXKYKR1.js",
+          "resourceType": "script"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/assets/index-BPxxStax.css",
+          "resourceType": "stylesheet"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg",
+          "resourceType": "image"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    }
+  ]
+}

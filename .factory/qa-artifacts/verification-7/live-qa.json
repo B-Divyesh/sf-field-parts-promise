@@ -1,0 +1,1050 @@
+{
+  "testedAt": "2026-08-29T15:25:34.692Z",
+  "base": "https://field-parts-promise.sociobot.in",
+  "axe": [
+    {
+      "view": "desktop",
+      "theme": "light",
+      "route": "/",
+      "status": 200,
+      "title": "Parts Promise — Hold parts for each job",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": []
+    },
+    {
+      "view": "desktop",
+      "theme": "light",
+      "route": "/?demo=1",
+      "status": 200,
+      "title": "Demo — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": []
+    },
+    {
+      "view": "desktop",
+      "theme": "light",
+      "route": "/jobs",
+      "status": 200,
+      "title": "Jobs — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": []
+    },
+    {
+      "view": "desktop",
+      "theme": "light",
+      "route": "/privacy",
+      "status": 200,
+      "title": "Privacy — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": []
+    },
+    {
+      "view": "desktop",
+      "theme": "light",
+      "route": "/terms",
+      "status": 200,
+      "title": "Terms — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": []
+    },
+    {
+      "view": "desktop",
+      "theme": "light",
+      "route": "/not-on-this-drawing",
+      "status": 404,
+      "title": "Page not found — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": []
+    },
+    {
+      "view": "desktop",
+      "theme": "dark",
+      "route": "/",
+      "status": 200,
+      "title": "Parts Promise — Hold parts for each job",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": []
+    },
+    {
+      "view": "desktop",
+      "theme": "dark",
+      "route": "/?demo=1",
+      "status": 200,
+      "title": "Demo — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": []
+    },
+    {
+      "view": "desktop",
+      "theme": "dark",
+      "route": "/jobs",
+      "status": 200,
+      "title": "Jobs — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": []
+    },
+    {
+      "view": "desktop",
+      "theme": "dark",
+      "route": "/privacy",
+      "status": 200,
+      "title": "Privacy — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": []
+    },
+    {
+      "view": "desktop",
+      "theme": "dark",
+      "route": "/terms",
+      "status": 200,
+      "title": "Terms — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": []
+    },
+    {
+      "view": "desktop",
+      "theme": "dark",
+      "route": "/not-on-this-drawing",
+      "status": 404,
+      "title": "Page not found — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": []
+    },
+    {
+      "view": "mobile-390",
+      "theme": "light",
+      "route": "/",
+      "status": 200,
+      "title": "Parts Promise — Hold parts for each job",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": [
+        {
+          "name": "Skip to main content",
+          "tag": "A",
+          "w": 177,
+          "h": 37
+        },
+        {
+          "name": "Parts Promise",
+          "tag": "A",
+          "w": 127.6875,
+          "h": 29
+        },
+        {
+          "name": "Demo",
+          "tag": "A",
+          "w": 43,
+          "h": 44
+        },
+        {
+          "name": "Jobs",
+          "tag": "A",
+          "w": 36,
+          "h": 44
+        },
+        {
+          "name": "Open the sample job",
+          "tag": "A",
+          "w": 147,
+          "h": 21
+        },
+        {
+          "name": "Read how local data works",
+          "tag": "A",
+          "w": 186,
+          "h": 21
+        },
+        {
+          "name": "Privacy",
+          "tag": "A",
+          "w": 43,
+          "h": 18
+        },
+        {
+          "name": "Terms",
+          "tag": "A",
+          "w": 39,
+          "h": 18
+        },
+        {
+          "name": "Built by Param Factory",
+          "tag": "A",
+          "w": 141,
+          "h": 18
+        }
+      ]
+    },
+    {
+      "view": "mobile-390",
+      "theme": "light",
+      "route": "/?demo=1",
+      "status": 200,
+      "title": "Demo — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": [
+        {
+          "name": "Skip to main content",
+          "tag": "A",
+          "w": 177,
+          "h": 37
+        },
+        {
+          "name": "Parts Promise",
+          "tag": "A",
+          "w": 127.6875,
+          "h": 29
+        },
+        {
+          "name": "Demo",
+          "tag": "A",
+          "w": 43,
+          "h": 44
+        },
+        {
+          "name": "Jobs",
+          "tag": "A",
+          "w": 36,
+          "h": 44
+        },
+        {
+          "name": "Privacy",
+          "tag": "A",
+          "w": 43,
+          "h": 18
+        },
+        {
+          "name": "Terms",
+          "tag": "A",
+          "w": 39,
+          "h": 18
+        },
+        {
+          "name": "Built by Param Factory",
+          "tag": "A",
+          "w": 141,
+          "h": 18
+        }
+      ]
+    },
+    {
+      "view": "mobile-390",
+      "theme": "light",
+      "route": "/jobs",
+      "status": 200,
+      "title": "Jobs — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": [
+        {
+          "name": "Skip to main content",
+          "tag": "A",
+          "w": 177,
+          "h": 37
+        },
+        {
+          "name": "Parts Promise",
+          "tag": "A",
+          "w": 127.6875,
+          "h": 29
+        },
+        {
+          "name": "Demo",
+          "tag": "A",
+          "w": 43,
+          "h": 44
+        },
+        {
+          "name": "Jobs",
+          "tag": "A",
+          "w": 36,
+          "h": 44
+        },
+        {
+          "name": "Privacy",
+          "tag": "A",
+          "w": 43,
+          "h": 18
+        },
+        {
+          "name": "Terms",
+          "tag": "A",
+          "w": 39,
+          "h": 18
+        },
+        {
+          "name": "Built by Param Factory",
+          "tag": "A",
+          "w": 141,
+          "h": 18
+        }
+      ]
+    },
+    {
+      "view": "mobile-390",
+      "theme": "light",
+      "route": "/privacy",
+      "status": 200,
+      "title": "Privacy — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": [
+        {
+          "name": "Skip to main content",
+          "tag": "A",
+          "w": 177,
+          "h": 37
+        },
+        {
+          "name": "Parts Promise",
+          "tag": "A",
+          "w": 127.6875,
+          "h": 29
+        },
+        {
+          "name": "Demo",
+          "tag": "A",
+          "w": 43,
+          "h": 44
+        },
+        {
+          "name": "Jobs",
+          "tag": "A",
+          "w": 36,
+          "h": 44
+        },
+        {
+          "name": "Privacy",
+          "tag": "A",
+          "w": 43,
+          "h": 18
+        },
+        {
+          "name": "Terms",
+          "tag": "A",
+          "w": 39,
+          "h": 18
+        },
+        {
+          "name": "Built by Param Factory",
+          "tag": "A",
+          "w": 141,
+          "h": 18
+        }
+      ]
+    },
+    {
+      "view": "mobile-390",
+      "theme": "light",
+      "route": "/terms",
+      "status": 200,
+      "title": "Terms — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": [
+        {
+          "name": "Skip to main content",
+          "tag": "A",
+          "w": 177,
+          "h": 37
+        },
+        {
+          "name": "Parts Promise",
+          "tag": "A",
+          "w": 127.6875,
+          "h": 29
+        },
+        {
+          "name": "Demo",
+          "tag": "A",
+          "w": 43,
+          "h": 44
+        },
+        {
+          "name": "Jobs",
+          "tag": "A",
+          "w": 36,
+          "h": 44
+        },
+        {
+          "name": "Privacy",
+          "tag": "A",
+          "w": 43,
+          "h": 18
+        },
+        {
+          "name": "Terms",
+          "tag": "A",
+          "w": 39,
+          "h": 18
+        },
+        {
+          "name": "Built by Param Factory",
+          "tag": "A",
+          "w": 141,
+          "h": 18
+        }
+      ]
+    },
+    {
+      "view": "mobile-390",
+      "theme": "light",
+      "route": "/not-on-this-drawing",
+      "status": 404,
+      "title": "Page not found — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": [
+        {
+          "name": "Skip to main content",
+          "tag": "A",
+          "w": 177,
+          "h": 37
+        },
+        {
+          "name": "Parts Promise",
+          "tag": "A",
+          "w": 127.6875,
+          "h": 29
+        },
+        {
+          "name": "Demo",
+          "tag": "A",
+          "w": 43,
+          "h": 44
+        },
+        {
+          "name": "Jobs",
+          "tag": "A",
+          "w": 36,
+          "h": 44
+        },
+        {
+          "name": "Go to home",
+          "tag": "A",
+          "w": 83,
+          "h": 21
+        },
+        {
+          "name": "Privacy",
+          "tag": "A",
+          "w": 43,
+          "h": 18
+        },
+        {
+          "name": "Terms",
+          "tag": "A",
+          "w": 39,
+          "h": 18
+        },
+        {
+          "name": "Built by Param Factory",
+          "tag": "A",
+          "w": 141,
+          "h": 18
+        }
+      ]
+    },
+    {
+      "view": "mobile-390",
+      "theme": "dark",
+      "route": "/",
+      "status": 200,
+      "title": "Parts Promise — Hold parts for each job",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": [
+        {
+          "name": "Skip to main content",
+          "tag": "A",
+          "w": 177,
+          "h": 37
+        },
+        {
+          "name": "Parts Promise",
+          "tag": "A",
+          "w": 127.6875,
+          "h": 29
+        },
+        {
+          "name": "Demo",
+          "tag": "A",
+          "w": 43,
+          "h": 44
+        },
+        {
+          "name": "Jobs",
+          "tag": "A",
+          "w": 36,
+          "h": 44
+        },
+        {
+          "name": "Open the sample job",
+          "tag": "A",
+          "w": 147,
+          "h": 21
+        },
+        {
+          "name": "Read how local data works",
+          "tag": "A",
+          "w": 186,
+          "h": 21
+        },
+        {
+          "name": "Privacy",
+          "tag": "A",
+          "w": 43,
+          "h": 18
+        },
+        {
+          "name": "Terms",
+          "tag": "A",
+          "w": 39,
+          "h": 18
+        },
+        {
+          "name": "Built by Param Factory",
+          "tag": "A",
+          "w": 141,
+          "h": 18
+        }
+      ]
+    },
+    {
+      "view": "mobile-390",
+      "theme": "dark",
+      "route": "/?demo=1",
+      "status": 200,
+      "title": "Demo — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": [
+        {
+          "name": "Skip to main content",
+          "tag": "A",
+          "w": 177,
+          "h": 37
+        },
+        {
+          "name": "Parts Promise",
+          "tag": "A",
+          "w": 127.6875,
+          "h": 29
+        },
+        {
+          "name": "Demo",
+          "tag": "A",
+          "w": 43,
+          "h": 44
+        },
+        {
+          "name": "Jobs",
+          "tag": "A",
+          "w": 36,
+          "h": 44
+        },
+        {
+          "name": "Privacy",
+          "tag": "A",
+          "w": 43,
+          "h": 18
+        },
+        {
+          "name": "Terms",
+          "tag": "A",
+          "w": 39,
+          "h": 18
+        },
+        {
+          "name": "Built by Param Factory",
+          "tag": "A",
+          "w": 141,
+          "h": 18
+        }
+      ]
+    },
+    {
+      "view": "mobile-390",
+      "theme": "dark",
+      "route": "/jobs",
+      "status": 200,
+      "title": "Jobs — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": [
+        {
+          "name": "Skip to main content",
+          "tag": "A",
+          "w": 177,
+          "h": 37
+        },
+        {
+          "name": "Parts Promise",
+          "tag": "A",
+          "w": 127.6875,
+          "h": 29
+        },
+        {
+          "name": "Demo",
+          "tag": "A",
+          "w": 43,
+          "h": 44
+        },
+        {
+          "name": "Jobs",
+          "tag": "A",
+          "w": 36,
+          "h": 44
+        },
+        {
+          "name": "Privacy",
+          "tag": "A",
+          "w": 43,
+          "h": 18
+        },
+        {
+          "name": "Terms",
+          "tag": "A",
+          "w": 39,
+          "h": 18
+        },
+        {
+          "name": "Built by Param Factory",
+          "tag": "A",
+          "w": 141,
+          "h": 18
+        }
+      ]
+    },
+    {
+      "view": "mobile-390",
+      "theme": "dark",
+      "route": "/privacy",
+      "status": 200,
+      "title": "Privacy — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": [
+        {
+          "name": "Skip to main content",
+          "tag": "A",
+          "w": 177,
+          "h": 37
+        },
+        {
+          "name": "Parts Promise",
+          "tag": "A",
+          "w": 127.6875,
+          "h": 29
+        },
+        {
+          "name": "Demo",
+          "tag": "A",
+          "w": 43,
+          "h": 44
+        },
+        {
+          "name": "Jobs",
+          "tag": "A",
+          "w": 36,
+          "h": 44
+        },
+        {
+          "name": "Privacy",
+          "tag": "A",
+          "w": 43,
+          "h": 18
+        },
+        {
+          "name": "Terms",
+          "tag": "A",
+          "w": 39,
+          "h": 18
+        },
+        {
+          "name": "Built by Param Factory",
+          "tag": "A",
+          "w": 141,
+          "h": 18
+        }
+      ]
+    },
+    {
+      "view": "mobile-390",
+      "theme": "dark",
+      "route": "/terms",
+      "status": 200,
+      "title": "Terms — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": [
+        {
+          "name": "Skip to main content",
+          "tag": "A",
+          "w": 177,
+          "h": 37
+        },
+        {
+          "name": "Parts Promise",
+          "tag": "A",
+          "w": 127.6875,
+          "h": 29
+        },
+        {
+          "name": "Demo",
+          "tag": "A",
+          "w": 43,
+          "h": 44
+        },
+        {
+          "name": "Jobs",
+          "tag": "A",
+          "w": 36,
+          "h": 44
+        },
+        {
+          "name": "Privacy",
+          "tag": "A",
+          "w": 43,
+          "h": 18
+        },
+        {
+          "name": "Terms",
+          "tag": "A",
+          "w": 39,
+          "h": 18
+        },
+        {
+          "name": "Built by Param Factory",
+          "tag": "A",
+          "w": 141,
+          "h": 18
+        }
+      ]
+    },
+    {
+      "view": "mobile-390",
+      "theme": "dark",
+      "route": "/not-on-this-drawing",
+      "status": 404,
+      "title": "Page not found — Parts Promise",
+      "h1": 1,
+      "main": 1,
+      "overflow": 0,
+      "serious": [],
+      "touchViolations": [
+        {
+          "name": "Skip to main content",
+          "tag": "A",
+          "w": 177,
+          "h": 37
+        },
+        {
+          "name": "Parts Promise",
+          "tag": "A",
+          "w": 127.6875,
+          "h": 29
+        },
+        {
+          "name": "Demo",
+          "tag": "A",
+          "w": 43,
+          "h": 44
+        },
+        {
+          "name": "Jobs",
+          "tag": "A",
+          "w": 36,
+          "h": 44
+        },
+        {
+          "name": "Go to home",
+          "tag": "A",
+          "w": 83,
+          "h": 21
+        },
+        {
+          "name": "Privacy",
+          "tag": "A",
+          "w": 43,
+          "h": 18
+        },
+        {
+          "name": "Terms",
+          "tag": "A",
+          "w": 39,
+          "h": 18
+        },
+        {
+          "name": "Built by Param Factory",
+          "tag": "A",
+          "w": 141,
+          "h": 18
+        }
+      ]
+    }
+  ],
+  "flow": {
+    "initial": true,
+    "invalidMessage": "Only 1 each is still needed for this job.",
+    "remainedAtRisk": true,
+    "recovered": true,
+    "reorder": "Van 2 has 0 each of Condensate pump. Minimum: 1 each. No\n              supplier order has been placed.",
+    "persisted": true,
+    "allocation": "Held for RD-1042 from Van 2 · 1 each · Field demo\n                    · checked Aug 28, 2026, 8:05 AMRemove allocation",
+    "dialogVisible": true,
+    "reset": true,
+    "cameraCalls": 0,
+    "requestCount": 12,
+    "requests": [
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/?demo=1"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-BZXKYKR1.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-BPxxStax.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/?demo=1"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-BZXKYKR1.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-BPxxStax.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      }
+    ],
+    "onlyAllowed": true,
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  "mobile": {
+    "headingFocused": false,
+    "allocationHeadingFocused": true,
+    "completed": true,
+    "geometry": {
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "buttons": [
+        {
+          "name": "Use dark theme",
+          "w": 131,
+          "h": 44
+        },
+        {
+          "name": "Reset demo",
+          "w": 358,
+          "h": 44
+        },
+        {
+          "name": "Start for real",
+          "w": 358,
+          "h": 44
+        },
+        {
+          "name": "Edit job",
+          "w": 93,
+          "h": 44
+        },
+        {
+          "name": "Add required part",
+          "w": 170,
+          "h": 44
+        },
+        {
+          "name": "Remove allocation",
+          "w": 128,
+          "h": 44
+        },
+        {
+          "name": "Allocate part",
+          "w": 132,
+          "h": 44
+        },
+        {
+          "name": "Check supplier date",
+          "w": 186,
+          "h": 44
+        },
+        {
+          "name": "Remove allocation",
+          "w": 128,
+          "h": 44
+        },
+        {
+          "name": "Remove allocation",
+          "w": 128,
+          "h": 44
+        },
+        {
+          "name": "Allocate part",
+          "w": 132,
+          "h": 44
+        },
+        {
+          "name": "Check supplier date",
+          "w": 186,
+          "h": 44
+        },
+        {
+          "name": "Remove allocation",
+          "w": 128,
+          "h": 44
+        },
+        {
+          "name": "Allocate part",
+          "w": 132,
+          "h": 44
+        },
+        {
+          "name": "Check supplier date",
+          "w": 186,
+          "h": 44
+        },
+        {
+          "name": "Undo allocation",
+          "w": 126,
+          "h": 44
+        },
+        {
+          "name": "Add a source",
+          "w": 133,
+          "h": 44
+        },
+        {
+          "name": "Dismiss message",
+          "w": 44,
+          "h": 44
+        }
+      ]
+    },
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  "pwa": {
+    "controlled": true,
+    "installing": false,
+    "waiting": false,
+    "caches": [
+      "parts-promise-shell-v3"
+    ],
+    "offlineRendered": true,
+    "offlineAllocated": true,
+    "consoleErrors": [],
+    "pageErrors": [],
+    "failedRequests": []
+  },
+  "reducedMotion": {
+    "motion": "0s"
+  },
+  "failures": [
+    "runtime errors desktop light: {\"consoleErrors\":[\"Failed to load resource: the server responded with a status of 404 ()\",\"Failed to load resource: the server responded with a status of 404 ()\"],\"pageErrors\":[]}",
+    "runtime errors desktop dark: {\"consoleErrors\":[\"Failed to load resource: the server responded with a status of 404 ()\",\"Failed to load resource: the server responded with a status of 404 ()\"],\"pageErrors\":[]}",
+    "touch targets light /: [{\"name\":\"Skip to main content\",\"tag\":\"A\",\"w\":177,\"h\":37},{\"name\":\"Parts Promise\",\"tag\":\"A\",\"w\":127.6875,\"h\":29},{\"name\":\"Demo\",\"tag\":\"A\",\"w\":43,\"h\":44},{\"name\":\"Jobs\",\"tag\":\"A\",\"w\":36,\"h\":44},{\"name\":\"Open the sample job\",\"tag\":\"A\",\"w\":147,\"h\":21},{\"name\":\"Read how local data works\",\"tag\":\"A\",\"w\":186,\"h\":21},{\"name\":\"Privacy\",\"tag\":\"A\",\"w\":43,\"h\":18},{\"name\":\"Terms\",\"tag\":\"A\",\"w\":39,\"h\":18},{\"name\":\"Built by Param Factory\",\"tag\":\"A\",\"w\":141,\"h\":18}]",
+    "touch targets light /?demo=1: [{\"name\":\"Skip to main content\",\"tag\":\"A\",\"w\":177,\"h\":37},{\"name\":\"Parts Promise\",\"tag\":\"A\",\"w\":127.6875,\"h\":29},{\"name\":\"Demo\",\"tag\":\"A\",\"w\":43,\"h\":44},{\"name\":\"Jobs\",\"tag\":\"A\",\"w\":36,\"h\":44},{\"name\":\"Privacy\",\"tag\":\"A\",\"w\":43,\"h\":18},{\"name\":\"Terms\",\"tag\":\"A\",\"w\":39,\"h\":18},{\"name\":\"Built by Param Factory\",\"tag\":\"A\",\"w\":141,\"h\":18}]",
+    "touch targets light /jobs: [{\"name\":\"Skip to main content\",\"tag\":\"A\",\"w\":177,\"h\":37},{\"name\":\"Parts Promise\",\"tag\":\"A\",\"w\":127.6875,\"h\":29},{\"name\":\"Demo\",\"tag\":\"A\",\"w\":43,\"h\":44},{\"name\":\"Jobs\",\"tag\":\"A\",\"w\":36,\"h\":44},{\"name\":\"Privacy\",\"tag\":\"A\",\"w\":43,\"h\":18},{\"name\":\"Terms\",\"tag\":\"A\",\"w\":39,\"h\":18},{\"name\":\"Built by Param Factory\",\"tag\":\"A\",\"w\":141,\"h\":18}]",
+    "touch targets light /privacy: [{\"name\":\"Skip to main content\",\"tag\":\"A\",\"w\":177,\"h\":37},{\"name\":\"Parts Promise\",\"tag\":\"A\",\"w\":127.6875,\"h\":29},{\"name\":\"Demo\",\"tag\":\"A\",\"w\":43,\"h\":44},{\"name\":\"Jobs\",\"tag\":\"A\",\"w\":36,\"h\":44},{\"name\":\"Privacy\",\"tag\":\"A\",\"w\":43,\"h\":18},{\"name\":\"Terms\",\"tag\":\"A\",\"w\":39,\"h\":18},{\"name\":\"Built by Param Factory\",\"tag\":\"A\",\"w\":141,\"h\":18}]",
+    "touch targets light /terms: [{\"name\":\"Skip to main content\",\"tag\":\"A\",\"w\":177,\"h\":37},{\"name\":\"Parts Promise\",\"tag\":\"A\",\"w\":127.6875,\"h\":29},{\"name\":\"Demo\",\"tag\":\"A\",\"w\":43,\"h\":44},{\"name\":\"Jobs\",\"tag\":\"A\",\"w\":36,\"h\":44},{\"name\":\"Privacy\",\"tag\":\"A\",\"w\":43,\"h\":18},{\"name\":\"Terms\",\"tag\":\"A\",\"w\":39,\"h\":18},{\"name\":\"Built by Param Factory\",\"tag\":\"A\",\"w\":141,\"h\":18}]",
+    "touch targets light /not-on-this-drawing: [{\"name\":\"Skip to main content\",\"tag\":\"A\",\"w\":177,\"h\":37},{\"name\":\"Parts Promise\",\"tag\":\"A\",\"w\":127.6875,\"h\":29},{\"name\":\"Demo\",\"tag\":\"A\",\"w\":43,\"h\":44},{\"name\":\"Jobs\",\"tag\":\"A\",\"w\":36,\"h\":44},{\"name\":\"Go to home\",\"tag\":\"A\",\"w\":83,\"h\":21},{\"name\":\"Privacy\",\"tag\":\"A\",\"w\":43,\"h\":18},{\"name\":\"Terms\",\"tag\":\"A\",\"w\":39,\"h\":18},{\"name\":\"Built by Param Factory\",\"tag\":\"A\",\"w\":141,\"h\":18}]",
+    "runtime errors mobile-390 light: {\"consoleErrors\":[\"Failed to load resource: the server responded with a status of 404 ()\",\"Failed to load resource: the server responded with a status of 404 ()\"],\"pageErrors\":[]}",
+    "touch targets dark /: [{\"name\":\"Skip to main content\",\"tag\":\"A\",\"w\":177,\"h\":37},{\"name\":\"Parts Promise\",\"tag\":\"A\",\"w\":127.6875,\"h\":29},{\"name\":\"Demo\",\"tag\":\"A\",\"w\":43,\"h\":44},{\"name\":\"Jobs\",\"tag\":\"A\",\"w\":36,\"h\":44},{\"name\":\"Open the sample job\",\"tag\":\"A\",\"w\":147,\"h\":21},{\"name\":\"Read how local data works\",\"tag\":\"A\",\"w\":186,\"h\":21},{\"name\":\"Privacy\",\"tag\":\"A\",\"w\":43,\"h\":18},{\"name\":\"Terms\",\"tag\":\"A\",\"w\":39,\"h\":18},{\"name\":\"Built by Param Factory\",\"tag\":\"A\",\"w\":141,\"h\":18}]",
+    "touch targets dark /?demo=1: [{\"name\":\"Skip to main content\",\"tag\":\"A\",\"w\":177,\"h\":37},{\"name\":\"Parts Promise\",\"tag\":\"A\",\"w\":127.6875,\"h\":29},{\"name\":\"Demo\",\"tag\":\"A\",\"w\":43,\"h\":44},{\"name\":\"Jobs\",\"tag\":\"A\",\"w\":36,\"h\":44},{\"name\":\"Privacy\",\"tag\":\"A\",\"w\":43,\"h\":18},{\"name\":\"Terms\",\"tag\":\"A\",\"w\":39,\"h\":18},{\"name\":\"Built by Param Factory\",\"tag\":\"A\",\"w\":141,\"h\":18}]",
+    "touch targets dark /jobs: [{\"name\":\"Skip to main content\",\"tag\":\"A\",\"w\":177,\"h\":37},{\"name\":\"Parts Promise\",\"tag\":\"A\",\"w\":127.6875,\"h\":29},{\"name\":\"Demo\",\"tag\":\"A\",\"w\":43,\"h\":44},{\"name\":\"Jobs\",\"tag\":\"A\",\"w\":36,\"h\":44},{\"name\":\"Privacy\",\"tag\":\"A\",\"w\":43,\"h\":18},{\"name\":\"Terms\",\"tag\":\"A\",\"w\":39,\"h\":18},{\"name\":\"Built by Param Factory\",\"tag\":\"A\",\"w\":141,\"h\":18}]",
+    "touch targets dark /privacy: [{\"name\":\"Skip to main content\",\"tag\":\"A\",\"w\":177,\"h\":37},{\"name\":\"Parts Promise\",\"tag\":\"A\",\"w\":127.6875,\"h\":29},{\"name\":\"Demo\",\"tag\":\"A\",\"w\":43,\"h\":44},{\"name\":\"Jobs\",\"tag\":\"A\",\"w\":36,\"h\":44},{\"name\":\"Privacy\",\"tag\":\"A\",\"w\":43,\"h\":18},{\"name\":\"Terms\",\"tag\":\"A\",\"w\":39,\"h\":18},{\"name\":\"Built by Param Factory\",\"tag\":\"A\",\"w\":141,\"h\":18}]",
+    "touch targets dark /terms: [{\"name\":\"Skip to main content\",\"tag\":\"A\",\"w\":177,\"h\":37},{\"name\":\"Parts Promise\",\"tag\":\"A\",\"w\":127.6875,\"h\":29},{\"name\":\"Demo\",\"tag\":\"A\",\"w\":43,\"h\":44},{\"name\":\"Jobs\",\"tag\":\"A\",\"w\":36,\"h\":44},{\"name\":\"Privacy\",\"tag\":\"A\",\"w\":43,\"h\":18},{\"name\":\"Terms\",\"tag\":\"A\",\"w\":39,\"h\":18},{\"name\":\"Built by Param Factory\",\"tag\":\"A\",\"w\":141,\"h\":18}]",
+    "touch targets dark /not-on-this-drawing: [{\"name\":\"Skip to main content\",\"tag\":\"A\",\"w\":177,\"h\":37},{\"name\":\"Parts Promise\",\"tag\":\"A\",\"w\":127.6875,\"h\":29},{\"name\":\"Demo\",\"tag\":\"A\",\"w\":43,\"h\":44},{\"name\":\"Jobs\",\"tag\":\"A\",\"w\":36,\"h\":44},{\"name\":\"Go to home\",\"tag\":\"A\",\"w\":83,\"h\":21},{\"name\":\"Privacy\",\"tag\":\"A\",\"w\":43,\"h\":18},{\"name\":\"Terms\",\"tag\":\"A\",\"w\":39,\"h\":18},{\"name\":\"Built by Param Factory\",\"tag\":\"A\",\"w\":141,\"h\":18}]",
+    "runtime errors mobile-390 dark: {\"consoleErrors\":[\"Failed to load resource: the server responded with a status of 404 ()\",\"Failed to load resource: the server responded with a status of 404 ()\"],\"pageErrors\":[]}",
+    "mobile live keyboard/geometry flow failed"
+  ]
+}
