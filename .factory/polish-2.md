@@ -48,7 +48,7 @@ Every finding in `.factory/review-1.md` and `.factory/review-2.md` is closed. Li
 - Live axe: zero serious/critical findings on six routes in light and dark themes.
 - Factory URL verification: HTTPS 200, no console errors, title/lang/main/H1/alt/button checks passed.
 - Lighthouse mobile: Performance 99, Accessibility 100, Best Practices 100, SEO 100; LCP 1.8 s, TBT 100 ms, CLS 0.007.
-- Production bundle: 92.33 KB JS raw / 31.06 KB gzip and 16.91 KB CSS raw / 3.96 KB gzip.
+- Production bundle: 92.33 KB JS raw / 31.12 KB gzip and 16.91 KB CSS raw / 3.96 KB gzip.
 - The live `/health` response reported the exact build SHA above after the final redeploy.
 
 No finding from either review remains open.

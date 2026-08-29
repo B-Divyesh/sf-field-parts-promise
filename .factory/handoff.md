@@ -26,7 +26,7 @@ All findings in `.factory/review-1.md` and `.factory/review-2.md` are resolved. 
 
 ## Verification
 
-Fresh clone used for the full gate: `/tmp/parts-promise-polish2-clean-p9gq6T`.
+Final fresh clone used for the full gate: `/tmp/parts-promise-polish2-final-6pnKRK`.
 
 ```sh
 npm ci
@@ -45,7 +45,7 @@ npm run test:e2e -- --retries=0
 - `npm run build`: passed and produced `dist/` plus the release Rust binary.
 - Browser suite: 35 passed; 21 expected skips because claim evidence runs once on desktop and mobile-only geometry runs once on mobile.
 - Every one of the 16 claim commands in `.factory/claims.json` was also executed separately from the clean clone and passed.
-- Built assets: JS 92.33 KB raw / 31.06 KB gzip; CSS 16.91 KB raw / 3.96 KB gzip; self-hosted fonts 56.44 KB total.
+- Built assets: JS 92.33 KB raw / 31.12 KB gzip; CSS 16.91 KB raw / 3.96 KB gzip; self-hosted fonts 56.44 KB total.
 
 ## Live evidence
 
