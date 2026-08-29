@@ -113,6 +113,11 @@ impl From<DbError> for ApiError {
                 "owner_required",
                 "Ask the firm owner to make this change.",
             ),
+            DbError::ReadOnlyRole => (
+                StatusCode::FORBIDDEN,
+                "read_only_role",
+                "Ask the firm owner for an update role.",
+            ),
             DbError::DuplicateMember => (
                 StatusCode::CONFLICT,
                 "duplicate_member",

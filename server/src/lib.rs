@@ -480,6 +480,32 @@ mod tests {
             .members
             .iter()
             .all(|member| member.status == "active"));
+
+        db.invite(
+            &owner,
+            &db::InviteInput {
+                email: "invited-viewer@example.test".to_owned(),
+                role: "viewer".to_owned(),
+            },
+        )
+        .await
+        .unwrap();
+        let viewer = test_identity(&auth, &auth.issue_test_token("invited-viewer", 600)).await;
+        db.bootstrap(&viewer).await.unwrap();
+        db.set_billing_state_for_test(&owner, "active")
+            .await
+            .unwrap();
+        let viewer_write = db
+            .sync(
+                &viewer,
+                &db::SyncInput {
+                    idempotency_key: Uuid::new_v4().to_string(),
+                    expected_version: 0,
+                    workspace: json!({"schemaVersion":1,"jobs":[],"requirements":[],"sources":[],"allocations":[]}),
+                },
+            )
+            .await;
+        assert!(matches!(viewer_write, Err(db::DbError::ReadOnlyRole)));
     }
 
     #[tokio::test]

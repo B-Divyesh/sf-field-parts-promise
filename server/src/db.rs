@@ -38,6 +38,8 @@ pub enum DbError {
     EntitlementRequired,
     #[error("Only an owner can make this change.")]
     OwnerRequired,
+    #[error("This team role can view records but cannot change them.")]
+    ReadOnlyRole,
     #[error("That invitation is already on this team.")]
     DuplicateMember,
     #[error("The workspace payload is not valid.")]
@@ -526,6 +528,9 @@ impl Database {
             .resolve_membership(&mut tx, identity)
             .await?
             .ok_or(DbError::NotOnboarded)?;
+        if membership.role == "viewer" {
+            return Err(DbError::ReadOnlyRole);
+        }
         let billing = self
             .billing_for(&mut tx, &membership.organization_id)
             .await?;

@@ -166,6 +166,7 @@
   $: activeStatus =
     activeJob && workspace ? promiseStatus(workspace, activeJob) : undefined;
   $: suggestions = workspace ? reorderSuggestions(workspace) : [];
+  $: sharedReadOnly = !demo && Boolean(idToken) && cloud?.role === 'viewer';
   $: document.documentElement.dataset.theme = theme;
 
   onMount(() => {
@@ -1462,9 +1463,11 @@
           </div>
         </dl>
         <p>Existing records and export remain available if payment stops.</p>
-        <button class="button" type="button" on:click={startCheckout}
-          >Check checkout availability</button
-        >
+        {#if cloud.role === 'owner'}<button
+            class="button"
+            type="button"
+            on:click={startCheckout}>Check checkout availability</button
+          >{:else}<p>The firm owner manages checkout.</p>{/if}
         {#if billingMessage}<p class="form-error" role="alert">
             {billingMessage}
           </p>{/if}
@@ -1493,6 +1496,9 @@
             type="button"
             on:click={signIn}>Sign in to set up team sync</button
           >
+        </p>{:else if sharedReadOnly}<p class="account-callout" role="status">
+          Viewer access can review and export this workspace but cannot change
+          it.
         </p>{:else if syncNotice}<p class="account-callout" role="status">
           {syncNotice}
         </p>{/if}
@@ -1502,12 +1508,14 @@
         <button
           class="button"
           type="button"
+          disabled={sharedReadOnly}
           aria-expanded={showAddJob}
           aria-controls="add-job-sheet"
           on:click={openAddJob}>Add a job</button
         ><button
           class="button secondary"
           type="button"
+          disabled={sharedReadOnly}
           aria-expanded={showImportForm}
           aria-controls="import-sheet"
           on:click={openImportForm}>Import workspace</button
@@ -1566,6 +1574,7 @@
       <button
         class="button secondary"
         type="button"
+        disabled={sharedReadOnly}
         aria-expanded={showEditJob}
         aria-controls="edit-job-sheet"
         on:click={beginEditJob}>Edit job</button
@@ -1581,6 +1590,7 @@
         <button
           class="button secondary"
           type="button"
+          disabled={sharedReadOnly}
           aria-expanded={showPartForm}
           aria-controls="add-part-sheet"
           on:click={openPartForm}>Add required part</button
@@ -1618,6 +1628,7 @@
                   ><button
                     type="button"
                     class="text-button"
+                    disabled={sharedReadOnly}
                     on:click={() => deallocate(allocation.id)}
                     >Remove allocation</button
                   >
@@ -1636,6 +1647,7 @@
                 ? 'allocate-pump'
                 : undefined}
               type="button"
+              disabled={sharedReadOnly}
               aria-expanded={allocationRequirementId === requirement.id &&
                 !showSupplierForm}
               aria-controls="allocation-sheet"
@@ -1645,7 +1657,7 @@
             ><button
               class="button secondary"
               type="button"
-              disabled={covered >= requirement.quantity}
+              disabled={sharedReadOnly || covered >= requirement.quantity}
               aria-expanded={showSupplierForm &&
                 allocationRequirementId === requirement.id}
               aria-controls="supplier-sheet"
@@ -1665,6 +1677,7 @@
           class="text-button"
           data-testid="undo-allocation"
           type="button"
+          disabled={sharedReadOnly}
           on:click={undoLastAllocation}>Undo allocation</button
         >
       </div>{/if}
@@ -1699,6 +1712,7 @@
       <button
         class="button secondary"
         type="button"
+        disabled={sharedReadOnly}
         aria-expanded={showSourceForm}
         aria-controls="source-sheet"
         on:click={openSourceForm}>Add a source</button
