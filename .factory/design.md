@@ -93,6 +93,12 @@ Motion communicates assembly and revision, never ambient activity.
 - **Conflict:** show both revisions, the actual shortage/change, and only valid resolutions. Use danger color plus the broken-leader icon and text.
 - **Success:** update in place and offer Undo when safe. Avoid toast-only confirmation; the source/quantity remains visible in the row.
 
+## M2 account surfaces
+
+Account screens extend the same drawing-sheet system instead of introducing a separate dashboard style. Onboarding is one narrow working sheet with the exact local record count beside the migration choice. Team rows use the existing ruled-list grammar, with role, invitation state, and seat effect written together. Billing uses a definition list so the $39 base, $8 technician quantity, owner exclusion, and plan state can be read without interpreting a chart.
+
+Sign-in progress, sync progress, gateway failure, and unpaid state use the established loading, status, and error treatments. The header adds one account action without exceeding four navigation destinations. On phones, account forms and billing facts stack; no required control moves into an overflow menu.
+
 ## Accessibility and field conditions
 
 Body text is at least 16 px. Targets are at least 44×44 px with 8 px between adjacent controls. The primary flow works with keyboard and switch input; source lists use native radios/list semantics, quantity uses a labelled number input plus buttons, and dialogs/sheets trap and restore focus correctly. Status never relies on color. At 200% text zoom, controls reflow without covering the promise status. High sunlight is served by the light theme's ink contrast; dark mode is explicit, not browser inversion.

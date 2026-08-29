@@ -1,9 +1,76 @@
 import { spawn } from 'node:child_process';
+import { createHmac } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { resolve } from 'node:path';
 
 import { chromium, expect, test } from '@playwright/test';
+
+const TEST_AUTH_SECRET = 'playwright-test-secret-at-least-32-bytes';
+
+function testToken(oid: string, expiresInSeconds = 600) {
+  const now = Math.floor(Date.now() / 1000);
+  const header = Buffer.from(
+    JSON.stringify({ alg: 'HS256', typ: 'JWT' })
+  ).toString('base64url');
+  const payload = Buffer.from(
+    JSON.stringify({
+      aud: '25c704f4-465a-47af-80ab-2c489466b697',
+      iss: 'https://test.parts-promise.invalid',
+      tid: '35c6fe40-0ec0-46b6-98c6-213ad4de6650',
+      oid,
+      name: `Test ${oid}`,
+      email: `${oid}@example.test`,
+      nbf: now - 1,
+      exp: now + expiresInSeconds
+    })
+  ).toString('base64url');
+  const unsigned = `${header}.${payload}`;
+  const signature = createHmac('sha256', TEST_AUTH_SECRET)
+    .update(unsigned)
+    .digest('base64url');
+  return `${unsigned}.${signature}`;
+}
+
+async function apiOnboard(
+  request: import('@playwright/test').APIRequestContext,
+  token: string,
+  organizationName: string,
+  workspace?: unknown,
+  forwardedFor = '198.51.100.10'
+) {
+  const response = await request.post('/api/v1/onboarding', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': forwardedFor
+    },
+    data: {
+      organization_name: organizationName,
+      locale: 'en-US',
+      time_zone: 'America/New_York',
+      migrate_local_workspace: Boolean(workspace),
+      local_item_count: workspace ? 1 : 0,
+      workspace: workspace ?? null
+    }
+  });
+  expect(response.ok(), await response.text()).toBe(true);
+}
+
+async function setTestBilling(
+  request: import('@playwright/test').APIRequestContext,
+  token: string,
+  state: string,
+  forwardedFor = '198.51.100.10'
+) {
+  const response = await request.post('/api/v1/test/billing', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': forwardedFor
+    },
+    data: { state }
+  });
+  expect(response.ok(), await response.text()).toBe(true);
+}
 
 async function openPumpAllocation(page: import('@playwright/test').Page) {
   await page.goto('/?demo=1');
@@ -637,7 +704,7 @@ test('@claim:local-workspace-flow A local job can be created, sourced, allocated
   );
 });
 
-test('@claim:m1-feature-boundaries This browser-only release has no account, sync, scan, ordering, or checkout action', async ({
+test('@claim:demo-feature-boundaries The demo stays account-free and cannot sync, scan, order, or pay', async ({
   page
 }, testInfo) => {
   test.skip(
@@ -646,11 +713,11 @@ test('@claim:m1-feature-boundaries This browser-only release has no account, syn
   );
   await page.goto('/');
   await expect(page.locator('.plain-language-section')).toContainText(
-    'does not sync between people, scan barcodes, place supplier orders, or take payment'
+    'does not scan barcodes or place supplier orders'
   );
   await page.goto('/?demo=1');
   for (const unavailableAction of [
-    /sign in/i,
+    /^sign in/i,
     /invite (?:a )?technician/i,
     /scan (?:a )?barcode/i,
     /place (?:a )?supplier order/i,
@@ -663,25 +730,6 @@ test('@claim:m1-feature-boundaries This browser-only release has no account, syn
       page.getByRole('link', { name: unavailableAction })
     ).toHaveCount(0);
   }
-});
-
-test('@claim:free-browser-release The browser-only release is visibly free and has no payment action', async ({
-  page
-}, testInfo) => {
-  test.skip(
-    testInfo.project.name !== 'chromium',
-    'Claim evidence runs once on desktop Chromium.'
-  );
-  await page.goto('/');
-  await expect(
-    page.getByText('Free for one browser in this release.')
-  ).toBeVisible();
-  await expect(page.getByRole('button', { name: /checkout|buy/i })).toHaveCount(
-    0
-  );
-  await expect(page.getByRole('link', { name: /checkout|buy/i })).toHaveCount(
-    0
-  );
 });
 
 test('@claim:indexeddb-local-storage Workspace records are written to the named local databases', async ({
@@ -819,6 +867,292 @@ test('@claim:clear-local-records Browser site-data removal clears the live works
   ).toBeVisible();
 });
 
+test('@claim:entra-sign-in Sign-in uses Sociobot CIAM and expired tokens fail', async ({
+  page,
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const expired = testToken(`expired-${Date.now()}`, -120);
+  const rejected = await request.get('/api/v1/bootstrap', {
+    headers: {
+      authorization: `Bearer ${expired}`,
+      'x-forwarded-for': '198.51.100.31'
+    }
+  });
+  expect(rejected.status()).toBe(401);
+  expect(rejected.headers()['www-authenticate']).toBe('Bearer');
+  await page.goto('/onboarding');
+  const authorization = page.waitForRequest(
+    (candidate) =>
+      candidate.url().startsWith('https://sociobotcustomers.ciamlogin.com/') &&
+      candidate.url().includes('/oauth2/v2.0/authorize'),
+    { timeout: 20_000 }
+  );
+  await page.getByRole('button', { name: 'Sign in with Sociobot' }).click();
+  const requestUrl = new URL((await authorization).url());
+  expect(requestUrl.searchParams.get('client_id')).toBe(
+    '25c704f4-465a-47af-80ab-2c489466b697'
+  );
+  expect(requestUrl.searchParams.get('redirect_uri')).toBe(
+    'http://127.0.0.1:4173/auth/callback'
+  );
+});
+
+test('@claim:tenant-data-isolation One firm cannot read another firm workspace', async ({
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const suffix = `${Date.now()}-${Math.random()}`;
+  const tokenA = testToken(`tenant-a-${suffix}`);
+  const tokenB = testToken(`tenant-b-${suffix}`);
+  const workspaceA = {
+    schemaVersion: 1,
+    jobs: [{ id: 'private-firm-a-job' }],
+    requirements: [],
+    sources: [],
+    allocations: []
+  };
+  await apiOnboard(
+    request,
+    tokenA,
+    'Isolation Firm A',
+    workspaceA,
+    '198.51.100.41'
+  );
+  await apiOnboard(
+    request,
+    tokenB,
+    'Isolation Firm B',
+    undefined,
+    '198.51.100.42'
+  );
+  const firmB = await request.get('/api/v1/bootstrap', {
+    headers: {
+      authorization: `Bearer ${tokenB}`,
+      'x-forwarded-for': '198.51.100.42'
+    }
+  });
+  expect(firmB.ok()).toBe(true);
+  expect(JSON.stringify((await firmB.json()).workspace)).not.toContain(
+    'private-firm-a-job'
+  );
+});
+
+test('@claim:two-device-sync A saved workspace appears on a second signed-in device', async ({
+  browser,
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const token = testToken(`two-device-${Date.now()}-${Math.random()}`);
+  await apiOnboard(
+    request,
+    token,
+    'Two Device Firm',
+    undefined,
+    '198.51.100.51'
+  );
+  await setTestBilling(request, token, 'active', '198.51.100.51');
+  const firstContext = await browser.newContext();
+  const secondContext = await browser.newContext();
+  const first = await firstContext.newPage();
+  const second = await secondContext.newPage();
+  await Promise.all([first.goto('/'), second.goto('/')]);
+  const workspace = {
+    schemaVersion: 1,
+    jobs: [{ id: 'shared-device-job' }],
+    requirements: [],
+    sources: [],
+    allocations: []
+  };
+  const pushed = await first.evaluate(
+    async ({ token, workspace }) => {
+      const response = await fetch('/api/v1/sync', {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer ${token}`,
+          'content-type': 'application/json',
+          'x-forwarded-for': '198.51.100.52'
+        },
+        body: JSON.stringify({
+          idempotency_key: crypto.randomUUID(),
+          expected_version: 0,
+          workspace
+        })
+      });
+      return { status: response.status, body: await response.json() };
+    },
+    { token, workspace }
+  );
+  expect(pushed.status).toBe(200);
+  const pulled = await second.evaluate(async (token) => {
+    const response = await fetch('/api/v1/bootstrap', {
+      headers: {
+        authorization: `Bearer ${token}`,
+        'x-forwarded-for': '198.51.100.53'
+      }
+    });
+    return response.json();
+  }, token);
+  expect(JSON.stringify(pulled.workspace)).toContain('shared-device-job');
+  await firstContext.close();
+  await secondContext.close();
+});
+
+test('@claim:idempotent-sync Retrying one sync operation applies it once', async ({
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const token = testToken(`idempotent-${Date.now()}-${Math.random()}`);
+  await apiOnboard(
+    request,
+    token,
+    'Idempotent Firm',
+    undefined,
+    '198.51.100.61'
+  );
+  await setTestBilling(request, token, 'active', '198.51.100.61');
+  const operation = {
+    idempotency_key: crypto.randomUUID(),
+    expected_version: 0,
+    workspace: {
+      schemaVersion: 1,
+      jobs: [{ id: 'apply-once' }],
+      requirements: [],
+      sources: [],
+      allocations: []
+    }
+  };
+  const headers = {
+    authorization: `Bearer ${token}`,
+    'x-forwarded-for': '198.51.100.62'
+  };
+  const first = await request.post('/api/v1/sync', {
+    headers,
+    data: operation
+  });
+  const replay = await request.post('/api/v1/sync', {
+    headers,
+    data: operation
+  });
+  expect(first.ok()).toBe(true);
+  expect((await first.json()).version).toBe(1);
+  expect(replay.ok()).toBe(true);
+  expect(await replay.json()).toMatchObject({ version: 1, replayed: true });
+});
+
+test('@claim:subscription-checkout Missing recurring registration stops before any charge', async ({
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const token = testToken(`billing-contract-${Date.now()}-${Math.random()}`);
+  await apiOnboard(
+    request,
+    token,
+    'Billing Contract Firm',
+    undefined,
+    '198.51.100.71'
+  );
+  const response = await request.post('/api/v1/billing/checkout', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': '198.51.100.72'
+    },
+    data: {}
+  });
+  expect(response.status()).toBe(424);
+  expect(await response.json()).toMatchObject({
+    code: 'billing_product_not_registered',
+    checkout_url:
+      'https://pilot-api.sociobot.in/api/v1/products/field-parts-promise/checkout'
+  });
+});
+
+test('@claim:technician-seat-charge Pricing and the seat total count technicians but exclude the owner', async ({
+  page,
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  await page.goto('/');
+  await expect(
+    page.getByText('Workshop is $39/month plus $8 per active technician.')
+  ).toBeVisible();
+  const token = testToken(`seat-count-${Date.now()}-${Math.random()}`);
+  const technicianOid = `field-tech-${Date.now()}-${Math.random()}`;
+  const technicianToken = testToken(technicianOid);
+  await apiOnboard(
+    request,
+    token,
+    'Seat Count Firm',
+    undefined,
+    '198.51.100.81'
+  );
+  const invite = await request.post('/api/v1/members', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': '198.51.100.82'
+    },
+    data: { email: `${technicianOid}@example.test`, role: 'technician' }
+  });
+  expect(invite.ok(), await invite.text()).toBe(true);
+  const accepted = await request.get('/api/v1/bootstrap', {
+    headers: {
+      authorization: `Bearer ${technicianToken}`,
+      'x-forwarded-for': '198.51.100.85'
+    }
+  });
+  expect(accepted.ok(), await accepted.text()).toBe(true);
+  expect((await accepted.json()).role).toBe('technician');
+  await setTestBilling(request, token, 'active', '198.51.100.83');
+  const billing = await request.get('/api/v1/billing', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': '198.51.100.84'
+    }
+  });
+  expect(await billing.json()).toMatchObject({
+    seat_quantity: 1,
+    state: 'active'
+  });
+});
+
+test('@claim:expired-plan-keeps-export An unpaid firm can export while cloud writes are blocked', async ({
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const token = testToken(`expired-export-${Date.now()}-${Math.random()}`);
+  const workspace = {
+    schemaVersion: 1,
+    jobs: [{ id: 'export-after-payment' }],
+    requirements: [],
+    sources: [],
+    allocations: []
+  };
+  await apiOnboard(request, token, 'Export Firm', workspace, '198.51.100.91');
+  await setTestBilling(request, token, 'unpaid', '198.51.100.92');
+  const write = await request.post('/api/v1/sync', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': '198.51.100.93'
+    },
+    data: {
+      idempotency_key: crypto.randomUUID(),
+      expected_version: 0,
+      workspace
+    }
+  });
+  expect(write.status()).toBe(402);
+  const exported = await request.get('/api/v1/export', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': '198.51.100.94'
+    }
+  });
+  expect(exported.ok()).toBe(true);
+  expect(JSON.stringify(await exported.json())).toContain(
+    'export-after-payment'
+  );
+});
+
 test('@claim:container-runtime The production server starts with only PORT and serves its identity and app', async ({}, testInfo) => {
   test.skip(
     testInfo.project.name !== 'chromium',
@@ -864,7 +1198,11 @@ test('@claim:container-runtime The production server starts with only PORT and s
       }
     }
     expect(health?.status).toBe(200);
-    expect(await health?.json()).toEqual({ status: 'ok', build_sha: 'dev' });
+    expect(await health?.json()).toMatchObject({
+      status: 'ok',
+      build_sha: 'dev',
+      database: 'sqlite'
+    });
     expect((await fetch(base)).status).toBe(200);
     expect(
       (
@@ -876,6 +1214,18 @@ test('@claim:container-runtime The production server starts with only PORT and s
       ).ok
     ).toBe(false);
     expect((await fetch(`${base}/not-on-this-drawing`)).status).toBe(404);
+
+    let limited: Response | undefined;
+    for (let attempt = 0; attempt < 45; attempt += 1) {
+      const response = await fetch(`${base}/api/v1/bootstrap`, {
+        headers: { 'x-forwarded-for': '203.0.113.200' }
+      });
+      if (response.status === 429) {
+        limited = response;
+        break;
+      }
+    }
+    expect(limited?.headers.get('retry-after')).toBeTruthy();
 
     const dockerfile = readFileSync('Dockerfile', 'utf8');
     expect(dockerfile).toContain('FROM rust:1-slim AS api-builder');

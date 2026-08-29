@@ -24,10 +24,18 @@ export default defineConfig({
       use: { ...devices['Pixel 5'], viewport: { width: 390, height: 844 } }
     }
   ],
-  webServer: {
-    command:
-      'npm run build:web && npm run preview -- --host 127.0.0.1 --port 4173',
-    url: 'http://127.0.0.1:4173',
-    reuseExistingServer: !process.env.CI
-  }
+  webServer: [
+    {
+      command:
+        'npm run build:web && npm run preview -- --host 127.0.0.1 --port 4173',
+      url: 'http://127.0.0.1:4173',
+      reuseExistingServer: !process.env.CI
+    },
+    {
+      command:
+        'cargo build --manifest-path server/Cargo.toml --locked && test_data_dir=$(mktemp -d); PORT=4174 STATIC_DIR=dist DATABASE_URL="sqlite://$test_data_dir/app.db?mode=rwc" AUTH_TEST_SECRET=playwright-test-secret-at-least-32-bytes server/target/debug/parts-promise-api',
+      url: 'http://127.0.0.1:4174/health',
+      reuseExistingServer: !process.env.CI
+    }
+  ]
 });

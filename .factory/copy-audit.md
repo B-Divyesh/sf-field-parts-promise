@@ -1,82 +1,63 @@
 # Landing copy audit
 
-Audited: 2026-08-29 after perfection-loop round 3. Route: `/`. Counts treat hyphenated terms and numbers as one word.
+Audited: 2026-08-29 for M2. Route: `/`. Counts treat hyphenated terms and prices as one word.
 
 | Copy | Words | Result |
 | --- | ---: | --- |
 | Parts Promise | 2 | Pass: product name |
 | Demo | 1 | Pass: navigation |
 | Jobs | 1 | Pass: navigation |
+| Team | 1 | Pass: signed-in navigation |
 | Privacy | 1 | Pass: navigation |
-| Use dark theme | 3 | Pass: button result |
-| Allocate parts to a job | 5 | Pass |
-| Promise dates from parts held for the job | 8 | Pass |
-| For solo tradespeople who need a parts check before agreeing a visit date. | 13 | Pass |
-| Try it with sample data | 5 | Pass |
-| Opens Riverside Dental with one missing pump. | 7 | Pass — `sample-fixture` |
-| The sample job and allocation work offline after your first visit. | 11 | Pass — `offline-reload` |
-| Sample changes stay in this browser. | 6 | Pass — `demo-reset-isolated` |
-| Free for one browser in this release. | 8 | Pass — `free-browser-release` |
-| Each required part shows the van, warehouse, or supplier record that covers it. | 13 | Pass |
-| Sample job status | 3 | Pass |
-| See why a visit date is at risk | 9 | Pass |
-| RD-1042 needs one condensate pump. | 5 | Pass — `sample-fixture` |
-| The job stays at risk until a source holds it. | 10 | Pass — `promise-status-from-allocation` |
-| Open the sample job | 4 | Pass |
-| RD-1042 · Riverside Dental | 3 | Pass — `sample-fixture` |
+| Sign in | 2 | Pass: action |
+| Allocate parts to a job | 5 | Pass: useful label |
+| Promise dates from parts held for the job | 8 | Pass: job headline |
+| For small trade firms that need a parts check before agreeing a visit date. | 14 | Pass: audience and change |
+| Try it with sample data | 5 | Pass: primary action |
+| Opens Riverside Dental with one missing pump. | 7 | Pass: `sample-fixture` |
+| The sample job and allocation work offline after your first visit. | 11 | Pass: `offline-reload` |
+| Sample changes stay in this browser. | 6 | Pass: `demo-reset-isolated` |
+| Workshop is $39/month plus $8 per active technician. | 8 | Pass: `technician-seat-charge` |
+| Sample job status | 3 | Pass: section label |
+| See why a visit date is at risk | 9 | Pass: section heading |
+| RD-1042 needs one condensate pump. | 5 | Pass: `sample-fixture` |
+| The job stays at risk until a source holds it. | 10 | Pass: `promise-status-from-allocation` |
+| Open the sample job | 4 | Pass: action |
+| RD-1042 · Riverside Dental | 3 | Pass: sample identity |
 | Date at risk | 3 | Pass: status |
-| Condensate pump needs 1 each. | 5 | Pass — `sample-fixture` |
-| How it works | 3 | Pass |
-| Check parts before agreeing a visit date | 8 | Pass |
-| List required parts | 3 | Pass |
-| Add each required part to the job. | 7 | Pass — `local-workspace-flow` |
-| Allocate each part | 3 | Pass |
-| Allocate it from a van or warehouse source. | 8 | Pass — `local-workspace-flow` |
-| Review the visit date | 4 | Pass |
-| Read the reason before you agree the visit date. | 9 | Pass — `local-workspace-flow` |
-| What this first release does not do | 7 | Pass |
-| It does not sync between people, scan barcodes, place supplier orders, or take payment. | 14 | Pass — `m1-feature-boundaries` |
-| It keeps one local workspace and a separate demo. | 9 | Pass — `demo-reset-isolated` |
-| Read how local data works | 5 | Pass |
-| Promise job dates from parts held for the job. | 8 | Pass: product statement |
-| Built by Param Factory | 4 | Pass |
-| Browser-only release | 2 | Pass |
+| Condensate pump needs 1 each. | 5 | Pass: sample shortage |
+| How it works | 3 | Pass: section label |
+| Check parts before agreeing a visit date | 8 | Pass: section heading |
+| List required parts | 3 | Pass: step |
+| Add each required part to the job. | 7 | Pass: `local-workspace-flow` |
+| Allocate each part | 3 | Pass: step |
+| Allocate it from a van or warehouse source. | 8 | Pass: `local-workspace-flow` |
+| Review the visit date | 4 | Pass: step |
+| Read the reason before you agree the visit date. | 9 | Pass: `local-workspace-flow` |
+| What this release does not do | 7 | Pass: scope heading |
+| It does not scan barcodes or place supplier orders. | 9 | Pass: `demo-feature-boundaries` |
+| The sample stays separate from signed-in firm workspaces. | 8 | Pass: `demo-transfer-isolated` |
+| Read how local data works | 5 | Pass: link |
+| Firm plan | 2 | Pass: section label |
+| Pay for the workshop and active technicians | 7 | Pass: pricing heading |
+| Workshop costs $39 each month. | 5 | Pass: stated price |
+| Each active technician costs $8 each month. | 7 | Pass: stated price |
+| The owner does not use a technician seat. | 8 | Pass: `technician-seat-charge` |
+| Sociobot and Dodo handle payment. | 5 | Pass: merchant information |
+| Checkout is waiting for this product's recurring plan registration. | 9 | Pass: `subscription-checkout` |
+| Set up your firm | 4 | Pass: action |
 
-No sentence exceeds 22 words. The audit found none of the banned terms: leverage, seamless, effortless, robust, powerful, intuitive, reimagine, supercharge, unlock, delightful, journey, ecosystem, or “AI-powered.”
+No sentence exceeds 22 words. None contains a banned term.
 
-## Round 2 workspace copy
+## M2 account copy checked separately
 
-| Copy | Words | Result |
-| --- | ---: | --- |
-| Import workspace | 2 | Pass: result-naming action |
-| Export workspace | 2 | Pass: result-naming action; `workspace-backup-roundtrip` |
-| Import this workspace | 3 | Pass |
-| CSV adds jobs, required parts, and van or warehouse sources. | 10 | Pass: `csv-import-validation` |
-| A JSON backup replaces this local workspace after preview. | 9 | Pass: `workspace-backup-roundtrip` |
-| Download CSV template | 3 | Pass: result-naming action |
-| Choose a CSV or Parts Promise JSON backup | 8 | Pass: file label |
-| Fix these rows before importing | 5 | Pass: recovery instruction |
-| Export a versioned backup before moving devices or clearing browser data. | 11 | Pass: `workspace-backup-roundtrip` |
-| Browser site-data controls remove local records. | 6 | Pass: `clear-local-records` |
-
-No round 2 interface sentence exceeds 22 words or contains a banned term.
-
-## Round 3 repair copy
-
-| Copy | Words | Result |
-| --- | ---: | --- |
-| Demo — sample data; nothing is saved to your local workspace. | 10 | Pass — `demo-reset-isolated`; names the actual local boundary. |
-| The sample uses a separate browser database named `parts-promise-demo-v1`. | 9 | Pass — one plain storage term. |
-| Imports and exports use only the browser database for the current mode. | 11 | Pass — `demo-transfer-isolated`. |
-| Download the CSV template from the import sheet. | 8 | Pass — `csv-template-download`. |
-| Export workspace downloads a versioned JSON backup with every job, required part, source, allocation, and timestamp. | 16 | Pass — `workspace-backup-roundtrip`. |
-
-All round 3 copy units are 22 words or fewer and contain none of the banned terms.
+The onboarding, team, billing, sign-in, error, and sync text was checked with the same 22-word limit. Longer UI paragraphs are split into separate sentences. Errors state what happened and what to do. The checkout error says that no charge was made.
 
 ## Canonical terminology
 
 | Concept | User-facing word |
 | --- | --- |
+| Customer workspace | firm workspace |
 | Work record | job |
 | Needed material | required part |
 | Held quantity | allocation |
@@ -84,4 +65,4 @@ All round 3 copy units are 22 words or fewer and contain none of the banned term
 | Supplier record | supplier order |
 | Planned work day | visit date |
 | Result of the check | promise status |
-| Field worker | solo tradesperson |
+| Field worker | technician |

@@ -1,6 +1,6 @@
 # Parts Promise venture plan
 
-Status: M1 released; perfection-loop round 2 passed.
+Status: M2 implementation complete; acceptance is blocked by recurring billing registration and a production backup restore drill.
 
 Product: `field-parts-promise` · artifact: offline-first PWA with a backend
 
@@ -73,7 +73,7 @@ The evidence is directional, not yet a validated willingness-to-pay study. The w
 
 - **Web:** Svelte 5, Vite, strict TypeScript, and a small History API router. Svelte fits a stateful local-first application without React's runtime or ecosystem overhead. The app shell and current jobs live in IndexedDB through Dexie. A versioned service worker precaches only the shell and bundled demo fixtures.
 - **API:** Rust 2021, axum, tokio, serde, sqlx, PostgreSQL, tracing, and tower-governor. Shared firms need transactional allocation, tenancy, and multi-device sync, so the API is not optional after M2.
-- **Deployment shape:** hashed web assets in Static Web Apps and a non-root API container in Container Apps. The repository does not modify deployment, DNS, or billing infrastructure. The API container starts with only `PORT` (default `8080`); optional connection and identity settings have safe development defaults or generated persisted secrets as required by the backend contract.
+- **Deployment shape:** one non-root Container Apps image serves the hashed web assets and the axum API on `PORT` (default `8080`). This corrects the earlier Static Web Apps split, which conflicted with the container work order and same-origin API. In production the app's managed identity reads separate runtime and migration PostgreSQL URLs from the factory Key Vault. Without those platform settings it starts with a local SQLite fallback, so `PORT` remains the only required environment variable. The repository does not modify DNS or billing infrastructure.
 - **Testing:** Vitest for deterministic domain rules, Rust unit/integration tests against an isolated database, and Playwright 1.58.2 for claim and accessibility flows. Each claim test starts from `?demo=1` unless identity or billing is the subject.
 
 The web budgets are initial JS ≤200 KB gzip (landing ≤150 KB), CSS ≤50 KB, self-hosted fonts ≤120 KB, mobile hero ≤300 KB, LCP <2.5 s, INP <200 ms, and CLS <0.1 on a throttled mid-range phone. Target ES2022 and evergreen browsers.
@@ -275,7 +275,7 @@ M1 DoD:
 
 ### M2 — Accounts, team sync, and recurring billing
 
-Status: planned. Goal: a firm can sign up, sync its local work safely, invite paid technicians, and subscribe through Sociobot.
+Status: **implementation complete; acceptance blocked**. Account, persistence, tenant, sync, rate-limit, and deployment work is complete. The live Sociobot test gateway returns `404 enabled factory product`, so checkout and recurring entitlement events cannot be completed without operator registration. The production database has seven-day automated backups, but the required isolated restore drill still needs operator infrastructure.
 
 Routes/screens added: `/auth/callback`, `/onboarding`, `/settings/team`, `/settings/billing`; authenticated behavior on `/jobs*`. Demo remains account-free and API-free.
 
@@ -291,6 +291,8 @@ Claims to append when M2 starts: `entra-sign-in`, `tenant-data-isolation`, `two-
 Tests: Rust route/domain/integration tests with two organizations; JWT audience/tenant/issuer/expiry failures; 100 rps load smoke; 429 + `Retry-After`; migration up/down; two-browser Playwright sync; checkout return and replay; seat increase/decrease; offline cached entitlement; IDOR fuzz cases.
 
 M2 DoD: production callback is registered or listed under operator action; real test-mode checkout completes at the stated recurring prices; server is the entitlement authority; tenant tests pass; backup restore is timed; demo claims from M1 still pass; container boots with only `PORT` and health reports build SHA.
+
+M2 implementation note (2026-08-29): the Entra authorization endpoint accepts the exact production callback, and discovery/JWKS validation is live. PostgreSQL migrations, transaction-local RLS context, invited-email activation, idempotent sync, unpaid export behavior, API limits, and the real pilot billing adapter are implemented. The adapter returns `424` and makes no charge while the gateway reports that the recurring product is unregistered. This follows the pricing stop condition above; it does not substitute the one-time license API or direct Dodo access. M2 cannot be marked released until the operator registers both recurring prices, exposes the seat/event contract, runs the checkout/return/cancel/refund suite, and completes the isolated backup restore drill.
 
 ### M3 — Field scanning, supplier watch, and conflict resolution
 
@@ -357,8 +359,8 @@ M5 DoD: the PWA installs and upgrades without losing queued work; a pilot can im
 | IndexedDB/service-worker eviction can lose unsynced work. | Storage-pressure/upgrade test on Chromium and two real iOS/Android devices; request persistent storage after demonstrated use and always show sync state. Pass with no loss across app update and explicit recovery copy for eviction. | Engineering, M1/M3. |
 | Camera/barcode APIs differ by device. | Test permission denied, no `BarcodeDetector`, poor light, and manual input on current iOS Safari/Android Chrome. Manual entry must complete the same job every time. | Engineering, M3. |
 | Supplier catalog/ETA licensing blocks connectors. | Start with person-entered evidence and neutral CSV. No connector enters scope without a written license and API quota/error review. | Product/legal, before any connector. |
-| Sociobot's documented paid-unlock flow is one-time while this product needs recurring base + seat quantities. | Register a test recurring product and complete create, return, verify/event, seat change, cancel, and refund before implementing M2 UI. Pass only when amounts and entitlement events are machine-verifiable. Never fall back to direct Dodo. | Operator + M2 builder, first M2 task. |
-| Entra callback may not be registered. | Validate discovery and perform one staging redirect to the exact production callback. Record registration as operator action until confirmed. | Operator, before M2 acceptance. |
+| Sociobot's documented paid-unlock flow is one-time while this product needs recurring base + seat quantities. | **Blocked 2026-08-29:** both pilot and live product checkout return `404 enabled factory product`. Register the recurring test product and complete create, return, verify/event, seat change, cancel, and refund. Pass only when amounts and entitlement events are machine-verifiable. Never fall back to direct Dodo. | Operator, before M2 acceptance. |
+| Entra callback may not be registered. | **Passed 2026-08-29:** discovery/JWKS return successfully, and an authorization request for `https://field-parts-promise.sociobot.in/auth/callback` reaches the Microsoft sign-in page without a redirect-registration error. | Complete. |
 | Seat counting may surprise owner-technicians. | Prototype billing summary with five firms. It must show owner excluded, active technicians named, next invoice delta, and effective date before confirmation. | Product, M2 polish. |
 | Cross-tenant IDOR or sensitive logs would be severe. | Automated two-tenant matrix for every route and redaction snapshot tests. Zero unauthorized 2xx and zero prohibited values in logs are release gates. | Security, every backend milestone. |
 | Units and regional dates could cause wrong quantities/dates. | Test locale/date rendering and mixed-unit fixtures; forbid implicit conversion. Pilot firms must configure locale/time zone during onboarding. | Engineering, M2. |
@@ -370,5 +372,5 @@ M5 DoD: the PWA installs and upgrades without losing queued work; a pilot can im
 - No runtime AI. Manual/supplier evidence is the trustworthy product input.
 - The design is original hand-authored vector work; no stock art or runtime font/image CDN.
 - The M1 demo is fully local and isolated. It proves product claims without accounts, network, or paid services.
-- Before M2 acceptance, the operator must register the Entra redirect URI and the Sociobot recurring product with the exact Workshop base and Technician seat prices, then provide/confirm the recurring seat contract exposed by Sociobot.
+- Before M2 acceptance, the operator must register the Sociobot recurring product with the exact Workshop base and Technician seat prices, then provide/confirm the recurring seat and event contract exposed by Sociobot.
 - Builders must not touch deployment, DNS, or billing infrastructure from this repository.

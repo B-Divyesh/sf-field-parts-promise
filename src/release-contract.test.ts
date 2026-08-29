@@ -55,7 +55,7 @@ describe('service worker update contract', () => {
   it('uses a new cache and checks the network before cached documents', () => {
     const worker = readFileSync('public/sw.js', 'utf8');
 
-    expect(worker).toContain("const CACHE = 'parts-promise-shell-v3'");
+    expect(worker).toContain("const CACHE = 'parts-promise-shell-v4'");
     expect(worker).toContain("request.mode === 'navigate'");
     expect(worker.indexOf('await fetch(request)')).toBeLessThan(
       worker.indexOf("request.mode === 'navigate' ? '/' : request")

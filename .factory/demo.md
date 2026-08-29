@@ -8,6 +8,8 @@ Allocate the pump from Van 2 to make the job **Parts in hand**. The calculation 
 
 The demo reads and writes `parts-promise-demo-v1` in IndexedDB. Its browser traffic uses same-origin GET requests and never asks for camera access. The live local workspace is `parts-promise-live-v1`.
 
+M2 account code does not run in demo mode. The demo does not open Microsoft sign-in, call `/api/v1`, check billing, or copy records into a firm.
+
 - **Reset demo** writes the bundled fixture back into the demo database.
 - **Start for real** confirms the boundary, deletes the demo database, and opens `/jobs` with live records unchanged.
 - The wordmark and browser Back also delete the demo database before leaving. Re-entry starts from the bundled fixture.

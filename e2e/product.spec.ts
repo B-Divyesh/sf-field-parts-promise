@@ -9,6 +9,10 @@ test('public and app routes have no serious accessibility findings', async ({
       '/',
       '/?demo=1',
       '/jobs',
+      '/auth/callback',
+      '/onboarding',
+      '/settings/team',
+      '/settings/billing',
       '/privacy',
       '/terms',
       '/not-on-this-drawing'
@@ -67,10 +71,42 @@ test('each route owns one correct metadata set', async ({ page }) => {
       canonical: 'https://field-parts-promise.sociobot.in/'
     },
     {
+      path: '/auth/callback',
+      title: 'Sign-in return — Parts Promise',
+      description: 'Complete secure sign-in to Parts Promise.',
+      canonical: 'https://field-parts-promise.sociobot.in/auth/callback',
+      noindex: true
+    },
+    {
+      path: '/onboarding',
+      title: 'Set up your firm — Parts Promise',
+      description:
+        'Set up a firm workspace and choose whether to copy local jobs.',
+      canonical: 'https://field-parts-promise.sociobot.in/onboarding'
+    },
+    {
+      path: '/settings/team',
+      title: 'Team — Parts Promise',
+      description: 'People who can update this firm’s jobs.',
+      canonical: 'https://field-parts-promise.sociobot.in/settings/team'
+    },
+    {
+      path: '/settings/billing',
+      title: 'Billing — Parts Promise',
+      description: 'Workshop plan and technician seat details.',
+      canonical: 'https://field-parts-promise.sociobot.in/settings/billing'
+    },
+    {
       path: '/privacy',
       title: 'Privacy — Parts Promise',
       description: 'How Parts Promise handles local data.',
       canonical: 'https://field-parts-promise.sociobot.in/privacy'
+    },
+    {
+      path: '/terms',
+      title: 'Terms — Parts Promise',
+      description: 'Terms for using Parts Promise.',
+      canonical: 'https://field-parts-promise.sociobot.in/terms'
     },
     {
       path: '/demo',
@@ -107,6 +143,10 @@ test('each route owns one correct metadata set', async ({ page }) => {
     await expect(
       page.locator('meta[name="twitter:description"]')
     ).toHaveAttribute('content', route.description);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      'content',
+      'noindex' in route && route.noindex ? 'noindex' : 'index,follow'
+    );
   }
 
   await page.goto('/jobs/not-a-real-job');
@@ -548,5 +588,5 @@ test('the current service worker controls the app without a pending update', asy
   expect(state.controlled).toBe(true);
   expect(state.installing).toBe(false);
   expect(state.waiting).toBe(false);
-  expect(state.caches).toEqual(['parts-promise-shell-v3']);
+  expect(state.caches).toEqual(['parts-promise-shell-v4']);
 });

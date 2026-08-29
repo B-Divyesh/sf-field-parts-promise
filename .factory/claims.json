@@ -56,18 +56,11 @@
     "sandbox": "fresh browser context; create a live local job and source, allocate then undo it, attach supplier evidence to that same user-created required part, and review its promise status"
   },
   {
-    "id": "m1-feature-boundaries",
-    "claim": "This browser-only release has no sign-in, team sync, barcode scan, supplier-order action, or checkout.",
-    "where": "landing scope section, terms, and README",
-    "test": "npm run test:e2e -- --grep @claim:m1-feature-boundaries",
-    "sandbox": "fresh browser context; assert the shipped scope copy and the absence of sign-in, invite, scan, order, buy, and checkout actions"
-  },
-  {
-    "id": "free-browser-release",
-    "claim": "This browser-only release is free.",
-    "where": "landing first-screen facts and README",
-    "test": "npm run test:e2e -- --grep @claim:free-browser-release",
-    "sandbox": "fresh browser context; assert the free first-screen fact and README-equivalent UI fact, then assert no checkout or buy action is shipped"
+    "id": "demo-feature-boundaries",
+    "claim": "The demo stays account-free and cannot sync, scan, place an order, or start payment.",
+    "where": "demo banner, landing scope section, and demo guide",
+    "test": "npm run test:e2e -- --grep @claim:demo-feature-boundaries",
+    "sandbox": "fresh browser context at /?demo=1; assert no sign-in, invite, scan, order, or checkout action exists"
   },
   {
     "id": "indexeddb-local-storage",
@@ -119,10 +112,59 @@
     "sandbox": "fresh live workspace; download the template, assert its filename, text/csv media type, exact header, and example rows, then preview it without an error"
   },
   {
+    "id": "entra-sign-in",
+    "claim": "Account sign-in uses the shared Sociobot Microsoft Entra tenant, and invalid or expired tokens are rejected.",
+    "where": "header, onboarding, and API authentication",
+    "test": "npm run test:e2e -- --grep @claim:entra-sign-in",
+    "sandbox": "fresh browser context; assert the authorization request tenant, client, and callback, then send an expired test-issuer token and assert 401 plus WWW-Authenticate"
+  },
+  {
+    "id": "tenant-data-isolation",
+    "claim": "A signed-in firm cannot read another firm's shared workspace.",
+    "where": "privacy page and server data boundary",
+    "test": "npm run test:e2e -- --grep @claim:tenant-data-isolation",
+    "sandbox": "clean test database; onboard two test-token identities into different firms, store a distinct job in firm A, and assert firm B bootstrap never returns it"
+  },
+  {
+    "id": "two-device-sync",
+    "claim": "A saved firm workspace appears on a second signed-in device.",
+    "where": "jobs sync status and README",
+    "test": "npm run test:e2e -- --grep @claim:two-device-sync",
+    "sandbox": "two fresh browser contexts using one test identity; push a workspace from the first and pull it from the second"
+  },
+  {
+    "id": "idempotent-sync",
+    "claim": "Retrying the same sync operation applies it only once.",
+    "where": "server sync behavior and README",
+    "test": "npm run test:e2e -- --grep @claim:idempotent-sync",
+    "sandbox": "clean test database; send the same UUID operation twice and assert one version increase plus a replayed response"
+  },
+  {
+    "id": "subscription-checkout",
+    "claim": "If the recurring Sociobot test product is unavailable, checkout stops before any charge and explains the operator action.",
+    "where": "billing settings",
+    "test": "npm run test:e2e -- --grep @claim:subscription-checkout",
+    "sandbox": "authenticated test firm; call the real pilot gateway adapter and assert its unregistered-product response becomes HTTP 424 with no Dodo request"
+  },
+  {
+    "id": "technician-seat-charge",
+    "claim": "Workshop costs $39 per month, each active technician costs $8 per month, and the owner is excluded from the technician seat total.",
+    "where": "team and billing settings",
+    "test": "npm run test:e2e -- --grep @claim:technician-seat-charge",
+    "sandbox": "fresh landing page plus a clean test firm with one owner and one technician; assert the two stated prices and exactly one technician seat"
+  },
+  {
+    "id": "expired-plan-keeps-export",
+    "claim": "An unpaid firm keeps existing records and can export them while new cloud writes are blocked.",
+    "where": "billing settings, API error, and terms",
+    "test": "npm run test:e2e -- --grep @claim:expired-plan-keeps-export",
+    "sandbox": "clean test firm with one stored job and an unpaid recorded entitlement; assert sync returns 402 and export returns the job"
+  },
+  {
     "id": "container-runtime",
-    "claim": "The production server starts with only PORT, serves its build identity and compiled app, has no job-data endpoint, and returns HTTP 404 for unknown paths.",
+    "claim": "The production server starts with only PORT, serves its build identity and compiled app, rate-limits API traffic, and returns HTTP 404 for unknown paths.",
     "where": "README architecture and deployment sections",
     "test": "npm run test:e2e -- --grep @claim:container-runtime",
-    "sandbox": "build and spawn the real Rust server with an environment containing only PORT; probe /health, /, a job-data request, and an unknown path; inspect the shipped image user and base contract"
+    "sandbox": "build and spawn the real Rust server with an environment containing only PORT; probe /health, /, an API burst, and an unknown path; assert 429 plus Retry-After and inspect the image contract"
   }
 ]
