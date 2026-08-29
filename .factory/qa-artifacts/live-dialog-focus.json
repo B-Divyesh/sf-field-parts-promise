@@ -1,0 +1,32 @@
+{
+  "states": [
+    {
+      "step": 0,
+      "activeText": "Reset demo",
+      "activeTag": "BUTTON",
+      "inDialog": false,
+      "dialogOpen": true
+    },
+    {
+      "step": 1,
+      "activeText": "Start for real",
+      "activeTag": "BUTTON",
+      "inDialog": false,
+      "dialogOpen": true
+    },
+    {
+      "step": 2,
+      "activeText": "Reset demo",
+      "activeTag": "BUTTON",
+      "inDialog": true,
+      "dialogOpen": true
+    },
+    {
+      "step": 3,
+      "activeText": "Keep changes",
+      "activeTag": "BUTTON",
+      "inDialog": true,
+      "dialogOpen": true
+    }
+  ]
+}

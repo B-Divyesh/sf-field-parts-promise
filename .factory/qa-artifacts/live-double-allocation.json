@@ -1,0 +1,25 @@
+{
+  "firstStatus": "◷\nExpected before visit\nPO-SINGLE-1 is confirmed by supplier for 2026-09-01.",
+  "secondUrl": "https://field-parts-promise.sociobot.in/jobs/5d6cc9b0-cec4-4252-b64b-8ff159f1b15c?demo=1",
+  "shown": "Supplier order PO-SINGLE-1 · 1 each available · checked Aug 29, 2026, 11:54 AM",
+  "secondStatus": "◷\nExpected before visit\nPO-SINGLE-1 is confirmed by supplier for 2026-09-01.",
+  "dbState": {
+    "source": {
+      "id": "2422eac2-8de7-442b-9bf5-a607e115b53c",
+      "onHand": 1,
+      "reference": "PO-SINGLE-1"
+    },
+    "allocations": [
+      {
+        "jobId": "job-rd-1042",
+        "quantity": 1
+      },
+      {
+        "jobId": "5d6cc9b0-cec4-4252-b64b-8ff159f1b15c",
+        "quantity": 1
+      }
+    ],
+    "allocatedTotal": 2
+  },
+  "bugConfirmed": true
+}

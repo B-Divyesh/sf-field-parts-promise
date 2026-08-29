@@ -1,0 +1,234 @@
+{
+  "desktop": {
+    "overError": "Only 1 each is still needed for this job.",
+    "supplierStatus": "⌁\nDate at risk\nSupplier order QA-SUP-1 is not expected before the visit buffer.",
+    "requestCount": 6,
+    "requests": [
+      "GET https://field-parts-promise.sociobot.in/?demo=1",
+      "GET https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2",
+      "GET https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2",
+      "GET https://field-parts-promise.sociobot.in/assets/index-CcXTN7fF.js",
+      "GET https://field-parts-promise.sociobot.in/assets/index-CkWDLRHA.css",
+      "GET https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    ],
+    "onlySameOriginGets": true,
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  "liveWorkspace": {
+    "invalidFocused": "Job number",
+    "recoveredUrl": "https://field-parts-promise.sociobot.in/jobs/f3ed7307-d1d8-4c7b-805d-f5855d6e005e",
+    "status": "⌁\nDate at risk\n20 A fuse needs 0.01 pack."
+  },
+  "axe_desktop": [
+    {
+      "route": "/",
+      "status": 200,
+      "h1": 1,
+      "seriousCritical": []
+    },
+    {
+      "route": "/?demo=1",
+      "status": 200,
+      "h1": 1,
+      "seriousCritical": []
+    },
+    {
+      "route": "/jobs",
+      "status": 200,
+      "h1": 1,
+      "seriousCritical": []
+    },
+    {
+      "route": "/privacy",
+      "status": 200,
+      "h1": 1,
+      "seriousCritical": []
+    },
+    {
+      "route": "/terms",
+      "status": 200,
+      "h1": 1,
+      "seriousCritical": []
+    },
+    {
+      "route": "/not-on-this-drawing",
+      "status": 404,
+      "h1": 1,
+      "seriousCritical": []
+    }
+  ],
+  "axe_mobile": [
+    {
+      "route": "/",
+      "status": 200,
+      "h1": 1,
+      "seriousCritical": []
+    },
+    {
+      "route": "/?demo=1",
+      "status": 200,
+      "h1": 1,
+      "seriousCritical": []
+    },
+    {
+      "route": "/jobs",
+      "status": 200,
+      "h1": 1,
+      "seriousCritical": []
+    },
+    {
+      "route": "/privacy",
+      "status": 200,
+      "h1": 1,
+      "seriousCritical": []
+    },
+    {
+      "route": "/terms",
+      "status": 200,
+      "h1": 1,
+      "seriousCritical": []
+    },
+    {
+      "route": "/not-on-this-drawing",
+      "status": 404,
+      "h1": 1,
+      "seriousCritical": []
+    }
+  ],
+  "mobile": {
+    "geometry": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "motion": "0s"
+    },
+    "firstFocus": {
+      "text": "Skip to main content",
+      "outline": "rgb(255, 255, 255) solid 0px",
+      "width": 177,
+      "height": 37
+    },
+    "touch": [
+      {
+        "x": 16,
+        "y": 85,
+        "width": 131,
+        "height": 44
+      },
+      {
+        "x": 16,
+        "y": 176,
+        "width": 358,
+        "height": 44
+      },
+      {
+        "x": 16,
+        "y": 228,
+        "width": 358,
+        "height": 44
+      }
+    ],
+    "zoom": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "buttons": [
+        {
+          "text": "Use dark theme",
+          "width": 131,
+          "height": 44
+        },
+        {
+          "text": "Reset demo",
+          "width": 358,
+          "height": 44
+        },
+        {
+          "text": "Start for real",
+          "width": 358,
+          "height": 44
+        },
+        {
+          "text": "Edit job",
+          "width": 93,
+          "height": 44
+        },
+        {
+          "text": "Add required part",
+          "width": 170,
+          "height": 44
+        },
+        {
+          "text": "Remove allocation",
+          "width": 128,
+          "height": 44
+        },
+        {
+          "text": "Allocate part",
+          "width": 132,
+          "height": 44
+        },
+        {
+          "text": "Remove allocation",
+          "width": 128,
+          "height": 44
+        },
+        {
+          "text": "Remove allocation",
+          "width": 128,
+          "height": 44
+        },
+        {
+          "text": "Allocate part",
+          "width": 132,
+          "height": 44
+        },
+        {
+          "text": "Remove allocation",
+          "width": 128,
+          "height": 44
+        },
+        {
+          "text": "Allocate part",
+          "width": 132,
+          "height": 44
+        },
+        {
+          "text": "Check supplier date",
+          "width": 186,
+          "height": 44
+        },
+        {
+          "text": "Undo allocation",
+          "width": 126,
+          "height": 44
+        },
+        {
+          "text": "Add a source",
+          "width": 133,
+          "height": 44
+        },
+        {
+          "text": "Close",
+          "width": 50,
+          "height": 44
+        },
+        {
+          "text": "Hold this quantity",
+          "width": 169,
+          "height": 44
+        }
+      ]
+    }
+  },
+  "offline": {
+    "sw": {
+      "controlled": true,
+      "installing": false,
+      "waiting": false,
+      "caches": [
+        "parts-promise-shell-v2"
+      ]
+    },
+    "offlineStatus": "◎\nParts in hand\nEvery required quantity is held from a van or warehouse."
+  }
+}
