@@ -159,7 +159,11 @@ test('@claim:demo-reset-isolated Demo reset restores the fixture and leaving pre
   const context = await browser.newContext();
   const page = await context.newPage();
   const requests: string[] = [];
+  const consoleErrors: string[] = [];
   page.on('request', (request) => requests.push(request.url()));
+  page.on('console', (message) => {
+    if (message.type() === 'error') consoleErrors.push(message.text());
+  });
   await page.goto('/jobs');
   await page.getByRole('button', { name: 'Add a job' }).click();
   await page.getByLabel('Job number').fill('LIVE-1');
@@ -232,6 +236,7 @@ test('@claim:demo-reset-isolated Demo reset restores the fixture and leaving pre
   expect(
     requests.every((url) => new URL(url).origin === new URL(page.url()).origin)
   ).toBe(true);
+  expect(consoleErrors).toEqual([]);
   await context.close();
 });
 

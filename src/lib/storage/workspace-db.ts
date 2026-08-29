@@ -94,12 +94,23 @@ export function databaseName(mode: WorkspaceMode): string {
 export async function deleteWorkspace(mode: WorkspaceMode): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     const request = indexedDB.deleteDatabase(DATABASES[mode]);
-    request.onerror = () =>
+    let blockedTimer: ReturnType<typeof setTimeout> | undefined;
+    request.onerror = () => {
+      if (blockedTimer) clearTimeout(blockedTimer);
       reject(
         request.error ?? new Error('The browser could not clear local storage.')
       );
-    request.onsuccess = () => resolve();
-    request.onblocked = () =>
-      reject(new Error('Close other Parts Promise tabs and try again.'));
+    };
+    request.onsuccess = () => {
+      if (blockedTimer) clearTimeout(blockedTimer);
+      resolve();
+    };
+    request.onblocked = () => {
+      blockedTimer ??= setTimeout(
+        () =>
+          reject(new Error('Close other Parts Promise tabs and try again.')),
+        2000
+      );
+    };
   });
 }
