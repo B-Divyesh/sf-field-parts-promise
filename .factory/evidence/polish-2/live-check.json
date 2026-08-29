@@ -1,0 +1,73 @@
+{
+  "checkedAt": "2026-08-29T14:45:27.793Z",
+  "base": "https://field-parts-promise.sociobot.in",
+  "findings": {
+    "F-2-1": "wordmark and browser Back deleted demo IndexedDB; re-entry restored Date at risk",
+    "F-2-2": "versioned JSON downloaded; invalid CSV preview named row 3 and blocked import",
+    "F-2-3": "missing local job rendered Page not found title/H1/OG metadata and noindex",
+    "F-2-4": "mobile sheet scrolled into view, focused its heading, exposed state, and restored trigger focus"
+  },
+  "axe": [
+    {
+      "theme": "light",
+      "path": "/",
+      "serious": []
+    },
+    {
+      "theme": "light",
+      "path": "/demo",
+      "serious": []
+    },
+    {
+      "theme": "light",
+      "path": "/jobs",
+      "serious": []
+    },
+    {
+      "theme": "light",
+      "path": "/privacy",
+      "serious": []
+    },
+    {
+      "theme": "light",
+      "path": "/terms",
+      "serious": []
+    },
+    {
+      "theme": "light",
+      "path": "/not-on-this-drawing",
+      "serious": []
+    },
+    {
+      "theme": "dark",
+      "path": "/",
+      "serious": []
+    },
+    {
+      "theme": "dark",
+      "path": "/demo",
+      "serious": []
+    },
+    {
+      "theme": "dark",
+      "path": "/jobs",
+      "serious": []
+    },
+    {
+      "theme": "dark",
+      "path": "/privacy",
+      "serious": []
+    },
+    {
+      "theme": "dark",
+      "path": "/terms",
+      "serious": []
+    },
+    {
+      "theme": "dark",
+      "path": "/not-on-this-drawing",
+      "serious": []
+    }
+  ],
+  "consoleErrors": []
+}

@@ -153,7 +153,9 @@ test('each work form expands, becomes visible, receives focus, and restores its 
     await expect
       .poll(async () => {
         const box = await title.boundingBox();
-        return box !== null && box.y >= 0 && box.y < 844;
+        return (
+          box !== null && box.y >= 0 && box.y < 422 && box.y + box.height <= 844
+        );
       })
       .toBe(true);
     await sheet.getByRole('button', { name: 'Close' }).click();
