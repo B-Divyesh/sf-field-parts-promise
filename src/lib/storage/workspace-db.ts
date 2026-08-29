@@ -30,12 +30,27 @@ async function read(mode: WorkspaceMode): Promise<Workspace | undefined> {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE, 'readonly');
     const request = transaction.objectStore(STORE).get(CURRENT_KEY);
-    request.onerror = () =>
+    let value: Workspace | undefined;
+    request.onerror = () => {
+      db.close();
       reject(
         request.error ?? new Error('The browser could not read local storage.')
       );
-    request.onsuccess = () => resolve(request.result as Workspace | undefined);
-    transaction.oncomplete = () => db.close();
+    };
+    request.onsuccess = () => {
+      value = request.result as Workspace | undefined;
+    };
+    transaction.onerror = () => {
+      db.close();
+      reject(
+        transaction.error ??
+          new Error('The browser could not read local storage.')
+      );
+    };
+    transaction.oncomplete = () => {
+      db.close();
+      resolve(value);
+    };
   });
 }
 
