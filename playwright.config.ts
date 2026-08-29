@@ -2,6 +2,10 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
+  // The container-runtime claim launches the compiled Rust server. Compile it
+  // before individual test timeouts begin so a cold Cargo target cannot make
+  // a runtime assertion flaky.
+  globalSetup: './e2e/global-setup.ts',
   // Service workers share an origin cache during a browser run. Serial claim
   // evidence keeps the offline cold-reload fixture independent and repeatable.
   fullyParallel: false,

@@ -1,5 +1,5 @@
-import { execFileSync, spawn } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { spawn } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { resolve } from 'node:path';
 
@@ -409,11 +409,10 @@ test('@claim:container-runtime The production server starts with only PORT and s
     testInfo.project.name !== 'chromium',
     'Claim evidence runs once on desktop Chromium.'
   );
-  execFileSync(
-    'cargo',
-    ['build', '--manifest-path', 'server/Cargo.toml', '--locked'],
-    { cwd: process.cwd(), stdio: 'pipe' }
-  );
+  // This deliberately stays below Playwright's default 30-second timeout.
+  // Compilation belongs in global setup; this claim covers only the built
+  // server's startup and HTTP contract.
+  test.setTimeout(15_000);
   const port = await new Promise<number>((resolvePort, reject) => {
     const probe = createServer();
     probe.once('error', reject);
@@ -432,6 +431,7 @@ test('@claim:container-runtime The production server starts with only PORT and s
     process.cwd(),
     'server/target/debug/parts-promise-api'
   );
+  expect(existsSync(binary)).toBe(true);
   const server = spawn(binary, [], {
     cwd: process.cwd(),
     env: { PORT: String(port) },
