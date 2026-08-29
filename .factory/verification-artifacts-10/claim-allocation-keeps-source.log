@@ -1,0 +1,81 @@
+
+> field-parts-promise@0.0.0 test:e2e
+> playwright test --grep @claim:allocation-keeps-source
+
+[WebServer] (node:3951) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:3968) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:4000) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer]    Compiling sqlx-postgres v0.8.6
+[WebServer]    Compiling rand_chacha v0.9.0
+[WebServer]    Compiling mime_guess v2.0.5
+[WebServer]    Compiling axum-core v0.5.6
+[WebServer]    Compiling hmac v0.12.1
+[WebServer]    Compiling num-integer v0.1.47
+[WebServer]    Compiling atoi v2.0.0
+[WebServer]    Compiling raw-cpuid v11.6.0
+[WebServer]    Compiling serde_path_to_error v0.1.20
+[WebServer]    Compiling thiserror-impl v1.0.69
+[WebServer]    Compiling pin-project-internal v1.1.13
+[WebServer]    Compiling regex-syntax v0.8.11
+[WebServer]    Compiling foldhash v0.2.0
+[WebServer]    Compiling matchit v0.8.4
+[WebServer]    Compiling hashbrown v0.14.5
+[WebServer]    Compiling deranged v0.5.8
+[WebServer]    Compiling heck v0.5.0
+[WebServer]    Compiling powerfmt v0.2.0
+[WebServer]    Compiling time v0.3.55
+[WebServer]    Compiling sqlx-macros-core v0.8.6
+[WebServer]    Compiling dashmap v6.2.1
+[WebServer]    Compiling axum v0.8.9
+[WebServer]    Compiling hashbrown v0.16.1
+[WebServer]    Compiling regex-automata v0.4.18
+[WebServer]    Compiling pin-project v1.1.13
+[WebServer]    Compiling thiserror v1.0.69
+[WebServer]    Compiling quanta v0.12.6
+[WebServer]    Compiling num-bigint v0.4.8
+[WebServer]    Compiling hkdf v0.12.4
+[WebServer]    Compiling rand v0.9.5
+[WebServer]    Compiling portable-atomic v1.15.0
+[WebServer]    Compiling hyper-timeout v0.5.2
+[WebServer]    Compiling flume v0.11.1
+[WebServer]    Compiling tokio-rustls v0.26.4
+[WebServer]    Compiling md-5 v0.10.6
+[WebServer]    Compiling futures-executor v0.3.34
+[WebServer]    Compiling spinning_top v0.3.0
+[WebServer]    Compiling async-trait v0.1.92
+[WebServer]    Compiling nonzero_ext v0.3.0
+[WebServer]    Compiling web-time v1.1.0
+[WebServer]    Compiling nonempty v0.7.0
+[WebServer]    Compiling futures-timer v3.0.4
+[WebServer]    Compiling lazy_static v1.5.0
+[WebServer]    Compiling http-range-header v0.4.2
+[WebServer]    Compiling tower-http v0.6.11
+[WebServer]    Compiling sharded-slab v0.1.7
+[WebServer]    Compiling governor v0.10.4
+[WebServer]    Compiling forwarded-header-value v0.1.1
+[WebServer]    Compiling tonic v0.14.6
+[WebServer]    Compiling sqlx-sqlite v0.8.6
+[WebServer]    Compiling hyper-rustls v0.27.9
+[WebServer]    Compiling simple_asn1 v0.6.4
+[WebServer]    Compiling matchers v0.2.0
+[WebServer]    Compiling sqlx-macros v0.8.6
+[WebServer]    Compiling pem v3.0.6
+[WebServer]    Compiling tracing-log v0.2.0
+[WebServer]    Compiling tracing-serde v0.2.0
+[WebServer]    Compiling thread_local v1.1.10
+[WebServer]    Compiling nu-ansi-term v0.50.3
+[WebServer]    Compiling tracing-subscriber v0.3.23
+[WebServer]    Compiling jsonwebtoken v9.3.1
+[WebServer]    Compiling sqlx v0.8.6
+[WebServer]    Compiling reqwest v0.12.28
+[WebServer]    Compiling tower_governor v0.8.0
+[WebServer]    Compiling parts-promise-api v0.0.0 (/work/repo/server)
+
+Error: Timed out waiting 60000ms from config.webServer.
+::error ::Error: Timed out waiting 60000ms from config.webServer.
+
+
+::notice title=🎭 Playwright Run Summary::

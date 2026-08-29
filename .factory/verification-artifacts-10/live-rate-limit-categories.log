@@ -1,0 +1,35 @@
+[
+  {
+    "path": "/api/v1/sync",
+    "counts": {
+      "422": 10,
+      "429": 20
+    },
+    "first429": 1,
+    "retryAfter": [
+      "0"
+    ]
+  },
+  {
+    "path": "/api/v1/onboarding",
+    "counts": {
+      "422": 5,
+      "429": 15
+    },
+    "first429": 4,
+    "retryAfter": [
+      "11"
+    ]
+  },
+  {
+    "path": "/metrics",
+    "counts": {
+      "401": 43,
+      "429": 57
+    },
+    "first429": 41,
+    "retryAfter": [
+      "0"
+    ]
+  }
+]

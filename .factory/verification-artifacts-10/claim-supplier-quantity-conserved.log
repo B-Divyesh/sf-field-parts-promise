@@ -1,0 +1,27 @@
+
+> field-parts-promise@0.0.0 test:e2e
+> playwright test --grep @claim:supplier-quantity-conserved
+
+[WebServer] (node:5221) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5238) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5270) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer]    Compiling parts-promise-api v0.0.0 (/work/repo/server)
+[WebServer]     Finished `dev` profile [unoptimized + debuginfo] target(s) in 8.20s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.80s
+
+Running 2 tests using 1 worker
+(node:5593) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5593) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+·(node:5663) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5663) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+°
+  1 skipped
+  1 passed (29.0s)
+::notice title=🎭 Playwright Run Summary::  1 skipped%0A  1 passed (29.0s)

@@ -1,0 +1,13 @@
+{
+  "banner": "Demo — sample data; nothing is saved to your local workspace. Reset demo Start for real",
+  "bannerContract": true,
+  "routeHeadingFocused": true,
+  "focus": {
+    "tag": "BUTTON",
+    "text": "Edit job",
+    "focusVisible": true,
+    "outline": "rgb(107, 53, 195) solid 3px",
+    "outlineOffset": "3px"
+  },
+  "errors": []
+}

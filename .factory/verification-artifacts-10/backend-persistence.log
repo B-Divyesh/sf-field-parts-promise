@@ -1,0 +1,39 @@
+{
+  "database": "/tmp/fpp-qa-nH7aTA",
+  "first": {
+    "replayed": false,
+    "version": 1,
+    "workspace": {
+      "allocations": [],
+      "jobs": [
+        {
+          "id": "persist-after-restart"
+        }
+      ],
+      "requirements": [],
+      "schemaVersion": 1,
+      "sources": []
+    }
+  },
+  "replay": {
+    "replayed": true,
+    "version": 1,
+    "workspace": {
+      "allocations": [],
+      "jobs": [
+        {
+          "id": "persist-after-restart"
+        }
+      ],
+      "requirements": [],
+      "schemaVersion": 1,
+      "sources": []
+    }
+  },
+  "restartPersisted": true,
+  "tenantBLeak": false,
+  "statuses": {
+    "a": 200,
+    "b": 200
+  }
+}

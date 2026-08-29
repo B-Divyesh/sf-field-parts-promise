@@ -1,0 +1,9 @@
+{
+  "finalOrigin": "https://sociobotcustomers.ciamlogin.com",
+  "pathname": "/35c6fe40-0ec0-46b6-98c6-213ad4de6650/oauth2/v2.0/authorize",
+  "tenantHost": "sociobotcustomers.ciamlogin.com",
+  "clientId": "25c704f4-465a-47af-80ab-2c489466b697",
+  "redirectUri": "https://field-parts-promise.sociobot.in/auth/callback",
+  "scope": "openid profile email offline_access",
+  "ciamRequests": 2
+}

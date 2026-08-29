@@ -1,0 +1,15 @@
+{
+  "counts": {
+    "401": 44,
+    "429": 56
+  },
+  "first429": {
+    "i": 40,
+    "status": 429,
+    "retry": "0",
+    "body": "Too Many Requests! Wait for 0s"
+  },
+  "retryAfterValues": [
+    "0"
+  ]
+}

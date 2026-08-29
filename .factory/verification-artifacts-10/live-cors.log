@@ -1,0 +1,35 @@
+ORIGIN https://field-parts-promise.sociobot.in
+HTTP/2 200 
+vary: origin, access-control-request-method, access-control-request-headers
+access-control-allow-methods: GET,POST,OPTIONS
+access-control-allow-headers: authorization,content-type
+access-control-allow-origin: https://field-parts-promise.sociobot.in
+x-request-id: b94887e9-e009-4b3e-9e2c-195cad449028
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+x-frame-options: DENY
+strict-transport-security: max-age=31536000; includeSubDomains
+permissions-policy: camera=(), microphone=(), geolocation=()
+content-security-policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src https://sociobotcustomers.ciamlogin.com; form-action 'self' https://sociobotcustomers.ciamlogin.com; img-src 'self' data: https://*.msauthimages.net; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self' https://sociobotcustomers.ciamlogin.com https://pilot-api.sociobot.in https://api.sociobot.in; manifest-src 'self'; worker-src 'self'
+cache-control: no-cache, max-age=0, must-revalidate
+allow: GET,HEAD
+content-length: 0
+date: Sat, 29 Aug 2026 21:23:04 GMT
+
+ORIGIN https://evil.example
+HTTP/2 200 
+vary: origin, access-control-request-method, access-control-request-headers
+access-control-allow-methods: GET,POST,OPTIONS
+access-control-allow-headers: authorization,content-type
+x-request-id: 3e9cc87e-0b6b-47c2-913d-7d55a284835c
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+x-frame-options: DENY
+strict-transport-security: max-age=31536000; includeSubDomains
+permissions-policy: camera=(), microphone=(), geolocation=()
+content-security-policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src https://sociobotcustomers.ciamlogin.com; form-action 'self' https://sociobotcustomers.ciamlogin.com; img-src 'self' data: https://*.msauthimages.net; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self' https://sociobotcustomers.ciamlogin.com https://pilot-api.sociobot.in https://api.sociobot.in; manifest-src 'self'; worker-src 'self'
+cache-control: no-cache, max-age=0, must-revalidate
+allow: GET,HEAD
+content-length: 0
+date: Sat, 29 Aug 2026 21:23:04 GMT
+
