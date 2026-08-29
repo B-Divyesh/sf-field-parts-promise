@@ -1,6 +1,6 @@
 # Parts Promise venture plan
 
-Status: M2 implementation complete; acceptance is blocked by recurring billing registration and a production backup restore drill.
+Status: M2 repair implementation complete; acceptance remains blocked only by recurring billing registration outside this repository.
 
 Product: `field-parts-promise` · artifact: offline-first PWA with a backend
 
@@ -275,7 +275,7 @@ M1 DoD:
 
 ### M2 — Accounts, team sync, and recurring billing
 
-Status: **implementation complete; acceptance blocked**. Account, persistence, tenant, sync, rate-limit, and deployment work is complete. The live Sociobot test gateway returns `404 enabled factory product`, so checkout and recurring entitlement events cannot be completed without operator registration. The production database has seven-day automated backups, but the required isolated restore drill still needs operator infrastructure.
+Status: **repair implementation complete; acceptance blocked externally**. Account, persistence, tenant sync, durable offline retry, explicit conflict resolution, data export/deletion controls, rate limits, operations metrics, and recovery evidence are complete. Both Sociobot gateways still return `404 enabled factory product`, so checkout and recurring entitlement events cannot be completed without a supported recurring-product registration.
 
 Routes/screens added: `/auth/callback`, `/onboarding`, `/settings/team`, `/settings/billing`; authenticated behavior on `/jobs*`. Demo remains account-free and API-free.
 
@@ -292,7 +292,11 @@ Tests: Rust route/domain/integration tests with two organizations; JWT audience/
 
 M2 DoD: production callback is registered or listed under operator action; real test-mode checkout completes at the stated recurring prices; server is the entitlement authority; tenant tests pass; backup restore is timed; demo claims from M1 still pass; container boots with only `PORT` and health reports build SHA.
 
-M2 implementation note (2026-08-29): commit `5b9fcde` is deployed on healthy revision `sf-field-parts-promise--0000016`. The Entra authorization endpoint accepts the exact production callback, and discovery/JWKS validation is live. PostgreSQL migrations, transaction-local RLS context, invited-email activation, idempotent sync, unpaid export behavior, API limits, and the real pilot billing adapter are implemented. The adapter returns `424` and makes no charge while the gateway reports that the recurring product is unregistered. This follows the pricing stop condition above; it does not substitute the one-time license API or direct Dodo access. M2 cannot be marked released until the operator registers both recurring prices, exposes the seat/event contract, runs the checkout/return/cancel/refund suite, and completes the isolated backup restore drill.
+M2 repair note (2026-08-29): the signed-in client now keeps one idempotent full-workspace operation in a dedicated IndexedDB outbox, restores it offline, retries on reconnect and with capped jittered backoff, and opens an explicit two-revision conflict instead of overwriting quantity evidence. Owners have a signed-in firm export plus a 14-day deletion schedule/cancel path. Export uses the critical five-request bucket, every 429 has a positive `Retry-After`, and protected metrics expose latency, status classes, conflicts, queue age/depth, and notification failures. Every missing README/privacy claim has a registered browser test.
+
+The PostgreSQL migration and runtime query test passed against the production database. A custom logical dump of all nine `fpp_*` tables was restored into isolated database `fpp_restore_drill_20260829_repair6`; 9 tables, 34 constraints, 8 RLS policies, and every table row count matched. The 27,959-byte restore took 7 seconds, and the isolated database was dropped afterward. This proves the product-level logical restore path; the platform's seven-day retention remains the operator's recovery window.
+
+Recurring billing is still the only M2 acceptance blocker. On 2026-08-29 both pilot and production catalogues contained no `field-parts-promise` entry, and both checkout URLs returned `404 {"error":"enabled factory product","status":404}`. The available factory-product contract is a one-time license with one fixed provider price; it cannot represent the researched $39/month base plus a live $8/month seat quantity. The implementation therefore preserves the plan's stop condition: production defaults to `api.sociobot.in`, automated tests explicitly use the pilot gateway, and no direct Dodo call or false recurring product was created.
 
 ### M3 — Field scanning, supplier watch, and conflict resolution
 

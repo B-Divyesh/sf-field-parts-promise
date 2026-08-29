@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { resolve } from 'node:path';
 
+import { AxeBuilder } from '@axe-core/playwright';
 import { chromium, expect, test } from '@playwright/test';
 
 const TEST_AUTH_SECRET = 'playwright-test-secret-at-least-32-bytes';
@@ -1038,6 +1039,439 @@ test('@claim:idempotent-sync Retrying one sync operation applies it once', async
   expect((await first.json()).version).toBe(1);
   expect(replay.ok()).toBe(true);
   expect(await replay.json()).toMatchObject({ version: 1, replayed: true });
+});
+
+test('@claim:offline-signed-in-sync A signed-in offline edit survives reload and syncs on reconnect', async ({
+  browser,
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const token = testToken(`offline-sync-${Date.now()}-${Math.random()}`);
+  await apiOnboard(
+    request,
+    token,
+    'Offline Sync Firm',
+    undefined,
+    '198.51.100.111'
+  );
+  await setTestBilling(request, token, 'active', '198.51.100.112');
+  const context = await browser.newContext();
+  await context.addInitScript((value) => {
+    sessionStorage.setItem('parts-promise-e2e-token', value);
+  }, token);
+  const page = await context.newPage();
+  await page.goto('/jobs');
+  await expect(page.getByText('Shared firm jobs')).toBeVisible();
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await context.setOffline(true);
+  await page.getByRole('button', { name: 'Add a job' }).click();
+  await page.getByLabel('Job number').fill('OFFLINE-1');
+  await page.getByLabel('Site or customer name').fill('Offline Plant');
+  await page.getByLabel('Visit date').fill('2026-10-01');
+  await page
+    .getByRole('textbox', { name: 'Required part', exact: true })
+    .fill('Isolator');
+  await page
+    .getByRole('spinbutton', { name: 'Quantity', exact: true })
+    .fill('1');
+  await page.getByRole('button', { name: 'Save job and part' }).click();
+  await expect(page.locator('h1')).toHaveText('Offline Plant parts');
+  expect(
+    await page.evaluate(async () => {
+      const request = indexedDB.open('parts-promise-cloud-v1', 1);
+      const database = await new Promise<IDBDatabase>((resolve, reject) => {
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      const operation = await new Promise<unknown>((resolve, reject) => {
+        const transaction = database.transaction('outbox', 'readonly');
+        const read = transaction.objectStore('outbox').getAll();
+        read.onsuccess = () => resolve(read.result);
+        read.onerror = () => reject(read.error);
+      });
+      database.close();
+      return (operation as unknown[]).length;
+    })
+  ).toBe(1);
+  await page.reload();
+  await expect(page.locator('h1')).toHaveText('Offline Plant parts');
+  await expect(
+    page.getByText(/1 change is queued for reconnect/)
+  ).toBeVisible();
+  await context.setOffline(false);
+  await expect(page.getByText('Shared workspace up to date.')).toBeVisible({
+    timeout: 15_000
+  });
+  let transientFailures = 0;
+  await page.route('**/api/v1/sync', async (route) => {
+    if (transientFailures++ === 0) {
+      await route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          code: 'storage_unavailable',
+          message: 'The shared workspace is temporarily unavailable.',
+          action: 'Try again shortly.'
+        })
+      });
+    } else await route.continue();
+  });
+  await page.getByRole('link', { name: 'Jobs' }).click();
+  await page.getByRole('button', { name: 'Add a job' }).click();
+  await page.getByLabel('Job number').fill('RETRY-1');
+  await page.getByLabel('Site or customer name').fill('Retry Plant');
+  await page.getByLabel('Visit date').fill('2026-10-04');
+  await page
+    .getByRole('textbox', { name: 'Required part', exact: true })
+    .fill('Relay');
+  await page
+    .getByRole('spinbutton', { name: 'Quantity', exact: true })
+    .fill('1');
+  await page.getByRole('button', { name: 'Save job and part' }).click();
+  await expect(page.getByText(/1 change stays queued/)).toBeVisible();
+  await expect(page.getByText('Shared workspace up to date.')).toBeVisible({
+    timeout: 10_000
+  });
+  expect(transientFailures).toBeGreaterThanOrEqual(2);
+  const shared = await request.get('/api/v1/bootstrap', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': '198.51.100.113'
+    }
+  });
+  const sharedWorkspace = JSON.stringify((await shared.json()).workspace);
+  expect(sharedWorkspace).toContain('OFFLINE-1');
+  expect(sharedWorkspace).toContain('RETRY-1');
+  await context.close();
+});
+
+test('@claim:sync-conflict-resolution Quantity conflicts cannot overwrite the shared revision', async ({
+  browser,
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const token = testToken(`conflict-${Date.now()}-${Math.random()}`);
+  await apiOnboard(
+    request,
+    token,
+    'Conflict Firm',
+    undefined,
+    '198.51.100.121'
+  );
+  await setTestBilling(request, token, 'active', '198.51.100.122');
+  const context = await browser.newContext();
+  await context.addInitScript((value) => {
+    sessionStorage.setItem('parts-promise-e2e-token', value);
+  }, token);
+  const page = await context.newPage();
+  await page.goto('/jobs');
+  await expect(page.getByText('Shared firm jobs')).toBeVisible();
+  await context.setOffline(true);
+  await page.getByRole('button', { name: 'Add a job' }).click();
+  await page.getByLabel('Job number').fill('DEVICE-1');
+  await page.getByLabel('Site or customer name').fill('Device Revision');
+  await page.getByLabel('Visit date').fill('2026-10-02');
+  await page
+    .getByRole('textbox', { name: 'Required part', exact: true })
+    .fill('Pump');
+  await page
+    .getByRole('spinbutton', { name: 'Quantity', exact: true })
+    .fill('1');
+  await page.getByRole('button', { name: 'Save job and part' }).click();
+
+  const sharedWorkspace = {
+    schemaVersion: 1,
+    jobs: [
+      {
+        id: 'shared-job',
+        number: 'SHARED-1',
+        site: 'Shared Revision',
+        visitDate: '2026-10-03',
+        notes: '',
+        createdAt: '2026-08-29T00:00:00Z',
+        updatedAt: '2026-08-29T00:00:00Z'
+      }
+    ],
+    requirements: [],
+    sources: [],
+    allocations: []
+  };
+  const sharedWrite = await request.post('/api/v1/sync', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': '198.51.100.123'
+    },
+    data: {
+      idempotency_key: crypto.randomUUID(),
+      expected_version: 0,
+      workspace: sharedWorkspace
+    }
+  });
+  expect(sharedWrite.ok(), await sharedWrite.text()).toBe(true);
+  await context.setOffline(false);
+  await expect(
+    page.getByRole('heading', { name: 'Resolve the shared workspace conflict' })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Send device revision' })
+  ).toHaveCount(0);
+  await expect(page.getByText(/will not overwrite/)).toBeVisible();
+  const conflictAccessibility = await new AxeBuilder({ page }).analyze();
+  expect(
+    conflictAccessibility.violations.filter((violation) =>
+      ['serious', 'critical'].includes(violation.impact ?? '')
+    )
+  ).toEqual([]);
+  await page.getByRole('button', { name: 'Use shared revision' }).click();
+  await expect(
+    page.getByText('The shared revision is now on this device.')
+  ).toBeVisible();
+  const shared = await request.get('/api/v1/bootstrap', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': '198.51.100.124'
+    }
+  });
+  const body = await shared.json();
+  expect(JSON.stringify(body.workspace)).toContain('shared-job');
+  expect(JSON.stringify(body.workspace)).not.toContain('DEVICE-1');
+  await context.close();
+});
+
+test('@claim:invitation-email-activation An invitation activates only for its matching verified email', async ({
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const owner = testToken(`invite-claim-owner-${Date.now()}`);
+  const invitedOid = `invite-claim-tech-${Date.now()}`;
+  await apiOnboard(
+    request,
+    owner,
+    'Invitation Claim Firm',
+    undefined,
+    '198.51.100.131'
+  );
+  const invite = await request.post('/api/v1/members', {
+    headers: {
+      authorization: `Bearer ${owner}`,
+      'x-forwarded-for': '198.51.100.132'
+    },
+    data: { email: `${invitedOid}@example.test`, role: 'technician' }
+  });
+  expect(invite.ok(), await invite.text()).toBe(true);
+  const unrelated = await request.get('/api/v1/bootstrap', {
+    headers: {
+      authorization: `Bearer ${testToken(`not-${invitedOid}`)}`,
+      'x-forwarded-for': '198.51.100.133'
+    }
+  });
+  expect((await unrelated.json()).onboarding_required).toBe(true);
+  const accepted = await request.get('/api/v1/bootstrap', {
+    headers: {
+      authorization: `Bearer ${testToken(invitedOid)}`,
+      'x-forwarded-for': '198.51.100.134'
+    }
+  });
+  expect(await accepted.json()).toMatchObject({
+    onboarding_required: false,
+    role: 'technician'
+  });
+});
+
+test('@claim:account-service-boundaries Signed-in data uses this API and sign-in redirects to Microsoft Entra', async ({
+  browser,
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const token = testToken(`network-boundary-${Date.now()}-${Math.random()}`);
+  await apiOnboard(
+    request,
+    token,
+    'Network Boundary Firm',
+    undefined,
+    '198.51.100.136'
+  );
+  const signedIn = await browser.newContext();
+  await signedIn.addInitScript((value) => {
+    sessionStorage.setItem('parts-promise-e2e-token', value);
+  }, token);
+  const accountPage = await signedIn.newPage();
+  const accountRequests: string[] = [];
+  accountPage.on('request', (candidate) =>
+    accountRequests.push(candidate.url())
+  );
+  await accountPage.goto('/settings/data');
+  await expect(
+    accountPage.getByRole('heading', { name: 'Export or delete firm data' })
+  ).toBeVisible();
+  const origin = new URL(accountPage.url()).origin;
+  expect(accountRequests.every((url) => new URL(url).origin === origin)).toBe(
+    true
+  );
+  await signedIn.close();
+
+  const signedOut = await browser.newContext();
+  const signInPage = await signedOut.newPage();
+  await signInPage.goto('/onboarding');
+  const authorization = signInPage.waitForRequest((candidate) =>
+    candidate.url().startsWith('https://sociobotcustomers.ciamlogin.com/')
+  );
+  await signInPage
+    .getByRole('button', { name: 'Sign in with Sociobot' })
+    .click();
+  expect(new URL((await authorization).url()).hostname).toBe(
+    'sociobotcustomers.ciamlogin.com'
+  );
+  await signedOut.close();
+});
+
+test('@claim:audit-log-recording Firm export includes auditable onboarding, invitation, and sync events', async ({
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const token = testToken(`audit-${Date.now()}-${Math.random()}`);
+  await apiOnboard(request, token, 'Audit Firm', undefined, '198.51.100.141');
+  await setTestBilling(request, token, 'active', '198.51.100.142');
+  await request.post('/api/v1/members', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': '198.51.100.143'
+    },
+    data: { email: 'audit-tech@example.test', role: 'viewer' }
+  });
+  const sync = await request.post('/api/v1/sync', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': '198.51.100.144'
+    },
+    data: {
+      idempotency_key: crypto.randomUUID(),
+      expected_version: 0,
+      workspace: {
+        schemaVersion: 1,
+        jobs: [{ id: 'audit-job' }],
+        requirements: [],
+        sources: [],
+        allocations: []
+      }
+    }
+  });
+  expect(sync.ok(), await sync.text()).toBe(true);
+  const exported = await request.get('/api/v1/export', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': '198.51.100.145'
+    }
+  });
+  const actions = (await exported.json()).audit_events.map(
+    (event: { action: string }) => event.action
+  );
+  expect(actions).toEqual(
+    expect.arrayContaining([
+      'organization.created',
+      'membership.invited',
+      'workspace.synced'
+    ])
+  );
+});
+
+test('@claim:firm-deletion-hold Owners can schedule and cancel a 14-day firm deletion hold', async ({
+  browser,
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const token = testToken(`deletion-${Date.now()}-${Math.random()}`);
+  await apiOnboard(
+    request,
+    token,
+    'Delete Claim Firm',
+    undefined,
+    '198.51.100.151'
+  );
+  const context = await browser.newContext();
+  await context.addInitScript((value) => {
+    sessionStorage.setItem('parts-promise-e2e-token', value);
+  }, token);
+  const page = await context.newPage();
+  await page.goto('/settings/data');
+  await expect(
+    page.getByRole('heading', { name: 'Export or delete firm data' })
+  ).toBeVisible();
+  const dataControlsAccessibility = await new AxeBuilder({ page }).analyze();
+  expect(
+    dataControlsAccessibility.violations.filter((violation) =>
+      ['serious', 'critical'].includes(violation.impact ?? '')
+    )
+  ).toEqual([]);
+  await page.getByLabel('Firm name').fill('Delete Claim Firm');
+  await page.getByRole('button', { name: 'Schedule firm deletion' }).click();
+  await expect(page.getByText(/Deletion is scheduled for/)).toBeVisible();
+  const scheduled = await request.get('/api/v1/bootstrap', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': '198.51.100.152'
+    }
+  });
+  const status = (await scheduled.json()).deletion;
+  const hold =
+    new Date(status.delete_after).getTime() -
+    new Date(status.requested_at).getTime();
+  expect(hold).toBe(14 * 24 * 60 * 60 * 1000);
+  await page.getByRole('button', { name: 'Cancel firm deletion' }).click();
+  await expect(page.getByText('Firm deletion was cancelled.')).toBeVisible();
+  const bootstrap = await request.get('/api/v1/bootstrap', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': '198.51.100.154'
+    }
+  });
+  expect((await bootstrap.json()).deletion.scheduled).toBe(false);
+  await context.close();
+});
+
+test('@claim:response-policy Export has a five-request bucket and metrics expose operations signals', async ({
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const token = testToken(`response-policy-${Date.now()}-${Math.random()}`);
+  await apiOnboard(
+    request,
+    token,
+    'Response Policy Firm',
+    undefined,
+    '198.51.100.161'
+  );
+  let limited: import('@playwright/test').APIResponse | undefined;
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const response = await request.get('/api/v1/export', {
+      headers: {
+        authorization: `Bearer ${token}`,
+        'x-forwarded-for': '198.51.100.162'
+      }
+    });
+    if (response.status() === 429) {
+      limited = response;
+      break;
+    }
+  }
+  expect(limited).toBeDefined();
+  expect(Number(limited!.headers()['retry-after'])).toBeGreaterThanOrEqual(1);
+  const metrics = await request.get('/metrics', {
+    headers: {
+      authorization: 'Bearer playwright-metrics-secret',
+      'x-forwarded-for': '198.51.100.163'
+    }
+  });
+  expect(metrics.ok(), await metrics.text()).toBe(true);
+  const body = await metrics.text();
+  for (const metric of [
+    'parts_promise_request_latency_ms_total',
+    'parts_promise_responses_total{class="4xx"}',
+    'parts_promise_sync_conflicts_total',
+    'parts_promise_queue_oldest_age_seconds',
+    'parts_promise_notification_failures_total'
+  ])
+    expect(body).toContain(metric);
 });
 
 test('@claim:subscription-checkout Missing recurring registration stops before any charge', async ({

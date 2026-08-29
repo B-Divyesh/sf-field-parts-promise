@@ -3,10 +3,7 @@ pub mod auth;
 pub mod db;
 
 use std::{
-    sync::{
-        atomic::{AtomicU64, Ordering},
-        Arc,
-    },
+    sync::{atomic::Ordering, Arc},
     time::Instant,
 };
 
@@ -25,15 +22,14 @@ use tower_http::{
 };
 use uuid::Uuid;
 
-use api::ApiState;
+use api::{ApiState, MetricsState};
 use auth::AuthVerifier;
 use db::Database;
 
 #[derive(Clone)]
 struct AppState {
     build_sha: String,
-    requests: Arc<AtomicU64>,
-    failures: Arc<AtomicU64>,
+    metrics: Arc<MetricsState>,
 }
 
 #[derive(Serialize)]
@@ -49,15 +45,14 @@ pub async fn app(
     database: Database,
     auth: AuthVerifier,
     metrics_token: String,
+    billing_base_url: String,
 ) -> Router {
     let static_dir = std::env::var("STATIC_DIR").unwrap_or_else(|_| "dist".to_owned());
     let index_file = format!("{static_dir}/index.html");
-    let requests = Arc::new(AtomicU64::new(0));
-    let failures = Arc::new(AtomicU64::new(0));
+    let metrics = Arc::new(MetricsState::default());
     let app_state = AppState {
         build_sha: build_sha.into(),
-        requests: requests.clone(),
-        failures: failures.clone(),
+        metrics: metrics.clone(),
     };
     let database_name = match database.kind() {
         db::DatabaseKind::Postgres => "postgres",
@@ -73,8 +68,8 @@ pub async fn app(
         database,
         auth,
         metrics_token: Arc::new(metrics_token),
-        requests,
-        failures,
+        billing_base_url: Arc::new(billing_base_url),
+        metrics,
         client: reqwest::Client::builder()
             .redirect(reqwest::redirect::Policy::none())
             .build()
@@ -86,7 +81,7 @@ pub async fn app(
                 || origin.as_bytes().starts_with(b"http://127.0.0.1:")
                 || origin.as_bytes().starts_with(b"http://localhost:")
         }))
-        .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
+        .allow_methods([Method::GET, Method::POST, Method::DELETE, Method::OPTIONS])
         .allow_headers([
             axum::http::header::AUTHORIZATION,
             axum::http::header::CONTENT_TYPE,
@@ -119,11 +114,25 @@ async fn request_observer(State(state): State<AppState>, request: Request, next:
     let method = request.method().clone();
     let path = request.uri().path().to_owned();
     let started = Instant::now();
-    state.requests.fetch_add(1, Ordering::Relaxed);
+    state.metrics.requests.fetch_add(1, Ordering::Relaxed);
     let mut response = next.run(request).await;
     if response.status().is_server_error() {
-        state.failures.fetch_add(1, Ordering::Relaxed);
+        state.metrics.failures.fetch_add(1, Ordering::Relaxed);
     }
+    let status = response.status().as_u16();
+    let status_counter = match status {
+        200..=299 => Some(&state.metrics.status_2xx),
+        400..=499 => Some(&state.metrics.status_4xx),
+        500..=599 => Some(&state.metrics.status_5xx),
+        _ => None,
+    };
+    if let Some(counter) = status_counter {
+        counter.fetch_add(1, Ordering::Relaxed);
+    }
+    state
+        .metrics
+        .latency_ms_total
+        .fetch_add(started.elapsed().as_millis() as u64, Ordering::Relaxed);
     response.headers_mut().insert(
         "x-request-id",
         request_id.parse().expect("request id header"),
@@ -211,6 +220,7 @@ fn is_document_path(path: &str) -> bool {
             | "/onboarding"
             | "/settings/team"
             | "/settings/billing"
+            | "/settings/data"
     ) || path
         .strip_prefix("/jobs/")
         .is_some_and(|job_id| !job_id.is_empty() && !job_id.contains('/'))
@@ -238,6 +248,7 @@ mod tests {
                 db.clone(),
                 auth.clone(),
                 "metrics-test".to_owned(),
+                "https://pilot-api.sociobot.in".to_owned(),
             )
             .await,
             auth,
@@ -440,7 +451,163 @@ mod tests {
             }
         }
         let response = limited.expect("rate limit should be enforced");
-        assert!(response.headers().get("retry-after").is_some());
+        let retry_after = response
+            .headers()
+            .get("retry-after")
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .parse::<u64>()
+            .unwrap();
+        assert!(retry_after >= 1);
+    }
+
+    #[tokio::test]
+    async fn export_uses_critical_limit_and_metrics_cover_the_operating_contract() {
+        let (app, auth, _) = test_app().await;
+        let token = auth.issue_test_token("export-limit", 600);
+        let onboard = app
+            .clone()
+            .oneshot(request(
+                "POST",
+                "/api/v1/onboarding",
+                Some(&token),
+                json!({
+                    "organization_name":"Export limit firm","locale":"en-US","time_zone":"UTC",
+                    "migrate_local_workspace":false,"local_item_count":0,"workspace":null
+                }),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(onboard.status(), StatusCode::OK);
+
+        let mut limited = None;
+        for _ in 0..8 {
+            let response = app
+                .clone()
+                .oneshot(request("GET", "/api/v1/export", Some(&token), json!({})))
+                .await
+                .unwrap();
+            if response.status() == StatusCode::TOO_MANY_REQUESTS {
+                limited = Some(response);
+                break;
+            }
+        }
+        let limited = limited.expect("export must use the five-request critical bucket");
+        assert!(
+            limited
+                .headers()
+                .get("retry-after")
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .parse::<u64>()
+                .unwrap()
+                >= 1
+        );
+
+        let metrics = app
+            .oneshot(
+                Request::builder()
+                    .uri("/metrics")
+                    .header("x-forwarded-for", "198.51.100.240")
+                    .header("authorization", "Bearer metrics-test")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(metrics.status(), StatusCode::OK);
+        let body = String::from_utf8(
+            metrics
+                .into_body()
+                .collect()
+                .await
+                .unwrap()
+                .to_bytes()
+                .to_vec(),
+        )
+        .unwrap();
+        for metric in [
+            "parts_promise_request_latency_ms_total",
+            "parts_promise_responses_total{class=\"2xx\"}",
+            "parts_promise_responses_total{class=\"4xx\"}",
+            "parts_promise_sync_conflicts_total",
+            "parts_promise_queue_depth",
+            "parts_promise_queue_oldest_age_seconds",
+            "parts_promise_notification_failures_total",
+        ] {
+            assert!(body.contains(metric), "missing {metric}");
+        }
+    }
+
+    #[tokio::test]
+    async fn owner_can_schedule_and_cancel_a_fourteen_day_deletion_hold() {
+        let (app, auth, _) = test_app().await;
+        let token = auth.issue_test_token("deletion-owner", 600);
+        let onboard = app
+            .clone()
+            .oneshot(request(
+                "POST",
+                "/api/v1/onboarding",
+                Some(&token),
+                json!({
+                    "organization_name":"Deletion Test Firm","locale":"en-US","time_zone":"UTC",
+                    "migrate_local_workspace":false,"local_item_count":0,"workspace":null
+                }),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(onboard.status(), StatusCode::OK);
+        let scheduled = app
+            .clone()
+            .oneshot(request(
+                "POST",
+                "/api/v1/account/deletion",
+                Some(&token),
+                json!({"organization_name":"Deletion Test Firm"}),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(scheduled.status(), StatusCode::OK);
+        let scheduled = json_body(scheduled).await;
+        assert_eq!(scheduled["scheduled"], true);
+        let requested =
+            chrono::DateTime::parse_from_rfc3339(scheduled["requested_at"].as_str().unwrap())
+                .unwrap();
+        let delete_after =
+            chrono::DateTime::parse_from_rfc3339(scheduled["delete_after"].as_str().unwrap())
+                .unwrap();
+        assert_eq!((delete_after - requested).num_days(), 14);
+
+        let exported = app
+            .clone()
+            .oneshot(request("GET", "/api/v1/export", Some(&token), json!({})))
+            .await
+            .unwrap();
+        let exported = json_body(exported).await;
+        assert!(exported["audit_events"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|event| event["action"] == "organization.deletion_scheduled"));
+
+        let cancelled = app
+            .clone()
+            .oneshot(request(
+                "DELETE",
+                "/api/v1/account/deletion",
+                Some(&token),
+                json!({}),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(cancelled.status(), StatusCode::OK);
+        let bootstrap = app
+            .oneshot(request("GET", "/api/v1/bootstrap", Some(&token), json!({})))
+            .await
+            .unwrap();
+        assert_eq!(json_body(bootstrap).await["deletion"]["scheduled"], false);
     }
 
     #[tokio::test]
@@ -605,11 +772,15 @@ mod tests {
         let down = include_str!("../migrations/202608290001_accounts_sync.down.sql");
         let identity_up = include_str!("../migrations/202608290002_rls_identity.up.sql");
         let identity_down = include_str!("../migrations/202608290002_rls_identity.down.sql");
+        let deletion_up = include_str!("../migrations/202608290003_deletion_hold.up.sql");
+        let deletion_down = include_str!("../migrations/202608290003_deletion_hold.down.sql");
         assert!(up.contains("ENABLE ROW LEVEL SECURITY"));
         assert!(up.contains("current_setting('app.organization_id'"));
         assert!(identity_up.contains("current_setting('app.user_oid'"));
         assert!(identity_up.contains("current_setting('app.user_email'"));
         assert!(identity_down.contains("CREATE POLICY fpp_memberships_tenant"));
+        assert!(deletion_up.contains("INTERVAL '14 days'"));
+        assert!(deletion_down.contains("DROP COLUMN IF EXISTS deletion_scheduled_for"));
         for table in [
             "fpp_users",
             "fpp_organizations",

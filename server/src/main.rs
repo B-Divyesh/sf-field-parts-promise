@@ -44,6 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "discovery_unavailable"
     };
     let (metrics_token, metrics_token_source) = load_or_create_metrics_token()?;
+    let (billing_base_url, billing_base_url_source) = billing_base_url();
 
     let address = SocketAddr::from(([0, 0, 0, 0], port));
     let listener = TcpListener::bind(address).await?;
@@ -55,18 +56,33 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         build_sha_source,
         database_source,
         metrics_token_source,
+        billing_base_url_source,
         auth_source,
         "Parts Promise is listening"
     );
 
     axum::serve(
         listener,
-        parts_promise_api::app(build_sha, database, auth, metrics_token).await,
+        parts_promise_api::app(build_sha, database, auth, metrics_token, billing_base_url)
+            .await
+            .into_make_service_with_connect_info::<SocketAddr>(),
     )
     .with_graceful_shutdown(shutdown_signal())
     .await?;
 
     Ok(())
+}
+
+fn billing_base_url() -> (String, &'static str) {
+    match env::var("SOCIOBOT_BILLING_BASE_URL").as_deref() {
+        Ok("https://pilot-api.sociobot.in") => {
+            ("https://pilot-api.sociobot.in".to_owned(), "supplied_pilot")
+        }
+        Ok("https://api.sociobot.in") => {
+            ("https://api.sociobot.in".to_owned(), "supplied_production")
+        }
+        _ => ("https://api.sociobot.in".to_owned(), "production_default"),
+    }
 }
 
 async fn load_database_config() -> (String, Option<String>, &'static str) {

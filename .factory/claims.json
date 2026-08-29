@@ -140,6 +140,55 @@
     "sandbox": "clean test database; send the same UUID operation twice and assert one version increase plus a replayed response"
   },
   {
+    "id": "offline-signed-in-sync",
+    "claim": "A signed-in change made offline stays in a durable device outbox, survives reload, retries on reconnect, and backs off after a temporary sync failure.",
+    "where": "offline plate, jobs sync status, README",
+    "test": "npm run test:e2e -- --grep @claim:offline-signed-in-sync",
+    "sandbox": "authenticated test firm in a fresh browser context; go offline, add a job, assert one IndexedDB outbox operation, reload offline, reconnect, assert the server receives the job, inject one 503, and assert automatic retry without another user action"
+  },
+  {
+    "id": "sync-conflict-resolution",
+    "claim": "A stale signed-in quantity revision opens an explicit conflict and cannot overwrite the shared quantity evidence.",
+    "where": "shared workspace conflict sheet and README",
+    "test": "npm run test:e2e -- --grep @claim:sync-conflict-resolution",
+    "sandbox": "authenticated test firm; queue an offline required quantity, advance the server revision, reconnect, assert the two-revision conflict, no device-overwrite action, and unchanged server data"
+  },
+  {
+    "id": "invitation-email-activation",
+    "claim": "A recorded team invitation activates only when its matching verified Entra email signs in.",
+    "where": "team settings and README",
+    "test": "npm run test:e2e -- --grep @claim:invitation-email-activation",
+    "sandbox": "clean test firm; invite one email, assert a different signed token remains unassigned, then assert the matching signed token receives the invited technician role"
+  },
+  {
+    "id": "account-service-boundaries",
+    "claim": "Signed-in workspace data uses this product API, and sign-in redirects to the shared Sociobot Microsoft Entra tenant.",
+    "where": "privacy page and README",
+    "test": "npm run test:e2e -- --grep @claim:account-service-boundaries",
+    "sandbox": "fresh authenticated context with request logging; open account data controls and assert same-origin requests, then use a signed-out context and assert the sign-in request targets the configured Entra tenant"
+  },
+  {
+    "id": "audit-log-recording",
+    "claim": "Firm onboarding, invitation, and workspace sync actions appear in the firm's exported audit events.",
+    "where": "privacy page, data controls, and README",
+    "test": "npm run test:e2e -- --grep @claim:audit-log-recording",
+    "sandbox": "clean test firm; onboard, invite, sync, export, and assert the three named audit event types"
+  },
+  {
+    "id": "firm-deletion-hold",
+    "claim": "A firm owner can schedule deletion with a 14-day hold and cancel it before deletion.",
+    "where": "data controls, privacy page, and README",
+    "test": "npm run test:e2e -- --grep @claim:firm-deletion-hold",
+    "sandbox": "clean owner test firm; schedule deletion with the exact firm name, assert the 14-day interval, cancel it, and assert bootstrap reports no scheduled deletion"
+  },
+  {
+    "id": "response-policy",
+    "claim": "Export uses a five-request critical bucket with a positive Retry-After, and protected metrics expose latency, status, conflict, queue-age, and notification signals.",
+    "where": "README operations section and milestone handoff",
+    "test": "npm run test:e2e -- --grep @claim:response-policy",
+    "sandbox": "clean test firm; exceed the export burst, assert 429 and Retry-After >= 1, authenticate to metrics, and assert every documented operations series"
+  },
+  {
     "id": "subscription-checkout",
     "claim": "If the recurring Sociobot test product is unavailable, checkout stops before any charge and explains the operator action.",
     "where": "billing settings",

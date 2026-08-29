@@ -13,19 +13,15 @@ describe('container release contract', () => {
     expect(dockerfile).not.toMatch(/COPY\s+\.git|\bgit\s+/);
   });
 
-  it('builds the runtime binary before the timed browser claim', () => {
+  it('allows a clean Rust build to finish before browser claims start', () => {
     const config = readFileSync('playwright.config.ts', 'utf8');
-    const setup = readFileSync('e2e/global-setup.ts', 'utf8');
     const claims = readFileSync('e2e/claims.spec.ts', 'utf8');
     const containerClaim = claims.slice(
       claims.indexOf('@claim:container-runtime')
     );
 
-    expect(config).toContain("globalSetup: './e2e/global-setup.ts'");
-    expect(setup).toContain("'cargo'");
-    expect(setup).toContain(
-      "'build', '--manifest-path', 'server/Cargo.toml', '--locked'"
-    );
+    expect(config).toContain('timeout: 600_000');
+    expect(config).not.toContain('globalSetup:');
     expect(containerClaim).toContain('test.setTimeout(15_000)');
     expect(containerClaim).not.toContain('cargo build');
     expect(containerClaim).not.toContain("'cargo'");
@@ -55,7 +51,7 @@ describe('service worker update contract', () => {
   it('uses a new cache and checks the network before cached documents', () => {
     const worker = readFileSync('public/sw.js', 'utf8');
 
-    expect(worker).toContain("const CACHE = 'parts-promise-shell-v4'");
+    expect(worker).toContain("const CACHE = 'parts-promise-shell-v5'");
     expect(worker).toContain("request.mode === 'navigate'");
     expect(worker.indexOf('await fetch(request)')).toBeLessThan(
       worker.indexOf("request.mode === 'navigate' ? '/' : request")

@@ -42,6 +42,15 @@
     saveWorkspace,
     type WorkspaceMode
   } from './lib/storage/workspace-db';
+  import {
+    clearCloudOperation,
+    hasQuantityConflict,
+    queueCloudWorkspace,
+    readCloudOperation,
+    readLatestCloudOperation,
+    rebaseCloudOperation,
+    type CloudOperation
+  } from './lib/storage/cloud-outbox';
 
   type Page =
     | 'home'
@@ -51,6 +60,7 @@
     | 'onboarding'
     | 'team'
     | 'billing'
+    | 'data'
     | 'privacy'
     | 'terms'
     | 'not-found';
@@ -84,7 +94,30 @@
     version?: number;
     billing?: BillingState;
     members: TeamMember[];
+    deletion?: {
+      scheduled: boolean;
+      requested_at?: string;
+      delete_after?: string;
+    };
   };
+
+  type SyncConflict = {
+    operation: CloudOperation;
+    sharedWorkspace: Workspace;
+    sharedVersion: number;
+    quantityChanged: boolean;
+  };
+
+  class ApiRequestError extends Error {
+    readonly status: number;
+    readonly code: string;
+
+    constructor(message: string, status: number, code: string) {
+      super(message);
+      this.status = status;
+      this.code = code;
+    }
+  }
 
   let currentPath = '/';
   let demo = false;
@@ -123,6 +156,13 @@
   let inviteRole = 'technician';
   let teamMessage = '';
   let billingMessage = '';
+  let dataMessage = '';
+  let deletionConfirmation = '';
+  let queuedCount = 0;
+  let syncInFlight = false;
+  let syncConflict: SyncConflict | null = null;
+  let syncRetryAttempt = 0;
+  let syncRetryTimer: number | undefined;
 
   type HistoryPosition = { scrollX: number; scrollY: number };
 
@@ -172,7 +212,19 @@
   onMount(() => {
     const updateRoute = (event: PopStateEvent) =>
       void syncRoute(true, historyPosition(event.state));
-    const updateOnline = () => (online = navigator.onLine);
+    const updateOnline = () => {
+      online = navigator.onLine;
+      if (online) {
+        if (idToken && !cloud)
+          void loadCloudBootstrap().catch((error) => {
+            syncNotice =
+              error instanceof Error
+                ? error.message
+                : 'The shared workspace could not reconnect.';
+          });
+        else void flushCloudOutbox();
+      }
+    };
     let scrollFrame: number | undefined;
     const recordScroll = () => {
       if (scrollFrame !== undefined) return;
@@ -202,6 +254,7 @@
       window.removeEventListener('online', updateOnline);
       window.removeEventListener('offline', updateOnline);
       if (scrollFrame !== undefined) cancelAnimationFrame(scrollFrame);
+      if (syncRetryTimer !== undefined) window.clearTimeout(syncRetryTimer);
       history.scrollRestoration = previousScrollRestoration;
     };
   });
@@ -215,6 +268,7 @@
     if (path === '/onboarding') return 'onboarding';
     if (path === '/settings/team') return 'team';
     if (path === '/settings/billing') return 'billing';
+    if (path === '/settings/data') return 'data';
     if (path === '/privacy') return 'privacy';
     if (path === '/terms') return 'terms';
     return 'not-found';
@@ -275,6 +329,12 @@
       return {
         title: 'Billing — Parts Promise',
         description: 'Workshop plan and technician seat details.',
+        canonical
+      };
+    if (currentPage === 'data')
+      return {
+        title: 'Data controls — Parts Promise',
+        description: 'Export or schedule deletion of firm data.',
         canonical
       };
     if (currentPage === 'privacy')
@@ -339,7 +399,11 @@
 
   async function initialize() {
     await loadCurrentWorkspace();
-    if (!demo) await restoreAccount();
+    if (!demo) {
+      const pending = await readLatestCloudOperation();
+      queuedCount = pending ? 1 : 0;
+      await restoreAccount();
+    }
   }
 
   async function loadCurrentWorkspace() {
@@ -363,8 +427,20 @@
     try {
       await saveWorkspace(mode(), next);
       toast = message;
-      if (!demo && idToken && cloud && !cloud.onboarding_required)
-        await pushCloudWorkspace(next);
+      if (
+        !demo &&
+        idToken &&
+        cloud?.organization_id &&
+        !cloud.onboarding_required &&
+        cloudVersion !== null
+      ) {
+        await queueCloudWorkspace(cloud.organization_id, cloudVersion, next);
+        queuedCount = 1;
+        syncNotice = online
+          ? 'Change queued for the shared workspace.'
+          : '1 change queued. It will retry when this device reconnects.';
+        if (online) await flushCloudOutbox();
+      }
     } catch (error) {
       storageError =
         error instanceof Error
@@ -441,9 +517,11 @@
     });
     const body = await response.json().catch(() => ({}));
     if (!response.ok)
-      throw new Error(
+      throw new ApiRequestError(
         [body.message, body.action].filter(Boolean).join(' ') ||
-          'The shared workspace request failed. Try again.'
+          'The shared workspace request failed. Try again.',
+        response.status,
+        body.code ?? 'request_failed'
       );
     return body;
   }
@@ -453,28 +531,126 @@
     cloud = next;
     cloudVersion = next.version ?? null;
     if (!next.onboarding_required && next.workspace) {
-      workspace = next.workspace;
-      await saveWorkspace('live', next.workspace);
+      const pending = next.organization_id
+        ? await readCloudOperation(next.organization_id)
+        : undefined;
+      queuedCount = pending ? 1 : 0;
+      workspace = pending?.workspace ?? next.workspace;
+      await saveWorkspace('live', workspace);
+      if (pending && online) await flushCloudOutbox();
     }
   }
 
-  async function pushCloudWorkspace(next: Workspace) {
-    if (cloudVersion === null) return;
+  async function flushCloudOutbox() {
+    if (
+      syncInFlight ||
+      !online ||
+      !idToken ||
+      !cloud?.organization_id ||
+      cloudVersion === null ||
+      syncConflict
+    )
+      return;
+    const operation = await readCloudOperation(cloud.organization_id);
+    if (!operation) {
+      queuedCount = 0;
+      syncRetryAttempt = 0;
+      return;
+    }
+    syncInFlight = true;
     syncNotice = 'Sending changes…';
     try {
       const result = await apiRequest('/api/v1/sync', {
         method: 'POST',
         body: JSON.stringify({
-          idempotency_key: crypto.randomUUID(),
-          expected_version: cloudVersion,
-          workspace: next
+          idempotency_key: operation.idempotencyKey,
+          expected_version: operation.expectedVersion,
+          workspace: operation.workspace
         })
       });
       cloudVersion = result.version;
+      workspace = result.workspace;
+      await saveWorkspace('live', result.workspace);
+      await clearCloudOperation(cloud.organization_id);
+      queuedCount = 0;
+      syncRetryAttempt = 0;
+      if (syncRetryTimer !== undefined) window.clearTimeout(syncRetryTimer);
+      syncRetryTimer = undefined;
       syncNotice = 'Shared workspace up to date.';
     } catch (error) {
-      syncNotice = `${error instanceof Error ? error.message : 'Sync failed.'} Your change stays on this device.`;
+      if (
+        error instanceof ApiRequestError &&
+        error.code === 'version_conflict'
+      ) {
+        const shared = (await apiRequest(
+          '/api/v1/bootstrap'
+        )) as CloudBootstrap;
+        if (shared.workspace && shared.version !== undefined) {
+          cloud = shared;
+          cloudVersion = shared.version;
+          syncConflict = {
+            operation,
+            sharedWorkspace: shared.workspace,
+            sharedVersion: shared.version,
+            quantityChanged: hasQuantityConflict(
+              operation.workspace,
+              shared.workspace
+            )
+          };
+          syncNotice =
+            'This device and the shared workspace changed. Choose a safe revision below.';
+        }
+      } else {
+        syncNotice = `${error instanceof Error ? error.message : 'Sync failed.'} 1 change stays queued on this device.`;
+        scheduleCloudRetry();
+      }
+    } finally {
+      syncInFlight = false;
     }
+  }
+
+  function scheduleCloudRetry() {
+    if (!online || syncConflict || syncRetryTimer !== undefined) return;
+    const baseDelay = Math.min(30_000, 1_000 * 2 ** syncRetryAttempt);
+    const jitter = Math.floor(Math.random() * 500);
+    syncRetryAttempt = Math.min(syncRetryAttempt + 1, 5);
+    syncRetryTimer = window.setTimeout(() => {
+      syncRetryTimer = undefined;
+      void flushCloudOutbox();
+    }, baseDelay + jitter);
+  }
+
+  async function useSharedRevision() {
+    if (!syncConflict || !cloud?.organization_id) return;
+    workspace = syncConflict.sharedWorkspace;
+    cloudVersion = syncConflict.sharedVersion;
+    await saveWorkspace('live', syncConflict.sharedWorkspace);
+    await clearCloudOperation(cloud.organization_id);
+    queuedCount = 0;
+    syncConflict = null;
+    syncNotice = 'The shared revision is now on this device.';
+    if (page === 'job') await navigate('/jobs');
+  }
+
+  async function sendDeviceRevision() {
+    if (!syncConflict || syncConflict.quantityChanged) return;
+    await rebaseCloudOperation(
+      syncConflict.operation,
+      syncConflict.sharedVersion
+    );
+    cloudVersion = syncConflict.sharedVersion;
+    syncConflict = null;
+    await flushCloudOutbox();
+  }
+
+  function downloadConflictingRevision() {
+    if (!syncConflict) return;
+    downloadText(
+      'parts-promise-device-conflict.json',
+      `${JSON.stringify(createWorkspaceBackup(syncConflict.operation.workspace), null, 2)}\n`,
+      'application/json'
+    );
+    toast = 'The device revision was downloaded.';
   }
 
   async function submitOnboarding() {
@@ -535,6 +711,63 @@
     } catch (error) {
       billingMessage =
         error instanceof Error ? error.message : 'Checkout could not start.';
+    }
+  }
+
+  async function exportFirmData() {
+    dataMessage = '';
+    try {
+      const exported = await apiRequest('/api/v1/export');
+      downloadText(
+        `parts-promise-firm-export-${new Date().toISOString().slice(0, 10)}.json`,
+        `${JSON.stringify(exported, null, 2)}\n`,
+        'application/json'
+      );
+      dataMessage = 'Firm data export downloaded.';
+    } catch (error) {
+      dataMessage =
+        error instanceof Error ? error.message : 'Firm export failed.';
+    }
+  }
+
+  async function scheduleFirmDeletion() {
+    dataMessage = '';
+    if (!cloud?.organization_name) return;
+    if (deletionConfirmation !== cloud.organization_name) {
+      dataMessage = 'Type the firm name exactly before scheduling deletion.';
+      return;
+    }
+    try {
+      const deletion = await apiRequest('/api/v1/account/deletion', {
+        method: 'POST',
+        body: JSON.stringify({ organization_name: deletionConfirmation })
+      });
+      cloud = { ...cloud, deletion };
+      deletionConfirmation = '';
+      dataMessage = `Firm deletion is scheduled for ${formatTime(deletion.delete_after)}. You can cancel it before then.`;
+    } catch (error) {
+      dataMessage =
+        error instanceof Error
+          ? error.message
+          : 'Deletion could not be scheduled.';
+    }
+  }
+
+  async function cancelFirmDeletion() {
+    dataMessage = '';
+    try {
+      await apiRequest('/api/v1/account/deletion', { method: 'DELETE' });
+      if (cloud)
+        cloud = {
+          ...cloud,
+          deletion: { scheduled: false }
+        };
+      dataMessage = 'Firm deletion was cancelled.';
+    } catch (error) {
+      dataMessage =
+        error instanceof Error
+          ? error.message
+          : 'Deletion could not be cancelled.';
     }
   }
 
@@ -1186,14 +1419,52 @@
 
 {#if !online}
   <aside class="offline-plate" role="status">
-    Offline — changes are kept on this device.
+    Offline — changes are kept on this device.{queuedCount > 0
+      ? ` ${queuedCount} change is queued for reconnect.`
+      : ''}
   </aside>
+{:else if syncNotice}
+  <aside class="offline-plate" role="status">{syncNotice}</aside>
 {/if}
 
 <main id="main" tabindex="-1">
   <p class="sr-only" aria-live="polite" aria-atomic="true">
     {routeAnnouncement || metadata.title}
   </p>
+
+  {#if syncConflict}
+    <section class="conflict-sheet" aria-labelledby="sync-conflict-title">
+      <p class="drawing-label">Two revisions need a choice</p>
+      <h2 id="sync-conflict-title">Resolve the shared workspace conflict</h2>
+      <p>
+        This device has {syncConflict.operation.workspace.jobs.length} jobs. The shared
+        revision has {syncConflict.sharedWorkspace.jobs.length} jobs.
+      </p>
+      {#if syncConflict.quantityChanged}<p class="form-error" role="alert">
+          Quantity evidence differs. Parts Promise will not overwrite it.
+          Download this device’s revision before using the shared revision.
+        </p>{:else}<p>
+          Quantity evidence matches. You may send this device’s revision after
+          reviewing both counts.
+        </p>{/if}
+      <div class="dialog-actions">
+        <button
+          class="button secondary"
+          type="button"
+          on:click={downloadConflictingRevision}
+          >Download device revision</button
+        >{#if !syncConflict.quantityChanged}<button
+            class="button secondary"
+            type="button"
+            on:click={sendDeviceRevision}>Send device revision</button
+          >{/if}<button
+          class="button"
+          type="button"
+          on:click={useSharedRevision}>Use shared revision</button
+        >
+      </div>
+    </section>
+  {/if}
 
   {#if storageError}
     <section class="error-sheet" role="alert">
@@ -1425,6 +1696,11 @@
           on:click={(event) => follow(event, '/settings/billing')}
           >Review plan and seats</a
         >
+        <a
+          href="/settings/data"
+          on:click={(event) => follow(event, '/settings/data')}
+          >Export or delete firm data</a
+        >
       {/if}
     </section>
   {:else if page === 'billing'}
@@ -1483,6 +1759,65 @@
         </p>
       {/if}
     </section>
+  {:else if page === 'data'}
+    <section class="account-sheet">
+      <p class="drawing-label">Data controls</p>
+      <h1 tabindex="-1">Export or delete firm data</h1>
+      {#if !idToken}
+        <p>Sign in to manage server-held firm data.</p>
+        <button class="button" type="button" on:click={signIn}
+          >Sign in with Sociobot</button
+        >
+      {:else if !cloud || cloud.onboarding_required}
+        <p>Create a firm workspace before managing firm data.</p>
+        <a
+          class="button"
+          href="/onboarding"
+          on:click={(event) => follow(event, '/onboarding')}>Set up your firm</a
+        >
+      {:else}
+        <h2>Download firm data</h2>
+        <p>
+          The JSON export includes the workspace, team, billing state, and audit
+          events. Export remains available if payment stops.
+        </p>
+        <button class="button secondary" type="button" on:click={exportFirmData}
+          >Export firm data</button
+        >
+        <h2>Delete this firm</h2>
+        {#if cloud.deletion?.scheduled}
+          <p role="status">
+            Deletion is scheduled for {formatTime(
+              cloud.deletion.delete_after!
+            )}. Records remain recoverable until then.
+          </p>
+          {#if cloud.role === 'owner'}<button
+              class="button secondary"
+              type="button"
+              on:click={cancelFirmDeletion}>Cancel firm deletion</button
+            >{/if}
+        {:else if cloud.role === 'owner'}
+          <p>
+            Scheduling starts a 14-day hold. Type <strong
+              >{cloud.organization_name}</strong
+            >
+            to confirm. You can cancel during the hold.
+          </p>
+          <form on:submit|preventDefault={scheduleFirmDeletion}>
+            <label
+              >Firm name<input
+                bind:value={deletionConfirmation}
+                required
+              /></label
+            >
+            <button class="button danger" type="submit"
+              >Schedule firm deletion</button
+            >
+          </form>
+        {:else}<p>Only the firm owner can schedule deletion.</p>{/if}
+        {#if dataMessage}<p role="status">{dataMessage}</p>{/if}
+      {/if}
+    </section>
   {:else if page === 'jobs'}
     <section class="page-heading">
       <p class="drawing-label">
@@ -1499,8 +1834,8 @@
         </p>{:else if sharedReadOnly}<p class="account-callout" role="status">
           Viewer access can review and export this workspace but cannot change
           it.
-        </p>{:else if syncNotice}<p class="account-callout" role="status">
-          {syncNotice}
+        </p>{:else if queuedCount > 0}<p class="account-callout" role="status">
+          {`${queuedCount} change queued on this device.`}
         </p>{/if}
     </section>
     <div class="jobs-toolbar">
@@ -1753,6 +2088,13 @@
       <p>
         Export a versioned backup before moving devices or clearing browser
         data. Browser site-data controls remove local records.
+      </p>
+      <p>
+        Signed-in firms can export server-held data and schedule a 14-day
+        deletion hold from <a
+          href="/settings/data"
+          on:click={(event) => follow(event, '/settings/data')}>Data controls</a
+        >.
       </p>
     </section>
   {:else if page === 'terms'}

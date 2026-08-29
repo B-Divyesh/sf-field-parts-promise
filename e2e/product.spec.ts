@@ -13,6 +13,7 @@ test('public and app routes have no serious accessibility findings', async ({
       '/onboarding',
       '/settings/team',
       '/settings/billing',
+      '/settings/data',
       '/privacy',
       '/terms',
       '/not-on-this-drawing'
@@ -95,6 +96,12 @@ test('each route owns one correct metadata set', async ({ page }) => {
       title: 'Billing — Parts Promise',
       description: 'Workshop plan and technician seat details.',
       canonical: 'https://field-parts-promise.sociobot.in/settings/billing'
+    },
+    {
+      path: '/settings/data',
+      title: 'Data controls — Parts Promise',
+      description: 'Export or schedule deletion of firm data.',
+      canonical: 'https://field-parts-promise.sociobot.in/settings/data'
     },
     {
       path: '/privacy',
@@ -588,5 +595,5 @@ test('the current service worker controls the app without a pending update', asy
   expect(state.controlled).toBe(true);
   expect(state.installing).toBe(false);
   expect(state.waiting).toBe(false);
-  expect(state.caches).toEqual(['parts-promise-shell-v4']);
+  expect(state.caches).toEqual(['parts-promise-shell-v5']);
 });

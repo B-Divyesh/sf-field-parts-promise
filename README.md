@@ -12,11 +12,13 @@ The demo uses the separate `parts-promise-demo-v1` browser database. It never si
 
 ## Accounts, sync, and billing
 
-Sign-in uses the shared Sociobot Microsoft Entra tenant. Firm records use PostgreSQL in production and are separated by membership and row-level security. A saved firm workspace appears on another signed-in device. Repeated sync requests with the same operation ID apply once.
+Sign-in uses the shared Sociobot Microsoft Entra tenant. Firm records use PostgreSQL in production and are separated by membership and row-level security. A saved firm workspace appears on another signed-in device. Repeated sync requests with the same operation ID apply once. Offline signed-in edits stay in the `parts-promise-cloud-v1` IndexedDB outbox. They retry after reconnect and back off after a temporary failure.
+
+If two devices change the same revision, the app shows both record counts. Quantity differences cannot be overwritten from the stale device. The user can download that device revision before choosing the shared revision.
 
 Owners can record invitations by work email. The invitation becomes active when that email signs in. Technicians count as $8 monthly seats; the owner does not. The Workshop base is $39 per month.
 
-The recurring product is not registered in the Sociobot test gateway yet. The billing screen checks the live test gateway and explains that no charge was made when registration is missing. It does not call Dodo directly or simulate payment. Existing cloud records and export remain available when a recorded plan is unpaid; new cloud writes stop.
+The recurring product is not registered in either Sociobot gateway yet. Production uses `api.sociobot.in`; browser tests explicitly use `pilot-api.sociobot.in`. The billing screen explains that no charge was made when registration is missing. It does not call Dodo directly or simulate payment. Existing cloud records and export remain available when a recorded plan is unpaid; new cloud writes stop.
 
 ## Run and verify
 
@@ -41,7 +43,9 @@ npm run build
 
 Local and demo records use IndexedDB. **Export workspace** downloads a versioned JSON backup. **Import workspace** previews JSON or CSV and reports invalid rows before saving.
 
-The Rust server exposes authenticated routes under `/api/v1`, `/health`, and protected `/metrics`. It validates Entra issuer, audience, tenant, signature, and token time. Requests derive the firm from the signed-in user's stable Entra object ID. Read, write, account, and payment paths have IP-based limits with `Retry-After` responses.
+The Rust server exposes authenticated routes under `/api/v1`, `/health`, and protected `/metrics`. It validates Entra issuer, audience, tenant, signature, and token time. Requests derive the firm from the signed-in user's stable Entra object ID. Read, write, account, and payment paths have IP-based limits with positive `Retry-After` responses. Export uses the five-request critical bucket. Metrics report request latency/status, sync conflicts, queue age, and notification failures.
+
+The signed-in data page exports the firm workspace, team, billing state, and audit events. Owners can schedule firm deletion with a 14-day recovery hold and cancel it during that hold.
 
 Production obtains separate PostgreSQL runtime and migration URLs from the factory Key Vault through managed identity. A clean container with only `PORT` uses a local SQLite fallback, so it still starts without secrets. See [`server/migrations/README.md`](server/migrations/README.md) for the reversible schema.
 

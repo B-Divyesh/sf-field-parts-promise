@@ -11,6 +11,11 @@ const scopes = ['openid', 'profile', 'email'];
 
 let client: PublicClientApplication | undefined;
 
+function e2eToken(): string {
+  if (import.meta.env.VITE_E2E_AUTH !== '1') return '';
+  return sessionStorage.getItem('parts-promise-e2e-token') ?? '';
+}
+
 async function msal(): Promise<PublicClientApplication> {
   if (client) return client;
   client = new PublicClientApplication({
@@ -38,6 +43,15 @@ export async function restoreCiamSession(): Promise<{
   account: AccountInfo | null;
   token: string;
 }> {
+  const testToken = e2eToken();
+  if (testToken)
+    return {
+      account: {
+        name: 'Playwright account',
+        username: 'playwright@example.test'
+      } as AccountInfo,
+      token: testToken
+    };
   const instance = await msal();
   const result = await instance.handleRedirectPromise();
   if (result?.account) instance.setActiveAccount(result.account);
@@ -50,6 +64,8 @@ export async function restoreCiamSession(): Promise<{
 }
 
 export async function currentCiamToken(): Promise<string> {
+  const testToken = e2eToken();
+  if (testToken) return testToken;
   const instance = await msal();
   const account = selectedAccount(instance);
   if (!account) return '';
@@ -63,6 +79,11 @@ export async function signInWithCiam(): Promise<void> {
 }
 
 export async function signOutFromCiam(): Promise<void> {
+  if (e2eToken()) {
+    sessionStorage.removeItem('parts-promise-e2e-token');
+    window.location.assign('/');
+    return;
+  }
   const instance = await msal();
   const account = selectedAccount(instance);
   await instance.logoutRedirect({

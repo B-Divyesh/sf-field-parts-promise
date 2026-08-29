@@ -78,6 +78,14 @@ pub struct Bootstrap {
     pub version: Option<i64>,
     pub billing: Option<BillingStatus>,
     pub members: Vec<Member>,
+    pub deletion: Option<DeletionStatus>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct DeletionStatus {
+    pub scheduled: bool,
+    pub requested_at: Option<String>,
+    pub delete_after: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -108,6 +116,11 @@ pub struct SyncResult {
 pub struct InviteInput {
     pub email: String,
     pub role: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct DeletionInput {
+    pub organization_name: String,
 }
 
 #[derive(Clone, Debug)]
@@ -148,6 +161,12 @@ impl Database {
             .await?;
         if kind == DatabaseKind::Sqlite {
             sqlx::raw_sql(SQLITE_SCHEMA).execute(&pool).await?;
+            for statement in [
+                "ALTER TABLE fpp_organizations ADD COLUMN deletion_requested_at TEXT",
+                "ALTER TABLE fpp_organizations ADD COLUMN deletion_scheduled_for TEXT",
+            ] {
+                let _ = sqlx::query(statement).execute(&pool).await;
+            }
         }
         Ok(Self { pool, kind })
     }
@@ -365,9 +384,16 @@ impl Database {
                 version: None,
                 billing: None,
                 members: vec![],
+                deletion: None,
             });
         };
-        let query = self.sql("SELECT o.name,o.locale,o.time_zone,w.version,CAST(w.workspace AS TEXT) AS workspace FROM fpp_organizations o JOIN fpp_workspaces w ON w.organization_id=o.id WHERE o.id=?");
+        let deletion_requested = if self.kind == DatabaseKind::Postgres {
+            "o.deletion_requested_at::text AS deletion_requested_at,o.deletion_scheduled_for::text AS deletion_scheduled_for"
+        } else {
+            "o.deletion_requested_at,o.deletion_scheduled_for"
+        };
+        let query_source = format!("SELECT o.name,o.locale,o.time_zone,{deletion_requested},w.version,CAST(w.workspace AS TEXT) AS workspace FROM fpp_organizations o JOIN fpp_workspaces w ON w.organization_id=o.id WHERE o.id=?");
+        let query = self.sql(&query_source);
         let row = sqlx::query(&query)
             .bind(&membership.organization_id)
             .fetch_one(&mut *tx)
@@ -392,6 +418,11 @@ impl Database {
             version: Some(row.get("version")),
             billing: Some(billing),
             members,
+            deletion: Some(DeletionStatus {
+                scheduled: row.try_get::<String, _>("deletion_scheduled_for").is_ok(),
+                requested_at: row.try_get("deletion_requested_at").ok(),
+                delete_after: row.try_get("deletion_scheduled_for").ok(),
+            }),
         })
     }
 
@@ -633,19 +664,165 @@ impl Database {
             .resolve_membership(&mut tx, identity)
             .await?
             .ok_or(DbError::NotOnboarded)?;
-        let query = if self.kind == DatabaseKind::Postgres {
-            "SELECT workspace::text AS workspace FROM fpp_workspaces WHERE organization_id=?"
+        let workspace_query = if self.kind == DatabaseKind::Postgres {
+            "SELECT version,workspace::text AS workspace,updated_at::text AS updated_at FROM fpp_workspaces WHERE organization_id=?"
         } else {
-            "SELECT workspace FROM fpp_workspaces WHERE organization_id=?"
+            "SELECT version,workspace,updated_at FROM fpp_workspaces WHERE organization_id=?"
         };
-        let text: String = sqlx::query(&self.sql(query))
+        let workspace_row = sqlx::query(&self.sql(workspace_query))
             .bind(&membership.organization_id)
             .fetch_one(&mut *tx)
-            .await?
-            .get("workspace");
-        let workspace = serde_json::from_str(&text).map_err(|_| DbError::InvalidWorkspace)?;
+            .await?;
+        let text: String = workspace_row.get("workspace");
+        let workspace: Value =
+            serde_json::from_str(&text).map_err(|_| DbError::InvalidWorkspace)?;
+        let organization = sqlx::query(
+            &self.sql("SELECT name,locale,time_zone FROM fpp_organizations WHERE id=?"),
+        )
+        .bind(&membership.organization_id)
+        .fetch_one(&mut *tx)
+        .await?;
+        let members = self
+            .members_for(&mut tx, &membership.organization_id)
+            .await?;
+        let audit_query = if self.kind == DatabaseKind::Postgres {
+            "SELECT action,object_type,object_id,summary::text AS summary,created_at::text AS created_at FROM fpp_audit_events WHERE organization_id=? ORDER BY created_at,id"
+        } else {
+            "SELECT action,object_type,object_id,summary,created_at FROM fpp_audit_events WHERE organization_id=? ORDER BY created_at,id"
+        };
+        let audit_rows = sqlx::query(&self.sql(audit_query))
+            .bind(&membership.organization_id)
+            .fetch_all(&mut *tx)
+            .await?;
+        let audit_events = audit_rows
+            .into_iter()
+            .map(|row| {
+                let summary: String = row.get("summary");
+                json!({
+                    "action":row.get::<String,_>("action"),
+                    "object_type":row.get::<String,_>("object_type"),
+                    "object_id":row.get::<String,_>("object_id"),
+                    "summary":serde_json::from_str::<Value>(&summary).unwrap_or_else(|_| json!({})),
+                    "created_at":row.get::<String,_>("created_at")
+                })
+            })
+            .collect::<Vec<_>>();
+        let billing = self
+            .billing_for(&mut tx, &membership.organization_id)
+            .await?;
         tx.commit().await?;
-        Ok(workspace)
+        Ok(json!({
+            "schema_version":1,
+            "organization":{
+                "name":organization.get::<String,_>("name"),
+                "locale":organization.get::<String,_>("locale"),
+                "time_zone":organization.get::<String,_>("time_zone")
+            },
+            "workspace_version":workspace_row.get::<i64,_>("version"),
+            "workspace_updated_at":workspace_row.get::<String,_>("updated_at"),
+            "workspace":workspace,
+            "members":members,
+            "billing":billing,
+            "audit_events":audit_events
+        }))
+    }
+
+    pub async fn schedule_deletion(
+        &self,
+        identity: &Identity,
+        input: &DeletionInput,
+    ) -> Result<DeletionStatus, DbError> {
+        let mut tx = self.pool.begin().await?;
+        let membership = self
+            .resolve_membership(&mut tx, identity)
+            .await?
+            .ok_or(DbError::NotOnboarded)?;
+        if membership.role != "owner" {
+            return Err(DbError::OwnerRequired);
+        }
+        let organization: String =
+            sqlx::query(&self.sql("SELECT name FROM fpp_organizations WHERE id=?"))
+                .bind(&membership.organization_id)
+                .fetch_one(&mut *tx)
+                .await?
+                .get("name");
+        if input.organization_name.trim() != organization {
+            return Err(DbError::InvalidWorkspace);
+        }
+        let requested_at = Utc::now();
+        let delete_after = requested_at + chrono::Duration::days(14);
+        let requested_text = requested_at.to_rfc3339();
+        let delete_text = delete_after.to_rfc3339();
+        let update_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("UPDATE fpp_organizations SET deletion_requested_at=CAST(? AS TIMESTAMPTZ),deletion_scheduled_for=CAST(? AS TIMESTAMPTZ),updated_at=CAST(? AS TIMESTAMPTZ) WHERE id=?")
+        } else {
+            self.sql("UPDATE fpp_organizations SET deletion_requested_at=?,deletion_scheduled_for=?,updated_at=? WHERE id=?")
+        };
+        sqlx::query(&update_sql)
+            .bind(&requested_text)
+            .bind(&delete_text)
+            .bind(&requested_text)
+            .bind(&membership.organization_id)
+            .execute(&mut *tx)
+            .await?;
+        let audit_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'organization.deletion_scheduled','organization',?,CAST(? AS JSONB),CAST(? AS TIMESTAMPTZ))")
+        } else {
+            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'organization.deletion_scheduled','organization',?,?,?)")
+        };
+        sqlx::query(&audit_sql)
+            .bind(Uuid::new_v4().to_string())
+            .bind(&membership.organization_id)
+            .bind(&membership.user_id)
+            .bind(&membership.organization_id)
+            .bind(json!({"delete_after":delete_text}).to_string())
+            .bind(&requested_text)
+            .execute(&mut *tx)
+            .await?;
+        tx.commit().await?;
+        Ok(DeletionStatus {
+            scheduled: true,
+            requested_at: Some(requested_text),
+            delete_after: Some(delete_text),
+        })
+    }
+
+    pub async fn cancel_deletion(&self, identity: &Identity) -> Result<(), DbError> {
+        let mut tx = self.pool.begin().await?;
+        let membership = self
+            .resolve_membership(&mut tx, identity)
+            .await?
+            .ok_or(DbError::NotOnboarded)?;
+        if membership.role != "owner" {
+            return Err(DbError::OwnerRequired);
+        }
+        let now = Utc::now().to_rfc3339();
+        let update_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("UPDATE fpp_organizations SET deletion_requested_at=NULL,deletion_scheduled_for=NULL,updated_at=CAST(? AS TIMESTAMPTZ) WHERE id=?")
+        } else {
+            self.sql("UPDATE fpp_organizations SET deletion_requested_at=NULL,deletion_scheduled_for=NULL,updated_at=? WHERE id=?")
+        };
+        sqlx::query(&update_sql)
+            .bind(&now)
+            .bind(&membership.organization_id)
+            .execute(&mut *tx)
+            .await?;
+        let audit_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'organization.deletion_cancelled','organization',?,CAST(? AS JSONB),CAST(? AS TIMESTAMPTZ))")
+        } else {
+            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'organization.deletion_cancelled','organization',?,?,?)")
+        };
+        sqlx::query(&audit_sql)
+            .bind(Uuid::new_v4().to_string())
+            .bind(&membership.organization_id)
+            .bind(&membership.user_id)
+            .bind(&membership.organization_id)
+            .bind("{}")
+            .bind(&now)
+            .execute(&mut *tx)
+            .await?;
+        tx.commit().await?;
+        Ok(())
     }
 
     pub async fn invite(

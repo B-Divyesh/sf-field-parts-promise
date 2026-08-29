@@ -53,6 +53,29 @@ No sentence exceeds 22 words. None contains a banned term.
 
 The onboarding, team, billing, sign-in, error, and sync text was checked with the same 22-word limit. Longer UI paragraphs are split into separate sentences. Errors state what happened and what to do. The checkout error says that no charge was made.
 
+Repair-added account copy:
+
+| Sentence | Words | Result |
+| --- | ---: | --- |
+| Export or delete firm data | 5 | Pass: data settings heading |
+| Firm data export | 3 | Pass: export section heading |
+| The JSON export includes the workspace, team, billing state, and audit events. | 12 | Pass: export scope |
+| Export remains available if payment stops. | 7 | Pass: billing boundary |
+| Export firm data | 3 | Pass: export action |
+| Delete this firm | 3 | Pass: deletion heading |
+| Scheduling starts a 14-day hold. | 5 | Pass: deletion hold |
+| Type the firm name exactly before scheduling deletion. | 8 | Pass: confirmation instruction |
+| Schedule firm deletion | 3 | Pass: destructive action |
+| Cancel firm deletion | 3 | Pass: recovery action |
+| Resolve the shared workspace conflict | 5 | Pass: conflict heading |
+| Quantity evidence differs. | 3 | Pass: conflict reason |
+| Parts Promise will not overwrite it. | 6 | Pass: safety outcome |
+| Download this device's revision before using the shared revision. | 9 | Pass: conflict instruction |
+| Download device revision | 3 | Pass: backup action |
+| Use shared revision | 3 | Pass: resolution action |
+
+No repair-added sentence exceeds 22 words or contains a banned term.
+
 ## Canonical terminology
 
 | Concept | User-facing word |
