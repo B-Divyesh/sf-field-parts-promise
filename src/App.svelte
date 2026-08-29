@@ -43,7 +43,48 @@
     type WorkspaceMode
   } from './lib/storage/workspace-db';
 
-  type Page = 'home' | 'jobs' | 'job' | 'privacy' | 'terms' | 'not-found';
+  type Page =
+    | 'home'
+    | 'jobs'
+    | 'job'
+    | 'auth-callback'
+    | 'onboarding'
+    | 'team'
+    | 'billing'
+    | 'privacy'
+    | 'terms'
+    | 'not-found';
+
+  type TeamMember = {
+    id: string;
+    name: string;
+    email?: string;
+    role: string;
+    status: string;
+    consumes_seat: boolean;
+  };
+
+  type BillingState = {
+    state: string;
+    plan: string;
+    seat_quantity: number;
+    period_end?: string;
+    cloud_writes_allowed: boolean;
+  };
+
+  type CloudBootstrap = {
+    onboarding_required: boolean;
+    user_name: string;
+    organization_id?: string;
+    organization_name?: string;
+    role?: string;
+    locale?: string;
+    time_zone?: string;
+    workspace?: Workspace;
+    version?: number;
+    billing?: BillingState;
+    members: TeamMember[];
+  };
 
   let currentPath = '/';
   let demo = false;
@@ -68,6 +109,20 @@
   let importPreview: ImportPreview | null = null;
   let importFileName = '';
   let routeAnnouncement = '';
+  let accountLoading = false;
+  let accountName = '';
+  let idToken = '';
+  let accountError = '';
+  let cloud: CloudBootstrap | null = null;
+  let cloudVersion: number | null = null;
+  let syncNotice = '';
+  let organizationName = '';
+  let migrateLocalWorkspace = false;
+  let onboardingConfirmed = false;
+  let inviteEmail = '';
+  let inviteRole = 'technician';
+  let teamMessage = '';
+  let billingMessage = '';
 
   type HistoryPosition = { scrollX: number; scrollY: number };
 
@@ -135,7 +190,7 @@
     const storedTheme = localStorage.getItem('parts-promise-theme');
     theme = storedTheme === 'dark' ? 'dark' : 'light';
     saveScrollPosition();
-    void loadCurrentWorkspace();
+    void initialize();
     window.addEventListener('popstate', updateRoute);
     window.addEventListener('scroll', recordScroll, { passive: true });
     window.addEventListener('online', updateOnline);
@@ -155,6 +210,10 @@
     if (path === '/') return 'home';
     if (path === '/jobs') return 'jobs';
     if (path.startsWith('/jobs/')) return 'job';
+    if (path === '/auth/callback') return 'auth-callback';
+    if (path === '/onboarding') return 'onboarding';
+    if (path === '/settings/team') return 'team';
+    if (path === '/settings/billing') return 'billing';
     if (path === '/privacy') return 'privacy';
     if (path === '/terms') return 'terms';
     return 'not-found';
@@ -190,6 +249,31 @@
       return {
         title: `${job?.number ?? 'Job'} parts — Parts Promise`,
         description: 'Parts held for this job.',
+        canonical
+      };
+    if (currentPage === 'auth-callback')
+      return {
+        title: 'Sign-in return — Parts Promise',
+        description: 'Complete secure sign-in to Parts Promise.',
+        canonical
+      };
+    if (currentPage === 'onboarding')
+      return {
+        title: 'Set up your firm — Parts Promise',
+        description:
+          'Set up a firm workspace and choose whether to copy local jobs.',
+        canonical
+      };
+    if (currentPage === 'team')
+      return {
+        title: 'Team — Parts Promise',
+        description: 'People who can update this firm’s jobs.',
+        canonical
+      };
+    if (currentPage === 'billing')
+      return {
+        title: 'Billing — Parts Promise',
+        description: 'Workshop plan and technician seat details.',
         canonical
       };
     if (currentPage === 'privacy')
@@ -242,12 +326,19 @@
       .getElementById('route-robots')
       ?.setAttribute(
         'content',
-        page === 'not-found' ? 'noindex' : 'index,follow'
+        page === 'not-found' || page === 'auth-callback'
+          ? 'noindex'
+          : 'index,follow'
       );
   }
 
   function mode(): WorkspaceMode {
     return demo ? 'demo' : 'live';
+  }
+
+  async function initialize() {
+    await loadCurrentWorkspace();
+    if (!demo) await restoreAccount();
   }
 
   async function loadCurrentWorkspace() {
@@ -271,11 +362,178 @@
     try {
       await saveWorkspace(mode(), next);
       toast = message;
+      if (!demo && idToken && cloud && !cloud.onboarding_required)
+        await pushCloudWorkspace(next);
     } catch (error) {
       storageError =
         error instanceof Error
           ? error.message
           : 'Local changes could not be saved.';
+    }
+  }
+
+  function localItemCount() {
+    if (!workspace) return 0;
+    return (
+      workspace.jobs.length +
+      workspace.requirements.length +
+      workspace.sources.length +
+      workspace.allocations.length
+    );
+  }
+
+  async function restoreAccount() {
+    if (demo) return;
+    accountLoading = true;
+    accountError = '';
+    try {
+      const { restoreCiamSession } = await import('./lib/auth/ciam');
+      const session = await restoreCiamSession();
+      accountName = session.account?.name ?? session.account?.username ?? '';
+      idToken = session.token;
+      if (idToken) await loadCloudBootstrap();
+      if (currentPath === '/auth/callback') {
+        if (idToken)
+          await navigate(cloud?.onboarding_required ? '/onboarding' : '/jobs');
+        else
+          accountError =
+            'No sign-in response was received. Start sign-in again.';
+      }
+    } catch (error) {
+      accountError =
+        error instanceof Error
+          ? error.message
+          : 'Sign-in could not be completed. Try again.';
+    } finally {
+      accountLoading = false;
+    }
+  }
+
+  async function signIn() {
+    accountLoading = true;
+    accountError = '';
+    try {
+      const { signInWithCiam } = await import('./lib/auth/ciam');
+      await signInWithCiam();
+    } catch (error) {
+      accountLoading = false;
+      accountError =
+        error instanceof Error ? error.message : 'Sign-in could not start.';
+    }
+  }
+
+  async function signOut() {
+    const { signOutFromCiam } = await import('./lib/auth/ciam');
+    await signOutFromCiam();
+  }
+
+  async function apiRequest(path: string, init?: RequestInit) {
+    const { currentCiamToken } = await import('./lib/auth/ciam');
+    idToken = (await currentCiamToken()) || idToken;
+    const response = await fetch(path, {
+      ...init,
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${idToken}`,
+        ...(init?.headers ?? {})
+      }
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok)
+      throw new Error(
+        [body.message, body.action].filter(Boolean).join(' ') ||
+          'The shared workspace request failed. Try again.'
+      );
+    return body;
+  }
+
+  async function loadCloudBootstrap() {
+    const next = (await apiRequest('/api/v1/bootstrap')) as CloudBootstrap;
+    cloud = next;
+    cloudVersion = next.version ?? null;
+    if (!next.onboarding_required && next.workspace) {
+      workspace = next.workspace;
+      await saveWorkspace('live', next.workspace);
+    }
+  }
+
+  async function pushCloudWorkspace(next: Workspace) {
+    if (cloudVersion === null) return;
+    syncNotice = 'Sending changes…';
+    try {
+      const result = await apiRequest('/api/v1/sync', {
+        method: 'POST',
+        body: JSON.stringify({
+          idempotency_key: crypto.randomUUID(),
+          expected_version: cloudVersion,
+          workspace: next
+        })
+      });
+      cloudVersion = result.version;
+      syncNotice = 'Shared workspace up to date.';
+    } catch (error) {
+      syncNotice = `${error instanceof Error ? error.message : 'Sync failed.'} Your change stays on this device.`;
+    }
+  }
+
+  async function submitOnboarding() {
+    formError = '';
+    const count = localItemCount();
+    if (!organizationName.trim() || !onboardingConfirmed) {
+      formError =
+        'Name the firm and confirm whether the local records should be copied.';
+      return;
+    }
+    try {
+      cloud = (await apiRequest('/api/v1/onboarding', {
+        method: 'POST',
+        body: JSON.stringify({
+          organization_name: organizationName.trim(),
+          locale: navigator.language || 'en-US',
+          time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+          migrate_local_workspace: migrateLocalWorkspace,
+          local_item_count: migrateLocalWorkspace ? count : 0,
+          workspace: migrateLocalWorkspace ? workspace : null
+        })
+      })) as CloudBootstrap;
+      cloudVersion = cloud.version ?? 0;
+      if (cloud.workspace) {
+        workspace = cloud.workspace;
+        await saveWorkspace('live', cloud.workspace);
+      }
+      await navigate('/settings/billing');
+    } catch (error) {
+      formError = error instanceof Error ? error.message : 'Firm setup failed.';
+    }
+  }
+
+  async function inviteMember() {
+    teamMessage = '';
+    try {
+      const result = await apiRequest('/api/v1/members', {
+        method: 'POST',
+        body: JSON.stringify({ email: inviteEmail, role: inviteRole })
+      });
+      if (cloud) cloud = { ...cloud, members: result.members };
+      inviteEmail = '';
+      teamMessage =
+        'Invitation recorded. It becomes active when that person signs in.';
+    } catch (error) {
+      teamMessage = error instanceof Error ? error.message : 'Invite failed.';
+    }
+  }
+
+  async function startCheckout() {
+    billingMessage = '';
+    try {
+      const result = await apiRequest('/api/v1/billing/checkout', {
+        method: 'POST',
+        body: '{}'
+      });
+      if (result.checkout_url) window.location.assign(result.checkout_url);
+    } catch (error) {
+      billingMessage =
+        error instanceof Error ? error.message : 'Checkout could not start.';
     }
   }
 
@@ -836,12 +1094,28 @@
       aria-current={page === 'jobs' || page === 'job' ? 'page' : undefined}
       on:click={(event) => follow(event, href('/jobs'))}>Jobs</a
     >
+    {#if idToken && !demo}<a
+        href="/settings/team"
+        aria-current={page === 'team' ? 'page' : undefined}
+        on:click={(event) => follow(event, '/settings/team')}>Team</a
+      >{/if}
     <a
       href={href('/privacy')}
       aria-current={page === 'privacy' ? 'page' : undefined}
       on:click={(event) => follow(event, href('/privacy'))}>Privacy</a
     >
   </nav>
+  {#if !demo}
+    {#if idToken}<button class="account-button" type="button" on:click={signOut}
+        >Sign out {accountName}</button
+      >{:else}<button
+        class="account-button"
+        type="button"
+        disabled={accountLoading}
+        on:click={signIn}
+        >{accountLoading ? 'Checking sign-in…' : 'Sign in'}</button
+      >{/if}
+  {/if}
   <button
     class="theme-toggle"
     type="button"
@@ -941,7 +1215,7 @@
           Promise dates from parts held for the job
         </h1>
         <p class="hero-summary">
-          For solo tradespeople who need a parts check before agreeing a visit
+          For small trade firms that need a parts check before agreeing a visit
           date.
         </p>
         <div class="hero-actions">
@@ -957,7 +1231,7 @@
             The sample job and allocation work offline after your first visit.
           </li>
           <li>Sample changes stay in this browser.</li>
-          <li>Free for one browser in this release.</li>
+          <li>Workshop is $39/month plus $8 per active technician.</li>
         </ul>
       </div>
       <BlueprintHero />
@@ -1004,20 +1278,224 @@
     </section>
 
     <section class="plain-language-section" aria-labelledby="privacy-title">
-      <h2 id="privacy-title">What this first release does not do</h2>
+      <h2 id="privacy-title">What this release does not do</h2>
       <p>
-        It does not sync between people, scan barcodes, place supplier orders,
-        or take payment. It keeps one local workspace and a separate demo.
+        It does not scan barcodes or place supplier orders. The sample stays
+        separate from signed-in firm workspaces.
       </p>
       <a href="/privacy" on:click={(event) => follow(event, '/privacy')}
         >Read how local data works</a
       >
     </section>
+    <section class="pricing-section" aria-labelledby="pricing-title">
+      <p class="drawing-label">Firm plan</p>
+      <h2 id="pricing-title">Pay for the workshop and active technicians</h2>
+      <p>
+        Workshop costs $39 each month. Each active technician costs $8 each
+        month. The owner does not use a technician seat.
+      </p>
+      <p>
+        Sociobot and Dodo handle payment. Checkout is waiting for this product’s
+        recurring plan registration.
+      </p>
+      <a href="/onboarding" on:click={(event) => follow(event, '/onboarding')}
+        >Set up your firm</a
+      >
+    </section>
+  {:else if page === 'auth-callback'}
+    <section class="account-sheet" aria-live="polite">
+      <p class="drawing-label">Secure sign-in</p>
+      <h1 tabindex="-1">Finish signing in</h1>
+      {#if accountError}<p class="form-error" role="alert">{accountError}</p>
+        <button class="button" type="button" on:click={signIn}
+          >Try sign-in again</button
+        >{:else}<p>Checking your Sociobot account…</p>{/if}
+    </section>
+  {:else if page === 'onboarding'}
+    <section class="account-sheet">
+      <p class="drawing-label">Firm setup</p>
+      <h1 tabindex="-1">Set up your firm workspace</h1>
+      {#if !idToken}
+        <p>Sign in with Sociobot before you create a shared workspace.</p>
+        {#if accountError}<p class="form-error" role="alert">
+            {accountError}
+          </p>{/if}
+        <button class="button" type="button" on:click={signIn}
+          >Sign in with Sociobot</button
+        >
+      {:else if cloud && !cloud.onboarding_required}
+        <p>{cloud.organization_name} is ready.</p>
+        <a
+          class="button"
+          href="/jobs"
+          on:click={(event) => follow(event, '/jobs')}>Open shared jobs</a
+        >
+      {:else}
+        <p>
+          Your local workspace has {localItemCount()} record{localItemCount() ===
+          1
+            ? ''
+            : 's'}. Nothing is copied until you choose it below.
+        </p>
+        <form on:submit|preventDefault={submitOnboarding}>
+          <label
+            >Firm name<input bind:value={organizationName} required /></label
+          >
+          {#if localItemCount() > 0}<label class="check-control"
+              ><input type="checkbox" bind:checked={migrateLocalWorkspace} />
+              Copy these {localItemCount()} local records into the firm workspace</label
+            >{/if}
+          <label class="check-control"
+            ><input
+              type="checkbox"
+              bind:checked={onboardingConfirmed}
+              required
+            />
+            I checked the record count and chose whether to copy it</label
+          >
+          {#if formError}<p class="form-error" role="alert">{formError}</p>{/if}
+          <button class="button" type="submit">Create firm workspace</button>
+        </form>
+      {/if}
+    </section>
+  {:else if page === 'team'}
+    <section class="account-sheet">
+      <p class="drawing-label">Team and seats</p>
+      <h1 tabindex="-1">People who can update jobs</h1>
+      {#if !idToken}
+        <p>Sign in to view your firm’s team.</p>
+        <button class="button" type="button" on:click={signIn}
+          >Sign in with Sociobot</button
+        >
+      {:else if !cloud || cloud.onboarding_required}
+        <p>Create a firm workspace before inviting technicians.</p>
+        <a
+          class="button"
+          href="/onboarding"
+          on:click={(event) => follow(event, '/onboarding')}>Set up your firm</a
+        >
+      {:else}
+        <p>
+          Active technicians use $8 monthly seats. Owners, coordinators, and
+          viewers do not use technician seats.
+        </p>
+        <ul class="member-list">
+          {#each cloud.members as member}<li>
+              <span
+                ><strong>{member.name}</strong>{#if member.email}<small
+                    >{member.email}</small
+                  >{/if}</span
+              ><span
+                >{member.role} · {member.status}{member.consumes_seat
+                  ? ' · paid seat'
+                  : ''}</span
+              >
+            </li>{/each}
+        </ul>
+        {#if cloud.role === 'owner'}
+          <form on:submit|preventDefault={inviteMember}>
+            <h2>Invite a team member</h2>
+            <p>
+              Record their work email, then send them this site link. Their
+              place becomes active when that email signs in.
+            </p>
+            <div class="form-grid">
+              <label
+                >Email<input
+                  type="email"
+                  bind:value={inviteEmail}
+                  required
+                /></label
+              ><label
+                >Role<select bind:value={inviteRole}
+                  ><option value="technician">Technician — $8/month</option
+                  ><option value="coordinator">Coordinator</option><option
+                    value="viewer">Viewer</option
+                  ></select
+                ></label
+              >
+            </div>
+            <button class="button" type="submit">Record invitation</button>
+          </form>
+        {/if}
+        {#if teamMessage}<p role="status">{teamMessage}</p>{/if}
+        <a
+          href="/settings/billing"
+          on:click={(event) => follow(event, '/settings/billing')}
+          >Review plan and seats</a
+        >
+      {/if}
+    </section>
+  {:else if page === 'billing'}
+    <section class="account-sheet">
+      <p class="drawing-label">Billing</p>
+      <h1 tabindex="-1">Plan and technician seats</h1>
+      {#if !idToken}
+        <p>Sign in to view billing for your firm.</p>
+        <button class="button" type="button" on:click={signIn}
+          >Sign in with Sociobot</button
+        >
+      {:else if !cloud || cloud.onboarding_required}
+        <p>Create a firm workspace before choosing a plan.</p>
+        <a
+          class="button"
+          href="/onboarding"
+          on:click={(event) => follow(event, '/onboarding')}>Set up your firm</a
+        >
+      {:else}
+        <dl class="billing-summary">
+          <div>
+            <dt>Workshop base</dt>
+            <dd>$39/month</dd>
+          </div>
+          <div>
+            <dt>Active technician seats</dt>
+            <dd>{cloud.billing?.seat_quantity ?? 0} × $8/month</dd>
+          </div>
+          <div>
+            <dt>Owner seat</dt>
+            <dd>Included</dd>
+          </div>
+          <div>
+            <dt>Plan state</dt>
+            <dd>{cloud.billing?.state ?? 'pending'}</dd>
+          </div>
+        </dl>
+        <p>Existing records and export remain available if payment stops.</p>
+        <button class="button" type="button" on:click={startCheckout}
+          >Check checkout availability</button
+        >
+        {#if billingMessage}<p class="form-error" role="alert">
+            {billingMessage}
+          </p>{/if}
+        <p>
+          Sociobot/Dodo is the merchant of record. Read the
+          <a href="/terms" on:click={(event) => follow(event, '/terms')}
+            >terms</a
+          >
+          and
+          <a href="/privacy" on:click={(event) => follow(event, '/privacy')}
+            >privacy notice</a
+          >.
+        </p>
+      {/if}
+    </section>
   {:else if page === 'jobs'}
     <section class="page-heading">
-      <p class="drawing-label">Jobs in this browser</p>
+      <p class="drawing-label">
+        {cloud && !demo ? 'Shared firm jobs' : 'Jobs in this browser'}
+      </p>
       <h1 tabindex="-1">Jobs and their parts status</h1>
       <p>Each job shows the one fact that still needs attention.</p>
+      {#if !demo && !idToken}<p class="account-callout">
+          This workspace stays on this device. <button
+            class="text-button"
+            type="button"
+            on:click={signIn}>Sign in to set up team sync</button
+          >
+        </p>{:else if syncNotice}<p class="account-callout" role="status">
+          {syncNotice}
+        </p>{/if}
     </section>
     <div class="jobs-toolbar">
       <div class="toolbar-actions">
@@ -1076,7 +1554,7 @@
   {:else if page === 'job' && activeJob && workspace && activeStatus}
     <section class="job-datum">
       <div>
-        <p class="drawing-label">Sample job</p>
+        <p class="drawing-label">{demo ? 'Sample job' : 'Job parts record'}</p>
         <h1 tabindex="-1">{activeJob.site} parts</h1>
         <p>
           <strong>{activeJob.number}</strong> · Visit
@@ -1237,6 +1715,16 @@
         <code>parts-promise-live-v1</code>. The sample uses
         <code>parts-promise-demo-v1</code>.
       </p>
+      <h2>Signed-in firm data</h2>
+      <p>
+        A signed-in firm can copy chosen local records to its shared workspace.
+        The server keeps firm records separate by organization and records sync
+        changes in an audit log.
+      </p>
+      <p>
+        Microsoft Entra handles sign-in. Sociobot and Dodo handle checkout.
+        Parts Promise stores no password or payment-card number.
+      </p>
       <h2>The demo is separate</h2>
       <p>
         Demo records never enter the live local workspace. Reset restores the
@@ -1264,8 +1752,19 @@
       </p>
       <h2>This release</h2>
       <p>
-        This release has no sign-in, team sync, barcode scan, supplier-order
-        action, or checkout. Records stay in one browser.
+        Sign-in and firm workspaces are available. Barcode scanning and
+        supplier-order actions are not included yet.
+      </p>
+      <h2>Plans and payment</h2>
+      <p>
+        Workshop is $39 each month plus $8 for each active technician. The owner
+        is included. Sociobot/Dodo is the merchant of record and handles
+        refunds.
+      </p>
+      <p>
+        Checkout begins only after you press its button. The current test
+        product still needs operator registration, so no charge can be started
+        yet.
       </p>
     </section>
   {:else}
@@ -1664,5 +2163,5 @@
       on:click={(event) => follow(event, href('/terms'))}>Terms</a
     ><a href="https://sociobot.in" rel="external">Built by Param Factory</a>
   </div>
-  <small>Browser-only release</small>
+  <small>Account workspace release</small>
 </footer>

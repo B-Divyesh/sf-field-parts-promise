@@ -1,4 +1,4 @@
-const CACHE = 'parts-promise-shell-v3';
+const CACHE = 'parts-promise-shell-v4';
 const SHELL = [
   '/',
   '/manifest.webmanifest',
@@ -59,9 +59,13 @@ self.addEventListener('message', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
   if (
     event.request.method !== 'GET' ||
-    new URL(event.request.url).origin !== self.location.origin
+    url.origin !== self.location.origin ||
+    url.pathname.startsWith('/api/') ||
+    url.pathname === '/metrics' ||
+    url.pathname === '/health'
   )
     return;
   event.respondWith(

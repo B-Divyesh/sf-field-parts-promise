@@ -173,6 +173,16 @@ time,
   border: 1px solid var(--color-line);
   background: var(--color-surface);
 }
+.account-button {
+  grid-column: 1 / -1;
+  width: fit-content;
+  min-height: 44px;
+  padding: var(--space-1) var(--space-2);
+  color: var(--color-blueprint);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  font-weight: 700;
+}
 
 .demo-banner,
 .offline-plate {
@@ -330,6 +340,69 @@ main {
 .plain-language-section,
 .pricing-section {
   margin-block-start: clamp(var(--space-7), 10vw, var(--space-9));
+}
+.account-sheet {
+  max-width: 760px;
+  padding: clamp(var(--space-4), 5vw, var(--space-7));
+  border-block: 1px solid var(--color-line);
+  background: var(--color-surface);
+}
+.account-sheet form {
+  display: grid;
+  gap: var(--space-4);
+  margin-block-start: var(--space-5);
+}
+.account-sheet label:not(.check-control) {
+  display: grid;
+  gap: var(--space-1);
+  font-weight: 700;
+}
+.check-control {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: var(--space-3);
+  align-items: start;
+  font-weight: 700;
+}
+.check-control input {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+}
+.account-callout {
+  padding: var(--space-3);
+  border-inline-start: 3px solid var(--color-blueprint);
+  background: var(--color-surface);
+}
+.member-list {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+  margin-block: var(--space-5);
+  list-style: none;
+}
+.member-list li,
+.billing-summary > div {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: space-between;
+  padding-block: var(--space-3);
+  border-block-end: 1px solid var(--color-line);
+}
+.member-list small {
+  display: block;
+  color: var(--color-text-muted);
+}
+.billing-summary {
+  margin-block: var(--space-5);
+}
+.billing-summary dt,
+.billing-summary dd {
+  margin: 0;
+}
+.billing-summary dd {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 .preview-section {
   display: grid;
@@ -810,10 +883,13 @@ dialog::backdrop {
 
 @media (min-width: 45rem) {
   .site-header {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto 1fr auto auto;
     padding-inline: var(--space-6);
   }
   .theme-toggle {
+    grid-column: auto;
+  }
+  .account-button {
     grid-column: auto;
   }
   main,
