@@ -1,0 +1,892 @@
+{
+  "base": "https://field-parts-promise.sociobot.in",
+  "generatedAt": "2026-08-29T19:02:53.824Z",
+  "firstRead": {
+    "mobile": {
+      "status": 200,
+      "title": "Parts Promise — Hold parts for each job",
+      "h1": [
+        "Promise dates from parts held for the job"
+      ],
+      "aboveFoldText": [
+        "Parts Promise — Hold parts for each job",
+        "Allocate parts to a job",
+        "Promise dates from parts held for the job",
+        "For solo tradespeople who need a parts check before agreeing a visit\n          date.",
+        "Try it with sample data",
+        "Opens Riverside Dental with one missing pump.",
+        "The sample job and allocation work offline after your first visit.",
+        "Sample changes stay in this browser.",
+        "Free for one browser in this release."
+      ],
+      "bodyText": "Skip to main content\nParts Promise\nDemo\nJobs\nPrivacy\nUse dark theme\n\nParts Promise — Hold parts for each job\n\nALLOCATE PARTS TO A JOB\n\nPromise dates from parts held for the job\n\nFor solo tradespeople who need a parts check before agreeing a visit date.\n\nTry it with sample data\nOpens Riverside Dental with one missing pump.\nThe sample job and allocation work offline after your first visit.\nSample changes stay in this browser.\nFree for one browser in this release.\nEach required part shows the van, warehouse, or supplier record that covers it.\n\nSAMPLE JOB STATUS\n\nSee why a visit date is at risk\n\nRD-1042 needs one condensate pump. The job stays at risk until a source holds it.\n\nOpen the sample job\n\nRD-1042 · RIVERSIDE DENTAL\n\nDate at risk\nCondensate pump needs 1 each.\n\nHOW IT WORKS\n\nCheck parts before agreeing a visit date\nList required parts\nAdd each required part to the job.\nAllocate each part\nAllocate it from a van or warehouse source.\nReview the visit date\nRead the reason before you agree the visit date.\nWhat this first release does not do\n\nIt does not sync between people, scan barcodes, place supplier orders, or take payment. It keeps one local workspace and a separate demo.\n\nRead how local data works\n\nPromise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nBrowser-only release",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "documentWidth": 390,
+      "documentHeight": 2486,
+      "primaryRect": {
+        "top": 405.09375,
+        "bottom": 449.09375
+      },
+      "factRects": [],
+      "requests": [
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/assets/index-C3DKxGI0.js"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/assets/index-CQwSfvsF.css"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    "desktop": {
+      "status": 200,
+      "title": "Parts Promise — Hold parts for each job",
+      "h1": [
+        "Promise dates from parts held for the job"
+      ],
+      "aboveFoldText": [
+        "Parts Promise — Hold parts for each job",
+        "Allocate parts to a job",
+        "Promise dates from parts held for the job",
+        "For solo tradespeople who need a parts check before agreeing a visit\n          date.",
+        "Try it with sample data",
+        "Opens Riverside Dental with one missing pump.",
+        "The sample job and allocation work offline after your first visit.",
+        "Sample changes stay in this browser.",
+        "Free for one browser in this release.",
+        "Each required part shows the van, warehouse, or supplier record that\n      covers it.",
+        "Sample job status",
+        "See why a visit date is at risk",
+        "RD-1042 · Riverside Dental",
+        "Date at risk"
+      ],
+      "bodyText": "Skip to main content\nParts Promise\nDemo\nJobs\nPrivacy\nUse dark theme\n\nParts Promise — Hold parts for each job\n\nALLOCATE PARTS TO A JOB\n\nPromise dates from parts held for the job\n\nFor solo tradespeople who need a parts check before agreeing a visit date.\n\nTry it with sample data\nOpens Riverside Dental with one missing pump.\nThe sample job and allocation work offline after your first visit.\nSample changes stay in this browser.\nFree for one browser in this release.\nEach required part shows the van, warehouse, or supplier record that covers it.\n\nSAMPLE JOB STATUS\n\nSee why a visit date is at risk\n\nRD-1042 needs one condensate pump. The job stays at risk until a source holds it.\n\nOpen the sample job\n\nRD-1042 · RIVERSIDE DENTAL\n\nDate at risk\nCondensate pump needs 1 each.\n\nHOW IT WORKS\n\nCheck parts before agreeing a visit date\nList required parts\nAdd each required part to the job.\nAllocate each part\nAllocate it from a van or warehouse source.\nReview the visit date\nRead the reason before you agree the visit date.\nWhat this first release does not do\n\nIt does not sync between people, scan barcodes, place supplier orders, or take payment. It keeps one local workspace and a separate demo.\n\nRead how local data works\n\nPromise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nBrowser-only release",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "documentWidth": 1440,
+      "documentHeight": 1968,
+      "primaryRect": {
+        "top": 479.359375,
+        "bottom": 523.359375
+      },
+      "factRects": [],
+      "requests": [
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/assets/index-C3DKxGI0.js"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/assets/index-CQwSfvsF.css"
+        },
+        {
+          "method": "GET",
+          "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    }
+  },
+  "demo": {
+    "demoEntry": {
+      "url": "https://field-parts-promise.sociobot.in/?demo=1",
+      "title": "Demo — Parts Promise",
+      "h1": "Riverside Dental parts",
+      "viewportText": [
+        "Demo — sample data; nothing is saved to your local workspace.",
+        "Reset demo",
+        "Start for real",
+        "Demo — Parts Promise",
+        "Sample job",
+        "Riverside Dental parts",
+        "RD-1042",
+        "Sep 2, 2026",
+        "Edit job",
+        "⌁",
+        "Date at risk",
+        "Condensate pump needs 1 each.",
+        "Required parts and their sources",
+        "Parts held for this job",
+        "Add required part"
+      ],
+      "bodyText": "Skip to main content\nParts Promise\nDemo\nJobs\nPrivacy\nUse dark theme\nDemo — sample data; nothing is saved to your local workspace.\nReset demo\nStart for real\n\nDemo — Parts Promise\n\nSAMPLE JOB\n\nRiverside Dental parts\n\nRD-1042 · Visit Sep 2, 2026\n\nEdit job\n⌁\nDate at risk\nCondensate pump needs 1 each.\n\nREQUIRED PARTS AND THEIR SOURCES\n\nParts held for this job\nAdd required part\nContactor 24V\n\nCT-24\n\n1 each held of 1 each\n\nHeld for RD-1042 from Warehouse A · 1 each · Morgan Lee · checked Aug 28, 2026, 7:40 AM\nRemove allocation\nAllocate part\nCheck supplier date\nReturn air filter 20×25\n\nAF-2025\n\n4 each held of 4 each\n\nHeld for RD-1042 from Warehouse A · 3 each · Morgan Lee · checked Aug 28, 2026, 7:40 AM\nRemove allocation\nHeld for RD-1042 from Van 2 · 1 each · Avery Cole · checked Aug 28, 2026, 8:05 AM\nRemove allocation\nAllocate part\nCheck supplier date\nCondensate pump\n\nCP-19\n\n0 each held of 1 each\n\n⌁ 1 each still needs a source.\n\nAllocate part\nCheck supplier date\nRecord a source or supplier date\n\nAdd manual van or warehouse evidence here. A supplier date is evidence, not a guarantee.\n\nAdd a source\n\nPromise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nBrowser-only release",
+      "databases": []
+    },
+    "allocated": "◎\nParts in hand\nEvery required quantity is held from a van or warehouse.",
+    "reset": "⌁\nDate at risk\nCondensate pump needs 1 each.",
+    "databases": [
+      "parts-promise-demo-v1",
+      "parts-promise-live-v1"
+    ],
+    "cameraCalled": false
+  },
+  "history": {
+    "beforePrivacy": 1642,
+    "afterBack": {
+      "scrollY": 1642,
+      "focused": true
+    }
+  },
+  "routes": [
+    {
+      "route": "/",
+      "status": 200,
+      "title": "Parts Promise — Hold parts for each job",
+      "h1s": [
+        "Promise dates from parts held for the job"
+      ],
+      "mainCount": 1,
+      "description": [
+        "Promise job dates from parts held for the job."
+      ],
+      "canonical": [
+        "https://field-parts-promise.sociobot.in/"
+      ],
+      "ogTitle": [
+        "Parts Promise — Hold parts for each job"
+      ],
+      "links": [
+        {
+          "text": "Skip to main content",
+          "href": "https://field-parts-promise.sociobot.in/#main"
+        },
+        {
+          "text": "Parts Promise",
+          "href": "https://field-parts-promise.sociobot.in/"
+        },
+        {
+          "text": "Demo",
+          "href": "https://field-parts-promise.sociobot.in/?demo=1"
+        },
+        {
+          "text": "Jobs",
+          "href": "https://field-parts-promise.sociobot.in/jobs"
+        },
+        {
+          "text": "Privacy",
+          "href": "https://field-parts-promise.sociobot.in/privacy"
+        },
+        {
+          "text": "Try it with sample data",
+          "href": "https://field-parts-promise.sociobot.in/?demo=1"
+        },
+        {
+          "text": "Open the sample job",
+          "href": "https://field-parts-promise.sociobot.in/?demo=1"
+        },
+        {
+          "text": "Read how local data works",
+          "href": "https://field-parts-promise.sociobot.in/privacy"
+        },
+        {
+          "text": "Privacy",
+          "href": "https://field-parts-promise.sociobot.in/privacy"
+        },
+        {
+          "text": "Terms",
+          "href": "https://field-parts-promise.sociobot.in/terms"
+        },
+        {
+          "text": "Built by Param Factory",
+          "href": "https://sociobot.in/"
+        }
+      ]
+    },
+    {
+      "route": "/demo",
+      "status": 200,
+      "title": "Demo — Parts Promise",
+      "h1s": [
+        "Riverside Dental parts"
+      ],
+      "mainCount": 1,
+      "description": [
+        "Sample job card for Parts Promise."
+      ],
+      "canonical": [
+        "https://field-parts-promise.sociobot.in/demo"
+      ],
+      "ogTitle": [
+        "Demo — Parts Promise"
+      ],
+      "links": [
+        {
+          "text": "Skip to main content",
+          "href": "https://field-parts-promise.sociobot.in/demo#main"
+        },
+        {
+          "text": "Parts Promise",
+          "href": "https://field-parts-promise.sociobot.in/"
+        },
+        {
+          "text": "Demo",
+          "href": "https://field-parts-promise.sociobot.in/?demo=1"
+        },
+        {
+          "text": "Jobs",
+          "href": "https://field-parts-promise.sociobot.in/jobs"
+        },
+        {
+          "text": "Privacy",
+          "href": "https://field-parts-promise.sociobot.in/privacy"
+        },
+        {
+          "text": "Privacy",
+          "href": "https://field-parts-promise.sociobot.in/privacy"
+        },
+        {
+          "text": "Terms",
+          "href": "https://field-parts-promise.sociobot.in/terms"
+        },
+        {
+          "text": "Built by Param Factory",
+          "href": "https://sociobot.in/"
+        }
+      ]
+    },
+    {
+      "route": "/jobs",
+      "status": 200,
+      "title": "Jobs — Parts Promise",
+      "h1s": [
+        "Jobs and their parts status"
+      ],
+      "mainCount": 1,
+      "description": [
+        "Jobs and their parts status."
+      ],
+      "canonical": [
+        "https://field-parts-promise.sociobot.in/jobs"
+      ],
+      "ogTitle": [
+        "Jobs — Parts Promise"
+      ],
+      "links": [
+        {
+          "text": "Skip to main content",
+          "href": "https://field-parts-promise.sociobot.in/jobs#main"
+        },
+        {
+          "text": "Parts Promise",
+          "href": "https://field-parts-promise.sociobot.in/"
+        },
+        {
+          "text": "Demo",
+          "href": "https://field-parts-promise.sociobot.in/?demo=1"
+        },
+        {
+          "text": "Jobs",
+          "href": "https://field-parts-promise.sociobot.in/jobs"
+        },
+        {
+          "text": "Privacy",
+          "href": "https://field-parts-promise.sociobot.in/privacy"
+        },
+        {
+          "text": "Privacy",
+          "href": "https://field-parts-promise.sociobot.in/privacy"
+        },
+        {
+          "text": "Terms",
+          "href": "https://field-parts-promise.sociobot.in/terms"
+        },
+        {
+          "text": "Built by Param Factory",
+          "href": "https://sociobot.in/"
+        }
+      ]
+    },
+    {
+      "route": "/privacy",
+      "status": 200,
+      "title": "Privacy — Parts Promise",
+      "h1s": [
+        "How Parts Promise handles data"
+      ],
+      "mainCount": 1,
+      "description": [
+        "How Parts Promise handles local data."
+      ],
+      "canonical": [
+        "https://field-parts-promise.sociobot.in/privacy"
+      ],
+      "ogTitle": [
+        "Privacy — Parts Promise"
+      ],
+      "links": [
+        {
+          "text": "Skip to main content",
+          "href": "https://field-parts-promise.sociobot.in/privacy#main"
+        },
+        {
+          "text": "Parts Promise",
+          "href": "https://field-parts-promise.sociobot.in/"
+        },
+        {
+          "text": "Demo",
+          "href": "https://field-parts-promise.sociobot.in/?demo=1"
+        },
+        {
+          "text": "Jobs",
+          "href": "https://field-parts-promise.sociobot.in/jobs"
+        },
+        {
+          "text": "Privacy",
+          "href": "https://field-parts-promise.sociobot.in/privacy"
+        },
+        {
+          "text": "Privacy",
+          "href": "https://field-parts-promise.sociobot.in/privacy"
+        },
+        {
+          "text": "Terms",
+          "href": "https://field-parts-promise.sociobot.in/terms"
+        },
+        {
+          "text": "Built by Param Factory",
+          "href": "https://sociobot.in/"
+        }
+      ]
+    },
+    {
+      "route": "/terms",
+      "status": 200,
+      "title": "Terms — Parts Promise",
+      "h1s": [
+        "Terms for using Parts Promise"
+      ],
+      "mainCount": 1,
+      "description": [
+        "Terms for using Parts Promise."
+      ],
+      "canonical": [
+        "https://field-parts-promise.sociobot.in/terms"
+      ],
+      "ogTitle": [
+        "Terms — Parts Promise"
+      ],
+      "links": [
+        {
+          "text": "Skip to main content",
+          "href": "https://field-parts-promise.sociobot.in/terms#main"
+        },
+        {
+          "text": "Parts Promise",
+          "href": "https://field-parts-promise.sociobot.in/"
+        },
+        {
+          "text": "Demo",
+          "href": "https://field-parts-promise.sociobot.in/?demo=1"
+        },
+        {
+          "text": "Jobs",
+          "href": "https://field-parts-promise.sociobot.in/jobs"
+        },
+        {
+          "text": "Privacy",
+          "href": "https://field-parts-promise.sociobot.in/privacy"
+        },
+        {
+          "text": "Privacy",
+          "href": "https://field-parts-promise.sociobot.in/privacy"
+        },
+        {
+          "text": "Terms",
+          "href": "https://field-parts-promise.sociobot.in/terms"
+        },
+        {
+          "text": "Built by Param Factory",
+          "href": "https://sociobot.in/"
+        }
+      ]
+    },
+    {
+      "route": "/not-on-this-drawing",
+      "status": 404,
+      "title": "Page not found — Parts Promise",
+      "h1s": [
+        "Page not found"
+      ],
+      "mainCount": 1,
+      "description": [
+        "The requested Parts Promise page is not available."
+      ],
+      "canonical": [
+        "https://field-parts-promise.sociobot.in/"
+      ],
+      "ogTitle": [
+        "Page not found — Parts Promise"
+      ],
+      "links": [
+        {
+          "text": "Skip to main content",
+          "href": "https://field-parts-promise.sociobot.in/not-on-this-drawing#main"
+        },
+        {
+          "text": "Parts Promise",
+          "href": "https://field-parts-promise.sociobot.in/"
+        },
+        {
+          "text": "Demo",
+          "href": "https://field-parts-promise.sociobot.in/?demo=1"
+        },
+        {
+          "text": "Jobs",
+          "href": "https://field-parts-promise.sociobot.in/jobs"
+        },
+        {
+          "text": "Privacy",
+          "href": "https://field-parts-promise.sociobot.in/privacy"
+        },
+        {
+          "text": "Open jobs",
+          "href": "https://field-parts-promise.sociobot.in/jobs"
+        },
+        {
+          "text": "Go to home",
+          "href": "https://field-parts-promise.sociobot.in/"
+        },
+        {
+          "text": "Privacy",
+          "href": "https://field-parts-promise.sociobot.in/privacy"
+        },
+        {
+          "text": "Terms",
+          "href": "https://field-parts-promise.sociobot.in/terms"
+        },
+        {
+          "text": "Built by Param Factory",
+          "href": "https://sociobot.in/"
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "href": "https://field-parts-promise.sociobot.in/#main",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/jobs",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/privacy",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/terms",
+      "status": 200
+    },
+    {
+      "href": "https://sociobot.in/",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/demo#main",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/jobs#main",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/privacy#main",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/terms#main",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/not-on-this-drawing#main",
+      "status": 404
+    }
+  ],
+  "axe": [
+    {
+      "route": "/",
+      "seriousOrCritical": []
+    },
+    {
+      "route": "/demo",
+      "seriousOrCritical": []
+    },
+    {
+      "route": "/jobs",
+      "seriousOrCritical": []
+    },
+    {
+      "route": "/privacy",
+      "seriousOrCritical": []
+    },
+    {
+      "route": "/terms",
+      "seriousOrCritical": []
+    }
+  ],
+  "privacy": {
+    "requests": [
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-C3DKxGI0.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-CQwSfvsF.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-C3DKxGI0.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-CQwSfvsF.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-C3DKxGI0.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-CQwSfvsF.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/demo"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-C3DKxGI0.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-CQwSfvsF.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/jobs"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-C3DKxGI0.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-CQwSfvsF.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/privacy"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-C3DKxGI0.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-CQwSfvsF.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/terms"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-C3DKxGI0.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-CQwSfvsF.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/not-on-this-drawing"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-C3DKxGI0.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-CQwSfvsF.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-C3DKxGI0.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-CQwSfvsF.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/demo"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-C3DKxGI0.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-CQwSfvsF.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/jobs"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-C3DKxGI0.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-CQwSfvsF.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/privacy"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-C3DKxGI0.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-CQwSfvsF.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/terms"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-C3DKxGI0.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-CQwSfvsF.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      }
+    ],
+    "allSameOrigin": true,
+    "allReadOnly": true,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 ()"
+    ],
+    "pageErrors": [],
+    "cameraCalled": false
+  }
+}
