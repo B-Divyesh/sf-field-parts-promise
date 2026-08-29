@@ -1,0 +1,14 @@
+HTTP/2 200 
+content-type: application/json
+vary: origin, access-control-request-method, access-control-request-headers
+x-request-id: 50f15f42-40aa-4fb0-b9d3-38832b9b8f9e
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+x-frame-options: DENY
+strict-transport-security: max-age=31536000; includeSubDomains
+permissions-policy: camera=(), microphone=(), geolocation=()
+content-security-policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src https://sociobotcustomers.ciamlogin.com; form-action 'self' https://sociobotcustomers.ciamlogin.com; img-src 'self' data: https://*.msauthimages.net; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self' https://sociobotcustomers.ciamlogin.com https://pilot-api.sociobot.in https://api.sociobot.in; manifest-src 'self'; worker-src 'self'
+cache-control: no-cache, max-age=0, must-revalidate
+content-length: 107
+date: Sat, 29 Aug 2026 21:04:19 GMT
+

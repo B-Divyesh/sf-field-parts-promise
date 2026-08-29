@@ -1,0 +1,28 @@
+{
+  "manifestUrl": "https://field-parts-promise.sociobot.in/manifest.webmanifest",
+  "manifestErrors": [],
+  "data": {
+    "name": "Parts Promise",
+    "short_name": "Parts Promise",
+    "description": "Promise job dates from parts held for the job.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#F3F0E7",
+    "theme_color": "#F3F0E7",
+    "icons": [
+      {
+        "src": "/assets/favicon.svg",
+        "sizes": "any",
+        "type": "image/svg+xml",
+        "purpose": "any"
+      },
+      {
+        "src": "/assets/apple-touch-icon.png",
+        "sizes": "180x180",
+        "type": "image/png",
+        "purpose": "any"
+      }
+    ]
+  },
+  "installabilityErrors": []
+}

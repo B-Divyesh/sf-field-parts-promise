@@ -1,0 +1,32 @@
+[
+  {
+    "method": "GET",
+    "url": "https://field-parts-promise.sociobot.in/?demo=1",
+    "resourceType": "document"
+  },
+  {
+    "method": "GET",
+    "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2",
+    "resourceType": "font"
+  },
+  {
+    "method": "GET",
+    "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2",
+    "resourceType": "font"
+  },
+  {
+    "method": "GET",
+    "url": "https://field-parts-promise.sociobot.in/assets/index-Bm3AQnJT.js",
+    "resourceType": "script"
+  },
+  {
+    "method": "GET",
+    "url": "https://field-parts-promise.sociobot.in/assets/index-BMAHt4Cx.css",
+    "resourceType": "stylesheet"
+  },
+  {
+    "method": "GET",
+    "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg",
+    "resourceType": "image"
+  }
+]

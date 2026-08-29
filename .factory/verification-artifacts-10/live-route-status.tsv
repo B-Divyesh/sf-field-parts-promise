@@ -1,0 +1,14 @@
+200	/
+200	/demo
+200	/?demo=1
+200	/jobs
+200	/auth/callback
+200	/onboarding
+200	/settings/team
+200	/settings/billing
+200	/privacy
+200	/terms
+200	/robots.txt
+200	/sitemap.xml
+200	/manifest.webmanifest
+404	/not-on-this-drawing
