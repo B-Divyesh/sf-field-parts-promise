@@ -1,55 +1,53 @@
-# Parts Promise — independent QA 6 handoff
+# Parts Promise — adversarial review 2 handoff
 
-## Status: PASS
+## Status: FAIL
 
-Candidate commit: `5b6b4dec17864f2c25761e532dacea383e483fc7`
+Review report: `.factory/review-2.md`
 
-Live URL: <https://field-parts-promise.sociobot.in>
-Verification report: `.factory/verification-6.md`
+Repository reviewed: `affd0d760eb47189f540223d6b420573b4d2f1ca`
 
-Fresh independent QA confirms that the live `/health` build SHA and the
-deployed JS/CSS hashes match this candidate. The previous deployment-only
-concern is not reproduced.
+Live build: `5b6b4dec17864f2c25761e532dacea383e483fc7`
 
-### What was verified
+## What was done
 
-- All 13 exact commands in `.factory/claims.json` passed after clean `npm ci`.
-- `npm test`, `npm run check`, `npm run format:check`, strict Rust clippy,
-  `npm run build`, and full Playwright (`31 passed`, `17 intentional skips`)
-  passed.
-- The one-click sample demo, allocation/reorder flow, reset boundary, local
-  persistence boundary, offline reload, 390 px layout, keyboard dialog flow,
-  reduced motion, and visual first read passed.
-- Live axe scans across six routes in both themes reported zero serious or
-  critical issues; Lighthouse mobile scored 100 in every category.
-- Live request logs were same-origin GET only; headers, caching, real 404,
-  service-worker update policy, and concurrent health/root smoke checks passed.
+- Opened the live product cold in fresh 390 × 844 and 1440 × 900 Chromium
+  contexts and recorded the first-screen interpretation.
+- Audited every landing-page and README copy unit with word counts.
+- Exercised the one-click sample, allocation, reset, explicit exit, privacy
+  request log, offline behavior, live/demo storage separation, routing,
+  metadata, history focus, links, 404, both themes, and accessibility.
+- Ran all 13 exact claim commands separately after `npm ci` in the fresh clone
+  `/tmp/parts-review-2-n91evP`.
+- Rechecked every finding in review 1 against the live build and source.
+- Made no product-code changes.
 
-### Server/API allowance
+## Result
 
-M1 has no mutable server API, sign-in, billing, or product-unlock endpoint;
-job data is local IndexedDB. `/health` is documented as exempt from the future
-API rate policy and returned 80/80 concurrent 200s, as expected. Therefore no
-non-health API rate allowance or `429`/`Retry-After` behavior exists to test
-in this milestone.
+All declared tests pass, but manual adversarial navigation found one blocking
+sandbox defect: leaving demo through the wordmark or browser Back preserves
+demo changes even though the banner and Privacy page say leaving discards them.
+The report also records missing import/export, incorrect metadata for a missing
+job deep link, and missing focus/announcement when work forms open.
 
-### How to repeat
+## Verification
 
 ```sh
 npm ci
 npm test
-npm run check
-npm run format:check
-cargo clippy --manifest-path server/Cargo.toml --locked --all-targets -- -D warnings
 npm run build
 npm run test:e2e -- --retries=0
 ```
 
-Run each exact command from `.factory/claims.json` for the required claim gate.
+- `npm test`: 12 Vitest and 3 Rust tests passed.
+- `npm run build`: passed; `dist/` produced; 27.58 KB gzip JS.
+- Full Playwright: 31 passed, 17 intentional skips.
+- Exact claim commands from the fresh clone: 13/13 passed.
+- Live axe sweep: zero serious/critical issues across six routes in both
+  themes.
 
-### Defects and next steps
+## Left to do
 
-No defects found. No product-code changes were made during this QA run. M2
-must introduce authenticated API routes, rate limiting with `429` plus
-`Retry-After`, synchronization/conflict handling, and Sociobot Entra/billing
-only when that milestone is in scope.
+Resolve F-2-1 through F-2-4 in `.factory/review-2.md`, add the specified
+regression/claim coverage, deploy the repaired build, and rerun the complete
+review from a fresh context. The next reviewer must verify the wordmark and
+Back exits explicitly; the current suite does not cover them.
