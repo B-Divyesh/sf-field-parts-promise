@@ -1,42 +1,18 @@
-# Parts Promise — adversarial review 4 handoff
+# Parts Promise M2 worker handoff
 
-## Status: PASS
+M2 code is committed, pushed, and deployed from `5b9fcde69434d19d055d71bba5e19e0310a00933`. Live revision `sf-field-parts-promise--0000016` is healthy at <https://field-parts-promise.sociobot.in> and reports PostgreSQL plus ready Entra verification.
 
-Work order: `field-parts-promise-review-4`
+Shipped: Sociobot Entra PKCE sign-in and JWT validation; explicit firm onboarding/local migration; PostgreSQL and SQLite migrations; transaction-local RLS; team roles and invitation activation; versioned/idempotent two-device sync; audit events; technician-seat counting; entitlement write gates with export preserved; real pilot billing adapter; endpoint limits; protected metrics; structured logs; security headers; demo isolation; account/team/billing routes; and the non-root `PORT`-only container.
 
-Review 4 found zero blocking or minor findings and no untested public claim.
-No product code was changed.
+Verification passed:
 
-## What was done
+- `npm test`: 15 frontend checks and 8 API tests.
+- Real PostgreSQL migration/runtime-role onboarding, invitation, seat, sync/export, and cleanup smoke.
+- `cargo clippy --locked -- -D warnings`.
+- 24/24 claim tests; full Playwright run 45 passed with 29 intentional cross-project skips.
+- `npm run build`; initial JS 35.88 KB gzip and CSS 4.17 KB gzip.
+- Live cold route/console/accessibility checks; Lighthouse 93 performance, 100 accessibility, 100 best practices, 100 SEO.
 
-- Reviewed the live site cold at 390 × 844 and 1440 × 900.
-- Audited every landing-page and README copy unit with word counts.
-- Exercised the one-click sample, allocation, reset, offline, request-privacy,
-  and live/demo isolation paths.
-- Ran every exact command in `.factory/claims.json` separately from clean clone
-  `/tmp/field-parts-promise-review-4-hnLvp6`.
-- Rechecked every finding from reviews 1–3 against the live product and source.
-- Checked route metadata, HTTP 404 behavior, deep links, Back/Forward focus and
-  scroll restoration, links, header/footer, axe, keyboard/mobile behavior,
-  privacy, and the product-specific visual identity.
+Acceptance is intentionally blocked. Sociobot has no registered recurring product for this slug: pilot and live checkout both return `404 {"error":"enabled factory product"}`. The adapter returns HTTP 424 and makes no charge. The operator must register the exact $39 base and $8 active-technician prices, expose the recurring seat/event contract, complete test checkout/cancel/refund checks, and run an isolated PostgreSQL restore drill. Azure's seven-day backup retention was verified, but no restore number is claimed.
 
-The complete evidence and reasoning are in `.factory/review-4.md`.
-
-## Verification
-
-- 18/18 registered claim commands: PASS.
-- `npm test`: PASS — 15 Vitest and 3 Rust tests.
-- `npm run build`: PASS — 0 Svelte errors/warnings; `dist/` produced; release
-  Rust binary built.
-- `npm run test:e2e -- --retries=0`: PASS — 39 passed, 23 intentional
-  cross-project skips.
-- `/opt/fleet/lib/verify-url.sh` on `/` and `/?demo=1`: PASS.
-- Live axe sweep: zero serious/critical findings.
-
-Review artifacts are under `.factory/qa-artifacts/review-4-*`.
-
-## Known gaps and next steps
-
-No review gap remains. The shipped scope is deliberately and visibly limited
-to a solo tradesperson in one browser; team sync, barcode scanning, supplier
-ordering, accounts, and checkout are not presented as available.
+Full evidence, commands, plan correction, operator actions, and M3 prerequisites are in [`.factory/handoff-m2.md`](handoff-m2.md).
