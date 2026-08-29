@@ -1,0 +1,124 @@
+{
+  "base": "https://field-parts-promise.sociobot.in",
+  "generatedAt": "2026-08-29T12:36:42.232Z",
+  "supplierConservation": {
+    "secondStatus": "⌁\nDate at risk\nCondensate pump needs 1 each.",
+    "supplierState": {
+      "onHand": 1,
+      "allocated": 1
+    }
+  },
+  "dialogs": [
+    {
+      "dialog": "Reset the sample job?",
+      "focusStayedInside": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "restored": true
+    },
+    {
+      "dialog": "Leave the sample workspace?",
+      "focusStayedInside": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "restored": true
+    }
+  ],
+  "privacy": {
+    "requests": 18,
+    "allSameOrigin": true,
+    "allReadOnly": true,
+    "consoleErrors": [],
+    "pageErrors": []
+  },
+  "realSupplierEvidence": {
+    "actionCount": 1,
+    "status": "◷\nExpected before visit\nSUP-REAL-1 is confirmed by supplier for 2026-09-01."
+  },
+  "axe": [
+    {
+      "theme": "light",
+      "route": "/",
+      "serious": 0
+    },
+    {
+      "theme": "light",
+      "route": "/?demo=1",
+      "serious": 0
+    },
+    {
+      "theme": "light",
+      "route": "/jobs",
+      "serious": 0
+    },
+    {
+      "theme": "light",
+      "route": "/privacy",
+      "serious": 0
+    },
+    {
+      "theme": "light",
+      "route": "/terms",
+      "serious": 0
+    },
+    {
+      "theme": "light",
+      "route": "/not-on-this-drawing",
+      "serious": 0
+    },
+    {
+      "theme": "dark",
+      "route": "/",
+      "serious": 0
+    },
+    {
+      "theme": "dark",
+      "route": "/?demo=1",
+      "serious": 0
+    },
+    {
+      "theme": "dark",
+      "route": "/jobs",
+      "serious": 0
+    },
+    {
+      "theme": "dark",
+      "route": "/privacy",
+      "serious": 0
+    },
+    {
+      "theme": "dark",
+      "route": "/terms",
+      "serious": 0
+    },
+    {
+      "theme": "dark",
+      "route": "/not-on-this-drawing",
+      "serious": 0
+    }
+  ],
+  "mobile": {
+    "viewport": 390,
+    "documentWidth": 390,
+    "minimumButtonHeight": 44,
+    "text200Percent": {
+      "viewport": 390,
+      "documentWidth": 390
+    }
+  },
+  "offline": {
+    "status": "◎\nParts in hand\nEvery required quantity is held from a van or warehouse.",
+    "errors": [],
+    "caches": [
+      "parts-promise-shell-v3"
+    ]
+  }
+}
