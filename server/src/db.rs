@@ -1,0 +1,871 @@
+use std::{borrow::Cow, time::Duration};
+
+use chrono::Utc;
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
+use sqlx::{any::AnyPoolOptions, Any, AnyPool, Row, Transaction};
+use uuid::Uuid;
+
+use crate::auth::Identity;
+
+const SQLITE_SCHEMA: &str = include_str!("../migrations/sqlite/0001_accounts_sync.sql");
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DatabaseKind {
+    Postgres,
+    Sqlite,
+}
+
+#[derive(Clone)]
+pub struct Database {
+    pool: AnyPool,
+    kind: DatabaseKind,
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum DbError {
+    #[error("The shared workspace is temporarily unavailable.")]
+    Sql(#[from] sqlx::Error),
+    #[error("This account already belongs to a firm.")]
+    AlreadyOnboarded,
+    #[error("Finish firm setup before using team sync.")]
+    NotOnboarded,
+    #[error("This record belongs to another firm or no longer exists.")]
+    NotFound,
+    #[error("This workspace changed on another device. Reload it before saving again.")]
+    VersionConflict,
+    #[error("Subscribe before sending more changes. Existing records and export stay available.")]
+    EntitlementRequired,
+    #[error("Only an owner can make this change.")]
+    OwnerRequired,
+    #[error("That invitation is already on this team.")]
+    DuplicateMember,
+    #[error("The workspace payload is not valid.")]
+    InvalidWorkspace,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct BillingStatus {
+    pub state: String,
+    pub plan: String,
+    pub seat_quantity: i64,
+    pub period_end: Option<String>,
+    pub cloud_writes_allowed: bool,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct Member {
+    pub id: String,
+    pub name: String,
+    pub email: Option<String>,
+    pub role: String,
+    pub status: String,
+    pub consumes_seat: bool,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct Bootstrap {
+    pub onboarding_required: bool,
+    pub user_name: String,
+    pub organization_id: Option<String>,
+    pub organization_name: Option<String>,
+    pub role: Option<String>,
+    pub locale: Option<String>,
+    pub time_zone: Option<String>,
+    pub workspace: Option<Value>,
+    pub version: Option<i64>,
+    pub billing: Option<BillingStatus>,
+    pub members: Vec<Member>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct OnboardingInput {
+    pub organization_name: String,
+    pub locale: String,
+    pub time_zone: String,
+    pub migrate_local_workspace: bool,
+    pub local_item_count: usize,
+    pub workspace: Option<Value>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct SyncInput {
+    pub idempotency_key: String,
+    pub expected_version: i64,
+    pub workspace: Value,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SyncResult {
+    pub version: i64,
+    pub workspace: Value,
+    pub replayed: bool,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct InviteInput {
+    pub email: String,
+    pub role: String,
+}
+
+#[derive(Clone, Debug)]
+struct Membership {
+    user_id: String,
+    organization_id: String,
+    role: String,
+}
+
+impl Database {
+    pub async fn connect(database_url: &str, migration_url: Option<&str>) -> Result<Self, DbError> {
+        sqlx::any::install_default_drivers();
+        let kind = if database_url.starts_with("postgres://")
+            || database_url.starts_with("postgresql://")
+        {
+            DatabaseKind::Postgres
+        } else {
+            DatabaseKind::Sqlite
+        };
+        if kind == DatabaseKind::Postgres {
+            let migrator = sqlx::PgPool::connect(migration_url.unwrap_or(database_url)).await?;
+            let mut product_migrations = sqlx::migrate!("./migrations");
+            product_migrations.set_ignore_missing(true);
+            product_migrations.run(&migrator).await.map_err(|error| {
+                sqlx::Error::Protocol(format!("database migration failed: {error}"))
+            })?;
+            migrator.close().await;
+        }
+        let max_connections = if database_url.contains(":memory:") {
+            1
+        } else {
+            8
+        };
+        let pool = AnyPoolOptions::new()
+            .max_connections(max_connections)
+            .acquire_timeout(Duration::from_secs(8))
+            .connect(database_url)
+            .await?;
+        if kind == DatabaseKind::Sqlite {
+            sqlx::raw_sql(SQLITE_SCHEMA).execute(&pool).await?;
+        }
+        Ok(Self { pool, kind })
+    }
+
+    pub fn kind(&self) -> DatabaseKind {
+        self.kind
+    }
+
+    fn sql<'a>(&self, source: &'a str) -> Cow<'a, str> {
+        if self.kind == DatabaseKind::Sqlite {
+            return Cow::Borrowed(source);
+        }
+        let mut number = 0;
+        let mut output = String::with_capacity(source.len() + 16);
+        for character in source.chars() {
+            if character == '?' {
+                number += 1;
+                output.push('$');
+                output.push_str(&number.to_string());
+            } else {
+                output.push(character);
+            }
+        }
+        Cow::Owned(output)
+    }
+
+    async fn set_context<'a>(
+        &self,
+        tx: &mut Transaction<'a, Any>,
+        identity: &Identity,
+        organization_id: Option<&str>,
+    ) -> Result<(), DbError> {
+        if self.kind == DatabaseKind::Postgres {
+            sqlx::query(&self.sql("SELECT set_config('app.user_oid', ?, true), set_config('app.user_email', ?, true), set_config('app.organization_id', ?, true)"))
+                .bind(&identity.oid)
+                .bind(identity.email.as_deref().unwrap_or(""))
+                .bind(organization_id.unwrap_or(""))
+                .execute(&mut **tx)
+                .await?;
+        }
+        Ok(())
+    }
+
+    async fn membership<'a>(
+        &self,
+        tx: &mut Transaction<'a, Any>,
+        identity: &Identity,
+    ) -> Result<Option<Membership>, DbError> {
+        self.set_context(tx, identity, None).await?;
+        let query = self.sql("SELECT u.id AS user_id, m.organization_id, m.role FROM fpp_users u JOIN fpp_memberships m ON m.user_id=u.id WHERE u.external_oid=? AND m.status='active' LIMIT 1");
+        let row = sqlx::query(&query)
+            .bind(&identity.oid)
+            .fetch_optional(&mut **tx)
+            .await?;
+        Ok(row.map(|row| Membership {
+            user_id: row.get("user_id"),
+            organization_id: row.get("organization_id"),
+            role: row.get("role"),
+        }))
+    }
+
+    async fn resolve_membership<'a>(
+        &self,
+        tx: &mut Transaction<'a, Any>,
+        identity: &Identity,
+    ) -> Result<Option<Membership>, DbError> {
+        if let Some(membership) = self.membership(tx, identity).await? {
+            self.set_context(tx, identity, Some(&membership.organization_id))
+                .await?;
+            return Ok(Some(membership));
+        }
+        let Some(email) = identity
+            .email
+            .as_deref()
+            .map(str::trim)
+            .filter(|email| !email.is_empty())
+        else {
+            return Ok(None);
+        };
+        let pending_oid = format!("pending:{}", email.to_lowercase());
+        let row = sqlx::query(&self.sql("SELECT u.id AS user_id,m.id AS membership_id,m.organization_id,m.role FROM fpp_users u JOIN fpp_memberships m ON m.user_id=u.id WHERE u.external_oid=? AND lower(u.email)=? AND m.status='invited' LIMIT 1"))
+            .bind(&pending_oid)
+            .bind(email.to_lowercase())
+            .fetch_optional(&mut **tx)
+            .await?;
+        let Some(row) = row else {
+            return Ok(None);
+        };
+        let membership = Membership {
+            user_id: row.get("user_id"),
+            organization_id: row.get("organization_id"),
+            role: row.get("role"),
+        };
+        let membership_id: String = row.get("membership_id");
+        self.set_context(tx, identity, Some(&membership.organization_id))
+            .await?;
+        let now = Utc::now().to_rfc3339();
+        let user_update = if self.kind == DatabaseKind::Postgres {
+            self.sql("UPDATE fpp_users SET external_oid=?,display_name=?,email=?,updated_at=CAST(? AS TIMESTAMPTZ) WHERE id=? AND external_oid=?")
+        } else {
+            self.sql("UPDATE fpp_users SET external_oid=?,display_name=?,email=?,updated_at=? WHERE id=? AND external_oid=?")
+        };
+        sqlx::query(&user_update)
+            .bind(&identity.oid)
+            .bind(&identity.name)
+            .bind(&identity.email)
+            .bind(&now)
+            .bind(&membership.user_id)
+            .bind(&pending_oid)
+            .execute(&mut **tx)
+            .await?;
+        let membership_update = if self.kind == DatabaseKind::Postgres {
+            self.sql("UPDATE fpp_memberships SET status='active',updated_at=CAST(? AS TIMESTAMPTZ) WHERE id=?")
+        } else {
+            self.sql("UPDATE fpp_memberships SET status='active',updated_at=? WHERE id=?")
+        };
+        sqlx::query(&membership_update)
+            .bind(&now)
+            .bind(&membership_id)
+            .execute(&mut **tx)
+            .await?;
+        if membership.role == "technician" {
+            let seat_sql = if self.kind == DatabaseKind::Postgres {
+                self.sql("INSERT INTO fpp_technician_seats(id,organization_id,membership_id,active_from,created_at) VALUES(?,?,?,CAST(? AS TIMESTAMPTZ),CAST(? AS TIMESTAMPTZ))")
+            } else {
+                self.sql("INSERT INTO fpp_technician_seats(id,organization_id,membership_id,active_from,created_at) VALUES(?,?,?,?,?)")
+            };
+            sqlx::query(&seat_sql)
+                .bind(Uuid::new_v4().to_string())
+                .bind(&membership.organization_id)
+                .bind(&membership_id)
+                .bind(&now)
+                .bind(&now)
+                .execute(&mut **tx)
+                .await?;
+            sqlx::query(&self.sql("UPDATE fpp_billing_accounts SET seat_quantity=seat_quantity+1 WHERE organization_id=?"))
+                .bind(&membership.organization_id)
+                .execute(&mut **tx)
+                .await?;
+        }
+        let audit_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'membership.accepted','membership',?,CAST(? AS JSONB),CAST(? AS TIMESTAMPTZ))")
+        } else {
+            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'membership.accepted','membership',?,?,?)")
+        };
+        sqlx::query(&audit_sql)
+            .bind(Uuid::new_v4().to_string())
+            .bind(&membership.organization_id)
+            .bind(&membership.user_id)
+            .bind(&membership_id)
+            .bind(json!({"role":membership.role.clone()}).to_string())
+            .bind(&now)
+            .execute(&mut **tx)
+            .await?;
+        Ok(Some(membership))
+    }
+
+    async fn upsert_user<'a>(
+        &self,
+        tx: &mut Transaction<'a, Any>,
+        identity: &Identity,
+    ) -> Result<String, DbError> {
+        let now = Utc::now().to_rfc3339();
+        let existing = sqlx::query(&self.sql("SELECT id FROM fpp_users WHERE external_oid=?"))
+            .bind(&identity.oid)
+            .fetch_optional(&mut **tx)
+            .await?;
+        if let Some(row) = existing {
+            let id: String = row.get("id");
+            let update_user_sql = if self.kind == DatabaseKind::Postgres {
+                self.sql("UPDATE fpp_users SET display_name=?, email=?, updated_at=CAST(? AS TIMESTAMPTZ) WHERE id=?")
+            } else {
+                self.sql("UPDATE fpp_users SET display_name=?, email=?, updated_at=? WHERE id=?")
+            };
+            sqlx::query(&update_user_sql)
+                .bind(&identity.name)
+                .bind(&identity.email)
+                .bind(&now)
+                .bind(&id)
+                .execute(&mut **tx)
+                .await?;
+            return Ok(id);
+        }
+        let id = Uuid::new_v4().to_string();
+        let insert_user_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("INSERT INTO fpp_users(id,external_oid,display_name,email,created_at,updated_at) VALUES(?,?,?,?,CAST(? AS TIMESTAMPTZ),CAST(? AS TIMESTAMPTZ))")
+        } else {
+            self.sql("INSERT INTO fpp_users(id,external_oid,display_name,email,created_at,updated_at) VALUES(?,?,?,?,?,?)")
+        };
+        sqlx::query(&insert_user_sql)
+            .bind(&id)
+            .bind(&identity.oid)
+            .bind(&identity.name)
+            .bind(&identity.email)
+            .bind(&now)
+            .bind(&now)
+            .execute(&mut **tx)
+            .await?;
+        Ok(id)
+    }
+
+    pub async fn bootstrap(&self, identity: &Identity) -> Result<Bootstrap, DbError> {
+        let mut tx = self.pool.begin().await?;
+        let Some(membership) = self.resolve_membership(&mut tx, identity).await? else {
+            tx.commit().await?;
+            return Ok(Bootstrap {
+                onboarding_required: true,
+                user_name: identity.name.clone(),
+                organization_id: None,
+                organization_name: None,
+                role: None,
+                locale: None,
+                time_zone: None,
+                workspace: None,
+                version: None,
+                billing: None,
+                members: vec![],
+            });
+        };
+        let query = self.sql("SELECT o.name,o.locale,o.time_zone,w.version,CAST(w.workspace AS TEXT) AS workspace FROM fpp_organizations o JOIN fpp_workspaces w ON w.organization_id=o.id WHERE o.id=?");
+        let row = sqlx::query(&query)
+            .bind(&membership.organization_id)
+            .fetch_one(&mut *tx)
+            .await?;
+        let workspace_text: String = row.get("workspace");
+        let billing = self
+            .billing_for(&mut tx, &membership.organization_id)
+            .await?;
+        let members = self
+            .members_for(&mut tx, &membership.organization_id)
+            .await?;
+        tx.commit().await?;
+        Ok(Bootstrap {
+            onboarding_required: false,
+            user_name: identity.name.clone(),
+            organization_id: Some(membership.organization_id.clone()),
+            organization_name: Some(row.get("name")),
+            role: Some(membership.role),
+            locale: Some(row.get("locale")),
+            time_zone: Some(row.get("time_zone")),
+            workspace: serde_json::from_str(&workspace_text).ok(),
+            version: Some(row.get("version")),
+            billing: Some(billing),
+            members,
+        })
+    }
+
+    pub async fn onboard(
+        &self,
+        identity: &Identity,
+        input: &OnboardingInput,
+    ) -> Result<Bootstrap, DbError> {
+        if input.organization_name.trim().len() < 2
+            || input.organization_name.trim().len() > 120
+            || input.locale.trim().is_empty()
+            || input.time_zone.trim().is_empty()
+            || input.local_item_count > 10_000
+        {
+            return Err(DbError::InvalidWorkspace);
+        }
+        let workspace = if input.migrate_local_workspace {
+            input.workspace.clone().ok_or(DbError::InvalidWorkspace)?
+        } else {
+            if input.local_item_count != 0 {
+                return Err(DbError::InvalidWorkspace);
+            }
+            empty_workspace()
+        };
+        validate_workspace(&workspace)?;
+        if input.migrate_local_workspace {
+            let item_count = ["jobs", "requirements", "sources", "allocations"]
+                .into_iter()
+                .map(|key| workspace[key].as_array().map_or(0, Vec::len))
+                .sum::<usize>();
+            let contains_demo = workspace["jobs"]
+                .as_array()
+                .is_some_and(|jobs| jobs.iter().any(|job| job["id"] == "job-rd-1042"));
+            if item_count != input.local_item_count || contains_demo {
+                return Err(DbError::InvalidWorkspace);
+            }
+        }
+        let workspace_text =
+            serde_json::to_string(&workspace).map_err(|_| DbError::InvalidWorkspace)?;
+        if workspace_text.len() > 256 * 1024 {
+            return Err(DbError::InvalidWorkspace);
+        }
+        let org_id = Uuid::new_v4().to_string();
+        let mut tx = self.pool.begin().await?;
+        if self.resolve_membership(&mut tx, identity).await?.is_some() {
+            return Err(DbError::AlreadyOnboarded);
+        }
+        self.set_context(&mut tx, identity, Some(&org_id)).await?;
+        let user_id = self.upsert_user(&mut tx, identity).await?;
+        let membership_id = Uuid::new_v4().to_string();
+        let now = Utc::now().to_rfc3339();
+        let organization_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("INSERT INTO fpp_organizations(id,name,locale,time_zone,buffer_days,evidence_stale_hours,created_at,updated_at) VALUES(?,?,?,?,1,72,CAST(? AS TIMESTAMPTZ),CAST(? AS TIMESTAMPTZ))")
+        } else {
+            self.sql("INSERT INTO fpp_organizations(id,name,locale,time_zone,buffer_days,evidence_stale_hours,created_at,updated_at) VALUES(?,?,?,?,1,72,?,?)")
+        };
+        sqlx::query(&organization_sql)
+            .bind(&org_id)
+            .bind(input.organization_name.trim())
+            .bind(input.locale.trim())
+            .bind(input.time_zone.trim())
+            .bind(&now)
+            .bind(&now)
+            .execute(&mut *tx)
+            .await?;
+        let membership_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("INSERT INTO fpp_memberships(id,organization_id,user_id,role,status,created_at,updated_at) VALUES(?,?,?,'owner','active',CAST(? AS TIMESTAMPTZ),CAST(? AS TIMESTAMPTZ))")
+        } else {
+            self.sql("INSERT INTO fpp_memberships(id,organization_id,user_id,role,status,created_at,updated_at) VALUES(?,?,?,'owner','active',?,?)")
+        };
+        sqlx::query(&membership_sql)
+            .bind(&membership_id)
+            .bind(&org_id)
+            .bind(&user_id)
+            .bind(&now)
+            .bind(&now)
+            .execute(&mut *tx)
+            .await?;
+        let workspace_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("INSERT INTO fpp_workspaces(organization_id,version,workspace,updated_by,updated_at) VALUES(?,0,CAST(? AS JSONB),?,CAST(? AS TIMESTAMPTZ))")
+        } else {
+            self.sql("INSERT INTO fpp_workspaces(organization_id,version,workspace,updated_by,updated_at) VALUES(?,0,?,?,?)")
+        };
+        sqlx::query(&workspace_sql)
+            .bind(&org_id)
+            .bind(&workspace_text)
+            .bind(&user_id)
+            .bind(&now)
+            .execute(&mut *tx)
+            .await?;
+        let billing_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("INSERT INTO fpp_billing_accounts(organization_id,plan,seat_quantity,state,updated_at) VALUES(?,'workshop',0,'pending',CAST(? AS TIMESTAMPTZ))")
+        } else {
+            self.sql("INSERT INTO fpp_billing_accounts(organization_id,plan,seat_quantity,state,updated_at) VALUES(?,'workshop',0,'pending',?)")
+        };
+        sqlx::query(&billing_sql)
+            .bind(&org_id)
+            .bind(&now)
+            .execute(&mut *tx)
+            .await?;
+        let summary = json!({"migrated": input.migrate_local_workspace, "item_count": input.local_item_count}).to_string();
+        let audit_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'organization.created','organization',?,CAST(? AS JSONB),CAST(? AS TIMESTAMPTZ))")
+        } else {
+            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'organization.created','organization',?,?,?)")
+        };
+        sqlx::query(&audit_sql)
+            .bind(Uuid::new_v4().to_string())
+            .bind(&org_id)
+            .bind(&user_id)
+            .bind(&org_id)
+            .bind(summary)
+            .bind(&now)
+            .execute(&mut *tx)
+            .await?;
+        tx.commit().await?;
+        self.bootstrap(identity).await
+    }
+
+    pub async fn sync(
+        &self,
+        identity: &Identity,
+        input: &SyncInput,
+    ) -> Result<SyncResult, DbError> {
+        Uuid::parse_str(&input.idempotency_key).map_err(|_| DbError::InvalidWorkspace)?;
+        validate_workspace(&input.workspace)?;
+        let workspace_text =
+            serde_json::to_string(&input.workspace).map_err(|_| DbError::InvalidWorkspace)?;
+        if workspace_text.len() > 256 * 1024 {
+            return Err(DbError::InvalidWorkspace);
+        }
+        let mut tx = self.pool.begin().await?;
+        let membership = self
+            .resolve_membership(&mut tx, identity)
+            .await?
+            .ok_or(DbError::NotOnboarded)?;
+        let billing = self
+            .billing_for(&mut tx, &membership.organization_id)
+            .await?;
+        if !billing.cloud_writes_allowed {
+            return Err(DbError::EntitlementRequired);
+        }
+        let replay_query = if self.kind == DatabaseKind::Postgres {
+            self.sql("SELECT response::text AS response FROM fpp_sync_operations WHERE organization_id=? AND idempotency_key=?")
+        } else {
+            self.sql("SELECT response FROM fpp_sync_operations WHERE organization_id=? AND idempotency_key=?")
+        };
+        let replay = sqlx::query(&replay_query)
+            .bind(&membership.organization_id)
+            .bind(&input.idempotency_key)
+            .fetch_optional(&mut *tx)
+            .await?;
+        if let Some(row) = replay {
+            let response_text: String = row.get("response");
+            let mut result: SyncResult =
+                serde_json::from_str(&response_text).map_err(|_| DbError::InvalidWorkspace)?;
+            result.replayed = true;
+            tx.commit().await?;
+            return Ok(result);
+        }
+        let current =
+            sqlx::query(&self.sql("SELECT version FROM fpp_workspaces WHERE organization_id=?"))
+                .bind(&membership.organization_id)
+                .fetch_optional(&mut *tx)
+                .await?
+                .ok_or(DbError::NotFound)?;
+        let version: i64 = current.get("version");
+        if version != input.expected_version {
+            return Err(DbError::VersionConflict);
+        }
+        let next_version = version + 1;
+        let now = Utc::now().to_rfc3339();
+        let update_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("UPDATE fpp_workspaces SET version=?,workspace=CAST(? AS JSONB),updated_by=?,updated_at=CAST(? AS TIMESTAMPTZ) WHERE organization_id=? AND version=?")
+        } else {
+            self.sql("UPDATE fpp_workspaces SET version=?,workspace=?,updated_by=?,updated_at=? WHERE organization_id=? AND version=?")
+        };
+        let updated = sqlx::query(&update_sql)
+            .bind(next_version)
+            .bind(&workspace_text)
+            .bind(&membership.user_id)
+            .bind(&now)
+            .bind(&membership.organization_id)
+            .bind(version)
+            .execute(&mut *tx)
+            .await?;
+        if updated.rows_affected() != 1 {
+            return Err(DbError::VersionConflict);
+        }
+        let result = SyncResult {
+            version: next_version,
+            workspace: input.workspace.clone(),
+            replayed: false,
+        };
+        let response_text =
+            serde_json::to_string(&result).map_err(|_| DbError::InvalidWorkspace)?;
+        let op_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("INSERT INTO fpp_sync_operations(id,organization_id,user_id,idempotency_key,expected_version,applied_version,response,created_at) VALUES(?,?,?,?,?,?,CAST(? AS JSONB),CAST(? AS TIMESTAMPTZ))")
+        } else {
+            self.sql("INSERT INTO fpp_sync_operations(id,organization_id,user_id,idempotency_key,expected_version,applied_version,response,created_at) VALUES(?,?,?,?,?,?,?,?)")
+        };
+        sqlx::query(&op_sql)
+            .bind(Uuid::new_v4().to_string())
+            .bind(&membership.organization_id)
+            .bind(&membership.user_id)
+            .bind(&input.idempotency_key)
+            .bind(version)
+            .bind(next_version)
+            .bind(response_text)
+            .bind(&now)
+            .execute(&mut *tx)
+            .await?;
+        let audit_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'workspace.synced','workspace',?,CAST(? AS JSONB),CAST(? AS TIMESTAMPTZ))")
+        } else {
+            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'workspace.synced','workspace',?,?,?)")
+        };
+        sqlx::query(&audit_sql)
+            .bind(Uuid::new_v4().to_string())
+            .bind(&membership.organization_id)
+            .bind(&membership.user_id)
+            .bind(&membership.organization_id)
+            .bind(
+                json!({"version":next_version,"idempotency_key":input.idempotency_key}).to_string(),
+            )
+            .bind(&now)
+            .execute(&mut *tx)
+            .await?;
+        tx.commit().await?;
+        Ok(result)
+    }
+
+    pub async fn export(&self, identity: &Identity) -> Result<Value, DbError> {
+        let mut tx = self.pool.begin().await?;
+        let membership = self
+            .resolve_membership(&mut tx, identity)
+            .await?
+            .ok_or(DbError::NotOnboarded)?;
+        let query = if self.kind == DatabaseKind::Postgres {
+            "SELECT workspace::text AS workspace FROM fpp_workspaces WHERE organization_id=?"
+        } else {
+            "SELECT workspace FROM fpp_workspaces WHERE organization_id=?"
+        };
+        let text: String = sqlx::query(&self.sql(query))
+            .bind(&membership.organization_id)
+            .fetch_one(&mut *tx)
+            .await?
+            .get("workspace");
+        let workspace = serde_json::from_str(&text).map_err(|_| DbError::InvalidWorkspace)?;
+        tx.commit().await?;
+        Ok(workspace)
+    }
+
+    pub async fn invite(
+        &self,
+        identity: &Identity,
+        input: &InviteInput,
+    ) -> Result<Vec<Member>, DbError> {
+        let mut tx = self.pool.begin().await?;
+        let membership = self
+            .resolve_membership(&mut tx, identity)
+            .await?
+            .ok_or(DbError::NotOnboarded)?;
+        if membership.role != "owner" {
+            return Err(DbError::OwnerRequired);
+        }
+        let email = input.email.trim().to_lowercase();
+        if !email.contains('@')
+            || email.len() > 254
+            || !matches!(input.role.as_str(), "technician" | "coordinator" | "viewer")
+        {
+            return Err(DbError::InvalidWorkspace);
+        }
+        let existing = sqlx::query(&self.sql("SELECT m.id FROM fpp_memberships m JOIN fpp_users u ON u.id=m.user_id WHERE m.organization_id=? AND lower(u.email)=?"))
+            .bind(&membership.organization_id).bind(&email).fetch_optional(&mut *tx).await?;
+        if existing.is_some() {
+            return Err(DbError::DuplicateMember);
+        }
+        let now = Utc::now().to_rfc3339();
+        let user_id = Uuid::new_v4().to_string();
+        let member_id = Uuid::new_v4().to_string();
+        let invite_user_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("INSERT INTO fpp_users(id,external_oid,display_name,email,created_at,updated_at) VALUES(?,?,?,?,CAST(? AS TIMESTAMPTZ),CAST(? AS TIMESTAMPTZ))")
+        } else {
+            self.sql("INSERT INTO fpp_users(id,external_oid,display_name,email,created_at,updated_at) VALUES(?,?,?,?,?,?)")
+        };
+        sqlx::query(&invite_user_sql)
+            .bind(&user_id)
+            .bind(format!("pending:{email}"))
+            .bind(&email)
+            .bind(&email)
+            .bind(&now)
+            .bind(&now)
+            .execute(&mut *tx)
+            .await?;
+        let invite_membership_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("INSERT INTO fpp_memberships(id,organization_id,user_id,role,status,created_at,updated_at) VALUES(?,?,?,?,'invited',CAST(? AS TIMESTAMPTZ),CAST(? AS TIMESTAMPTZ))")
+        } else {
+            self.sql("INSERT INTO fpp_memberships(id,organization_id,user_id,role,status,created_at,updated_at) VALUES(?,?,?,?,'invited',?,?)")
+        };
+        sqlx::query(&invite_membership_sql)
+            .bind(&member_id)
+            .bind(&membership.organization_id)
+            .bind(&user_id)
+            .bind(&input.role)
+            .bind(&now)
+            .bind(&now)
+            .execute(&mut *tx)
+            .await?;
+        let audit_sql = if self.kind == DatabaseKind::Postgres {
+            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'membership.invited','membership',?,CAST(? AS JSONB),CAST(? AS TIMESTAMPTZ))")
+        } else {
+            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'membership.invited','membership',?,?,?)")
+        };
+        sqlx::query(&audit_sql)
+            .bind(Uuid::new_v4().to_string())
+            .bind(&membership.organization_id)
+            .bind(&membership.user_id)
+            .bind(&member_id)
+            .bind(json!({"role":input.role}).to_string())
+            .bind(&now)
+            .execute(&mut *tx)
+            .await?;
+        tx.commit().await?;
+        let mut tx = self.pool.begin().await?;
+        self.set_context(&mut tx, identity, Some(&membership.organization_id))
+            .await?;
+        let members = self
+            .members_for(&mut tx, &membership.organization_id)
+            .await?;
+        tx.commit().await?;
+        Ok(members)
+    }
+
+    pub async fn billing(&self, identity: &Identity) -> Result<BillingStatus, DbError> {
+        let mut tx = self.pool.begin().await?;
+        let membership = self
+            .resolve_membership(&mut tx, identity)
+            .await?
+            .ok_or(DbError::NotOnboarded)?;
+        let billing = self
+            .billing_for(&mut tx, &membership.organization_id)
+            .await?;
+        tx.commit().await?;
+        Ok(billing)
+    }
+
+    pub async fn require_owner(&self, identity: &Identity) -> Result<(), DbError> {
+        let mut tx = self.pool.begin().await?;
+        let membership = self
+            .resolve_membership(&mut tx, identity)
+            .await?
+            .ok_or(DbError::NotOnboarded)?;
+        if membership.role != "owner" {
+            return Err(DbError::OwnerRequired);
+        }
+        tx.commit().await?;
+        Ok(())
+    }
+
+    async fn billing_for<'a>(
+        &self,
+        tx: &mut Transaction<'a, Any>,
+        organization_id: &str,
+    ) -> Result<BillingStatus, DbError> {
+        let billing_select = if self.kind == DatabaseKind::Postgres {
+            self.sql("SELECT plan,state,seat_quantity,period_end::text AS period_end FROM fpp_billing_accounts WHERE organization_id=?")
+        } else {
+            self.sql("SELECT plan,state,seat_quantity,period_end FROM fpp_billing_accounts WHERE organization_id=?")
+        };
+        let row = sqlx::query(&billing_select)
+            .bind(organization_id)
+            .fetch_one(&mut **tx)
+            .await?;
+        let state: String = row.get("state");
+        Ok(BillingStatus {
+            plan: row.get("plan"),
+            seat_quantity: row.get("seat_quantity"),
+            period_end: row.try_get("period_end").ok(),
+            cloud_writes_allowed: matches!(state.as_str(), "active" | "grace"),
+            state,
+        })
+    }
+
+    async fn members_for<'a>(
+        &self,
+        tx: &mut Transaction<'a, Any>,
+        organization_id: &str,
+    ) -> Result<Vec<Member>, DbError> {
+        let rows = sqlx::query(&self.sql("SELECT m.id,u.display_name,u.email,m.role,m.status FROM fpp_memberships m JOIN fpp_users u ON u.id=m.user_id WHERE m.organization_id=? ORDER BY CASE m.role WHEN 'owner' THEN 0 ELSE 1 END,u.display_name"))
+            .bind(organization_id).fetch_all(&mut **tx).await?;
+        Ok(rows
+            .into_iter()
+            .map(|row| {
+                let role: String = row.get("role");
+                let status: String = row.get("status");
+                Member {
+                    id: row.get("id"),
+                    name: row.get("display_name"),
+                    email: row.try_get("email").ok(),
+                    consumes_seat: role == "technician" && status == "active",
+                    role,
+                    status,
+                }
+            })
+            .collect())
+    }
+
+    #[cfg(any(test, debug_assertions))]
+    pub async fn set_billing_state_for_test(
+        &self,
+        identity: &Identity,
+        state: &str,
+    ) -> Result<(), DbError> {
+        let mut tx = self.pool.begin().await?;
+        let membership = self
+            .resolve_membership(&mut tx, identity)
+            .await?
+            .ok_or(DbError::NotOnboarded)?;
+        let seats: i64 = sqlx::query(&self.sql("SELECT COUNT(*) AS count FROM fpp_memberships WHERE organization_id=? AND role='technician' AND status='active'"))
+            .bind(&membership.organization_id).fetch_one(&mut *tx).await?.get("count");
+        sqlx::query(&self.sql(
+            "UPDATE fpp_billing_accounts SET state=?,seat_quantity=? WHERE organization_id=?",
+        ))
+        .bind(state)
+        .bind(seats)
+        .bind(&membership.organization_id)
+        .execute(&mut *tx)
+        .await?;
+        tx.commit().await?;
+        Ok(())
+    }
+
+    #[cfg(test)]
+    pub async fn delete_test_identity(&self, identity: &Identity) -> Result<(), DbError> {
+        let mut tx = self.pool.begin().await?;
+        if let Some(membership) = self.resolve_membership(&mut tx, identity).await? {
+            sqlx::query(&self.sql("DELETE FROM fpp_organizations WHERE id=?"))
+                .bind(&membership.organization_id)
+                .execute(&mut *tx)
+                .await?;
+            sqlx::query(&self.sql("DELETE FROM fpp_users WHERE id=?"))
+                .bind(&membership.user_id)
+                .execute(&mut *tx)
+                .await?;
+        }
+        tx.commit().await?;
+        Ok(())
+    }
+
+    #[cfg(test)]
+    pub async fn delete_postgres_smoke_records(&self) -> Result<(), DbError> {
+        if self.kind == DatabaseKind::Postgres {
+            sqlx::query("DELETE FROM fpp_organizations o USING fpp_memberships m, fpp_users u WHERE m.organization_id=o.id AND m.user_id=u.id AND u.display_name IN ('PostgreSQL smoke','Runtime RLS smoke')")
+                .execute(&self.pool).await?;
+            sqlx::query("DELETE FROM fpp_users WHERE display_name IN ('PostgreSQL smoke','Runtime RLS smoke')")
+                .execute(&self.pool)
+                .await?;
+        }
+        Ok(())
+    }
+}
+
+fn empty_workspace() -> Value {
+    json!({"schemaVersion":1,"jobs":[],"requirements":[],"sources":[],"allocations":[]})
+}
+
+fn validate_workspace(workspace: &Value) -> Result<(), DbError> {
+    let object = workspace.as_object().ok_or(DbError::InvalidWorkspace)?;
+    if object.get("schemaVersion").and_then(Value::as_i64) != Some(1) {
+        return Err(DbError::InvalidWorkspace);
+    }
+    for key in ["jobs", "requirements", "sources", "allocations"] {
+        if !object.get(key).is_some_and(Value::is_array) {
+            return Err(DbError::InvalidWorkspace);
+        }
+    }
+    Ok(())
+}

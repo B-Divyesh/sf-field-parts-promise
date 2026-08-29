@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS fpp_billing_events;
+DROP TABLE IF EXISTS fpp_billing_accounts;
+DROP TABLE IF EXISTS fpp_technician_seats;
+DROP TABLE IF EXISTS fpp_audit_events;
+DROP TABLE IF EXISTS fpp_sync_operations;
+DROP TABLE IF EXISTS fpp_workspaces;
+DROP TABLE IF EXISTS fpp_memberships;
+DROP TABLE IF EXISTS fpp_organizations;
+DROP TABLE IF EXISTS fpp_users;

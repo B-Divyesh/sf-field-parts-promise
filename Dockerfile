@@ -16,6 +16,7 @@ WORKDIR /build
 
 COPY server/Cargo.toml server/Cargo.lock ./server/
 COPY server/src ./server/src
+COPY server/migrations ./server/migrations
 RUN cargo build --manifest-path server/Cargo.toml --release --locked
 
 FROM gcr.io/distroless/cc-debian12:nonroot

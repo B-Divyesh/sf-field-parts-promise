@@ -1,8 +1,18 @@
-use std::{env, net::SocketAddr};
+use std::{env, fs, net::SocketAddr, path::PathBuf};
 
 use tokio::net::TcpListener;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
+
+#[derive(serde::Deserialize)]
+struct ManagedIdentityToken {
+    access_token: String,
+}
+
+#[derive(serde::Deserialize)]
+struct KeyVaultSecret {
+    value: String,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -24,19 +34,126 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "default"
     };
 
+    let (database_url, migration_url, database_source) = load_database_config().await;
+    let database =
+        parts_promise_api::db::Database::connect(&database_url, migration_url.as_deref()).await?;
+    let auth = parts_promise_api::auth::AuthVerifier::from_environment().await;
+    let auth_source = if auth.is_available() {
+        "supplied_defaults_discovered"
+    } else {
+        "discovery_unavailable"
+    };
+    let (metrics_token, metrics_token_source) = load_or_create_metrics_token()?;
+
     let address = SocketAddr::from(([0, 0, 0, 0], port));
     let listener = TcpListener::bind(address).await?;
 
     info!(
         port,
-        port_source, build_sha, build_sha_source, "Parts Promise API scaffold is listening"
+        port_source,
+        build_sha,
+        build_sha_source,
+        database_source,
+        metrics_token_source,
+        auth_source,
+        "Parts Promise is listening"
     );
 
-    axum::serve(listener, parts_promise_api::app(build_sha))
-        .with_graceful_shutdown(shutdown_signal())
-        .await?;
+    axum::serve(
+        listener,
+        parts_promise_api::app(build_sha, database, auth, metrics_token).await,
+    )
+    .with_graceful_shutdown(shutdown_signal())
+    .await?;
 
     Ok(())
+}
+
+async fn load_database_config() -> (String, Option<String>, &'static str) {
+    if let Ok(database_url) = env::var("DATABASE_URL") {
+        return (
+            database_url,
+            env::var("DATABASE_MIGRATION_URL").ok(),
+            "supplied",
+        );
+    }
+    if let Some((runtime, migration)) = key_vault_database_urls().await {
+        return (runtime, Some(migration), "managed_identity_key_vault");
+    }
+    (
+        "sqlite:///tmp/field-parts-promise.db?mode=rwc".to_owned(),
+        None,
+        "generated_local_fallback",
+    )
+}
+
+async fn key_vault_database_urls() -> Option<(String, String)> {
+    let endpoint = env::var("IDENTITY_ENDPOINT").ok()?;
+    let identity_header = env::var("IDENTITY_HEADER").ok()?;
+    let client_id = env::var("MANAGED_IDENTITY_CLIENT_ID")
+        .unwrap_or_else(|_| "ba10d5bc-6375-4325-8892-4c7a5be500ca".to_owned());
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(8))
+        .build()
+        .ok()?;
+    let token = client
+        .get(endpoint)
+        .header("X-IDENTITY-HEADER", identity_header)
+        .query(&[
+            ("api-version", "2019-08-01"),
+            ("resource", "https://vault.azure.net"),
+            ("client_id", client_id.as_str()),
+        ])
+        .send()
+        .await
+        .ok()?
+        .error_for_status()
+        .ok()?
+        .json::<ManagedIdentityToken>()
+        .await
+        .ok()?;
+    async fn secret(client: &reqwest::Client, token: &str, name: &str) -> Option<String> {
+        client
+            .get(format!(
+                "https://sociobot-keyvault1.vault.azure.net/secrets/{name}?api-version=7.4"
+            ))
+            .bearer_auth(token)
+            .send()
+            .await
+            .ok()?
+            .error_for_status()
+            .ok()?
+            .json::<KeyVaultSecret>()
+            .await
+            .ok()
+            .map(|secret| secret.value)
+    }
+    let runtime = secret(&client, &token.access_token, "sociobot-db-runtime-url").await?;
+    let migration = secret(&client, &token.access_token, "sociobot-db-migration-url").await?;
+    Some((runtime, migration))
+}
+
+fn load_or_create_metrics_token() -> Result<(String, &'static str), Box<dyn std::error::Error>> {
+    if let Ok(token) = env::var("METRICS_TOKEN") {
+        return Ok((token, "supplied"));
+    }
+    let data_dir = env::var("DATA_DIR").unwrap_or_else(|_| "/tmp/parts-promise".to_owned());
+    let path = PathBuf::from(data_dir).join("metrics.token");
+    if let Ok(token) = fs::read_to_string(&path) {
+        if !token.trim().is_empty() {
+            return Ok((token.trim().to_owned(), "persisted"));
+        }
+    }
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    let token = format!(
+        "{}{}",
+        uuid::Uuid::new_v4().simple(),
+        uuid::Uuid::new_v4().simple()
+    );
+    fs::write(path, &token)?;
+    Ok((token, "generated"))
 }
 
 async fn shutdown_signal() {
