@@ -28,6 +28,14 @@
     Workspace
   } from './lib/domain/types';
   import {
+    CSV_TEMPLATE,
+    backupFilename,
+    createWorkspaceBackup,
+    parseWorkspaceBackup,
+    parseWorkspaceCsv,
+    type ImportPreview
+  } from './lib/domain/workspace-transfer';
+  import {
     deleteWorkspace,
     loadWorkspace,
     resetDemo,
@@ -52,10 +60,24 @@
   let showPartForm = false;
   let showSourceForm = false;
   let showSupplierForm = false;
+  let showImportForm = false;
   let allocationRequirementId = '';
   let allocationSourceId = '';
   let allocationQuantity = 1;
   let formError = '';
+  let importPreview: ImportPreview | null = null;
+  let importFileName = '';
+  let routeAnnouncement = '';
+
+  type SheetName =
+    | 'add-job'
+    | 'edit-job'
+    | 'add-part'
+    | 'allocation'
+    | 'source'
+    | 'supplier'
+    | 'import';
+  const sheetTriggers: Partial<Record<SheetName, HTMLElement>> = {};
 
   let jobNumber = '';
   let jobSite = '';
@@ -75,9 +97,13 @@
   let supplierDate = '';
   let supplierConfidence: SupplierConfidence = 'Confirmed by supplier';
 
-  $: page = getPage(currentPath, demo);
-  $: activeJobId = page === 'job' ? jobIdFromPath(currentPath, demo) : '';
+  $: routePage = getPage(currentPath, demo);
+  $: activeJobId = routePage === 'job' ? jobIdFromPath(currentPath, demo) : '';
   $: activeJob = workspace?.jobs.find((job) => job.id === activeJobId);
+  $: page =
+    routePage === 'job' && !loading && workspace && !activeJob
+      ? 'not-found'
+      : routePage;
   $: metadata = pageMetadata(page, activeJob);
   $: updateDocumentMetadata(metadata);
   $: activeStatus =
@@ -164,7 +190,7 @@
       return {
         title: 'Page not found — Parts Promise',
         description: 'The requested Parts Promise page is not available.',
-        canonical
+        canonical: '/'
       };
     return {
       title: 'Parts Promise — Hold parts for each job',
@@ -194,6 +220,12 @@
         else element.setAttribute('content', value);
       }
     }
+    document
+      .getElementById('route-robots')
+      ?.setAttribute(
+        'content',
+        page === 'not-found' ? 'noindex' : 'index,follow'
+      );
   }
 
   function mode(): WorkspaceMode {
@@ -235,10 +267,13 @@
   }
 
   async function syncRoute(shouldFocus: boolean) {
-    currentPath = window.location.pathname;
-    demo =
+    const nextPath = window.location.pathname;
+    const nextDemo =
       new URLSearchParams(window.location.search).get('demo') === '1' ||
-      currentPath === '/demo';
+      nextPath === '/demo';
+    if (demo && !nextDemo) await deleteWorkspace('demo');
+    currentPath = nextPath;
+    demo = nextDemo;
     await loadCurrentWorkspace();
     if (shouldFocus) await focusPageHeading();
   }
@@ -258,6 +293,45 @@
   async function focusPageHeading() {
     await tick();
     document.querySelector<HTMLElement>('main h1')?.focus();
+    routeAnnouncement = metadata.title;
+  }
+
+  async function revealSheet(name: SheetName, trigger: HTMLElement) {
+    sheetTriggers[name] = trigger;
+    await tick();
+    const sheet = document.getElementById(`${name}-sheet`);
+    sheet?.scrollIntoView({
+      block: 'start',
+      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches
+        ? 'auto'
+        : 'smooth'
+    });
+    sheet?.querySelector<HTMLElement>('h2, input, select')?.focus();
+  }
+
+  async function closeSheet(name: SheetName, close: () => void) {
+    close();
+    formError = '';
+    await tick();
+    sheetTriggers[name]?.focus();
+  }
+
+  async function openAddJob(event: MouseEvent) {
+    showAddJob = true;
+    formError = '';
+    await revealSheet('add-job', event.currentTarget as HTMLElement);
+  }
+
+  async function openPartForm(event: MouseEvent) {
+    showPartForm = true;
+    formError = '';
+    await revealSheet('add-part', event.currentTarget as HTMLElement);
+  }
+
+  async function openSourceForm(event: MouseEvent) {
+    showSourceForm = true;
+    formError = '';
+    await revealSheet('source', event.currentTarget as HTMLElement);
   }
 
   function changeTheme() {
@@ -298,7 +372,6 @@
   }
 
   async function confirmExitDemo() {
-    await deleteWorkspace('demo');
     exitDialog?.close();
     await navigate('/jobs');
     toast = 'Your local workspace is open. Sample changes were discarded.';
@@ -312,7 +385,10 @@
     );
   }
 
-  function openAllocation(requirement: PartRequirement) {
+  async function openAllocation(
+    requirement: PartRequirement,
+    trigger: HTMLElement
+  ) {
     if (!workspace) return;
     allocationRequirementId = requirement.id;
     const source = sourcesForRequirement(workspace, requirement).find(
@@ -324,6 +400,7 @@
       requirement.quantity - coveredQuantity(workspace, requirement.id)
     );
     formError = '';
+    await revealSheet('allocation', trigger);
   }
 
   async function saveAllocation() {
@@ -361,8 +438,7 @@
       result.workspace,
       `${formatQuantity(allocation.quantity, allocation.unit)} from ${source.name} is held for ${activeJob.number}.`
     );
-    allocationRequirementId = '';
-    formError = '';
+    await closeSheet('allocation', () => (allocationRequirementId = ''));
   }
 
   async function deallocate(allocationId: string) {
@@ -436,17 +512,120 @@
     job.visitDate = jobDate;
     job.updatedAt = new Date().toISOString();
     await commit(next, 'The job details were updated on this device.');
-    showEditJob = false;
-    formError = '';
+    await closeSheet('edit-job', () => (showEditJob = false));
   }
 
-  function beginEditJob() {
+  async function beginEditJob(event: MouseEvent) {
     if (!activeJob) return;
     jobNumber = activeJob.number;
     jobSite = activeJob.site;
     jobDate = activeJob.visitDate;
     showEditJob = true;
     formError = '';
+    await revealSheet('edit-job', event.currentTarget as HTMLElement);
+  }
+
+  async function openSupplierForm(
+    requirement: PartRequirement,
+    quantity: number,
+    trigger: HTMLElement
+  ) {
+    allocationRequirementId = requirement.id;
+    allocationQuantity = quantity;
+    formError = '';
+    showSupplierForm = true;
+    await revealSheet('supplier', trigger);
+  }
+
+  async function openImportForm(event: MouseEvent) {
+    showImportForm = true;
+    importPreview = null;
+    importFileName = '';
+    await revealSheet('import', event.currentTarget as HTMLElement);
+  }
+
+  function downloadText(filename: string, text: string, type: string) {
+    const url = URL.createObjectURL(new Blob([text], { type }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+
+  function exportWorkspace() {
+    if (!workspace) return;
+    downloadText(
+      backupFilename(),
+      `${JSON.stringify(createWorkspaceBackup(workspace), null, 2)}\n`,
+      'application/json'
+    );
+    toast = `${demo ? 'Sample' : 'Local'} workspace backup downloaded.`;
+  }
+
+  function downloadCsvTemplate() {
+    downloadText('parts-promise-import-template.csv', CSV_TEMPLATE, 'text/csv');
+  }
+
+  async function previewImport(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    importFileName = file.name;
+    if (file.size > 2_000_000) {
+      importPreview = {
+        format: file.name.toLowerCase().endsWith('.json') ? 'json' : 'csv',
+        workspace: null,
+        counts: { jobs: 0, requirements: 0, sources: 0, allocations: 0 },
+        errors: [
+          'The import is larger than 2 MB. Split the CSV or choose a smaller backup.'
+        ]
+      };
+      return;
+    }
+    const text = await file.text();
+    importPreview = file.name.toLowerCase().endsWith('.json')
+      ? parseWorkspaceBackup(text)
+      : parseWorkspaceCsv(text);
+  }
+
+  async function applyImport() {
+    if (!workspace || !importPreview?.workspace || importPreview.errors.length)
+      return;
+    let next = importPreview.workspace;
+    if (importPreview.format === 'csv') {
+      const existingNumbers = new Set(
+        workspace.jobs.map((job) => job.number.toLowerCase())
+      );
+      const repeated = next.jobs.find((job) =>
+        existingNumbers.has(job.number.toLowerCase())
+      );
+      if (repeated) {
+        importPreview = {
+          ...importPreview,
+          errors: [
+            `Job number ${repeated.number} already exists in this workspace.`
+          ]
+        };
+        return;
+      }
+      next = {
+        ...workspace,
+        jobs: [...workspace.jobs, ...next.jobs],
+        requirements: [...workspace.requirements, ...next.requirements],
+        sources: [...workspace.sources, ...next.sources]
+      };
+    }
+    await commit(
+      next,
+      `${importFileName} was imported into the ${demo ? 'sample' : 'local'} workspace.`
+    );
+    await closeSheet('import', () => {
+      showImportForm = false;
+      importPreview = null;
+    });
   }
 
   async function createPart() {
@@ -471,8 +650,7 @@
     );
     partDescription = '';
     partQuantity = 1;
-    showPartForm = false;
-    formError = '';
+    await closeSheet('add-part', () => (showPartForm = false));
   }
 
   async function createSource() {
@@ -504,8 +682,7 @@
     sourcePart = '';
     sourceQuantity = 1;
     sourceMinimum = 0;
-    showSourceForm = false;
-    formError = '';
+    await closeSheet('source', () => (showSourceForm = false));
   }
 
   async function createSupplierEvidence() {
@@ -564,11 +741,12 @@
       allocationResult.workspace,
       `Supplier evidence ${supplierReference.trim()} was attached to ${requirement.description}.`
     );
-    showSupplierForm = false;
-    allocationRequirementId = '';
+    await closeSheet('supplier', () => {
+      showSupplierForm = false;
+      allocationRequirementId = '';
+    });
     supplierReference = '';
     supplierDate = '';
-    formError = '';
   }
 
   function formatDate(date: string) {
@@ -681,7 +859,9 @@
 {/if}
 
 <main id="main" tabindex="-1">
-  <p class="sr-only" aria-live="polite">{metadata.title}</p>
+  <p class="sr-only" aria-live="polite" aria-atomic="true">
+    {routeAnnouncement || metadata.title}
+  </p>
 
   {#if storageError}
     <section class="error-sheet" role="alert">
@@ -782,6 +962,32 @@
       <h1 tabindex="-1">Jobs and their parts status</h1>
       <p>Each job shows the one fact that still needs attention.</p>
     </section>
+    <div class="jobs-toolbar">
+      <div class="toolbar-actions">
+        <button
+          class="button"
+          type="button"
+          aria-expanded={showAddJob}
+          aria-controls="add-job-sheet"
+          on:click={openAddJob}>Add a job</button
+        ><button
+          class="button secondary"
+          type="button"
+          aria-expanded={showImportForm}
+          aria-controls="import-sheet"
+          on:click={openImportForm}>Import workspace</button
+        ><button
+          class="button secondary"
+          type="button"
+          on:click={exportWorkspace}>Export workspace</button
+        >
+      </div>
+      <span
+        >{workspace?.jobs.length ?? 0} local job{workspace?.jobs.length === 1
+          ? ''
+          : 's'}</span
+      >
+    </div>
     {#if workspace && workspace.jobs.length === 0}
       <section class="empty-state">
         <span aria-hidden="true">⌁</span>
@@ -789,24 +995,8 @@
         <p>
           Start with the job you need to check before you agree its visit date.
         </p>
-        <button
-          class="button"
-          type="button"
-          on:click={() => (showAddJob = true)}>Add a job</button
-        >
       </section>
     {:else}
-      <div class="jobs-toolbar">
-        <button
-          class="button"
-          type="button"
-          on:click={() => (showAddJob = true)}>Add a job</button
-        ><span
-          >{workspace?.jobs.length ?? 0} local job{workspace?.jobs.length === 1
-            ? ''
-            : 's'}</span
-        >
-      </div>
       <div class="job-list">
         {#each workspace?.jobs ?? [] as job}
           {@const status = promiseStatus(workspace!, job)}
@@ -838,8 +1028,12 @@
           >
         </p>
       </div>
-      <button class="button secondary" type="button" on:click={beginEditJob}
-        >Edit job</button
+      <button
+        class="button secondary"
+        type="button"
+        aria-expanded={showEditJob}
+        aria-controls="edit-job-sheet"
+        on:click={beginEditJob}>Edit job</button
       >
     </section>
     <StatusPlate status={activeStatus} />
@@ -852,7 +1046,9 @@
         <button
           class="button secondary"
           type="button"
-          on:click={() => (showPartForm = true)}>Add required part</button
+          aria-expanded={showPartForm}
+          aria-controls="add-part-sheet"
+          on:click={openPartForm}>Add required part</button
         >
       </div>
       {#each requirementsFor(activeJob) as requirement}
@@ -905,17 +1101,25 @@
                 ? 'allocate-pump'
                 : undefined}
               type="button"
-              on:click={() => openAllocation(requirement)}>Allocate part</button
+              aria-expanded={allocationRequirementId === requirement.id &&
+                !showSupplierForm}
+              aria-controls="allocation-sheet"
+              on:click={(event) =>
+                openAllocation(requirement, event.currentTarget as HTMLElement)}
+              >Allocate part</button
             ><button
               class="button secondary"
               type="button"
               disabled={covered >= requirement.quantity}
-              on:click={() => {
-                allocationRequirementId = requirement.id;
-                allocationQuantity = requirement.quantity - covered;
-                formError = '';
-                showSupplierForm = true;
-              }}>Check supplier date</button
+              aria-expanded={showSupplierForm &&
+                allocationRequirementId === requirement.id}
+              aria-controls="supplier-sheet"
+              on:click={(event) =>
+                openSupplierForm(
+                  requirement,
+                  requirement.quantity - covered,
+                  event.currentTarget as HTMLElement
+                )}>Check supplier date</button
             >
           </div>
         </article>
@@ -960,7 +1164,9 @@
       <button
         class="button secondary"
         type="button"
-        on:click={() => (showSourceForm = true)}>Add a source</button
+        aria-expanded={showSourceForm}
+        aria-controls="source-sheet"
+        on:click={openSourceForm}>Add a source</button
       >
     </section>
   {:else if page === 'privacy'}
@@ -985,7 +1191,10 @@
         access.
       </p>
       <h2>Your control</h2>
-      <p>Use your browser's site-data controls to remove local records.</p>
+      <p>
+        Export a versioned backup before moving devices or clearing browser
+        data. Browser site-data controls remove local records.
+      </p>
     </section>
   {:else if page === 'terms'}
     <section class="legal-copy">
@@ -1021,13 +1230,20 @@
   {/if}
 
   {#if showAddJob}
-    <section class="work-sheet" aria-labelledby="add-job-title">
+    <section
+      id="add-job-sheet"
+      class="work-sheet"
+      aria-labelledby="add-job-title"
+    >
       <div class="sheet-heading">
-        <h2 id="add-job-title">Add a job and its first required part</h2>
+        <h2 id="add-job-title" tabindex="-1">
+          Add a job and its first required part
+        </h2>
         <button
           class="text-button"
           type="button"
-          on:click={() => (showAddJob = false)}>Close</button
+          on:click={() => closeSheet('add-job', () => (showAddJob = false))}
+          >Close</button
         >
       </div>
       <form on:submit|preventDefault={createJob}>
@@ -1062,13 +1278,18 @@
   {/if}
 
   {#if showEditJob}
-    <section class="work-sheet" aria-labelledby="edit-job-title">
+    <section
+      id="edit-job-sheet"
+      class="work-sheet"
+      aria-labelledby="edit-job-title"
+    >
       <div class="sheet-heading">
-        <h2 id="edit-job-title">Edit this job</h2>
+        <h2 id="edit-job-title" tabindex="-1">Edit this job</h2>
         <button
           class="text-button"
           type="button"
-          on:click={() => (showEditJob = false)}>Close</button
+          on:click={() => closeSheet('edit-job', () => (showEditJob = false))}
+          >Close</button
         >
       </div>
       <form on:submit|preventDefault={updateJob}>
@@ -1093,13 +1314,18 @@
   {/if}
 
   {#if showPartForm}
-    <section class="work-sheet" aria-labelledby="add-part-title">
+    <section
+      id="add-part-sheet"
+      class="work-sheet"
+      aria-labelledby="add-part-title"
+    >
       <div class="sheet-heading">
-        <h2 id="add-part-title">Add a required part</h2>
+        <h2 id="add-part-title" tabindex="-1">Add a required part</h2>
         <button
           class="text-button"
           type="button"
-          on:click={() => (showPartForm = false)}>Close</button
+          on:click={() => closeSheet('add-part', () => (showPartForm = false))}
+          >Close</button
         >
       </div>
       <form on:submit|preventDefault={createPart}>
@@ -1133,15 +1359,20 @@
       (item) => item.id === allocationRequirementId
     )}
     <section
+      id="allocation-sheet"
       class="work-sheet allocation-sheet"
       aria-labelledby="allocation-title"
     >
       <div class="sheet-heading">
-        <h2 id="allocation-title">Allocate {requirement?.description}</h2>
+        <h2 id="allocation-title" tabindex="-1">
+          Allocate {requirement?.description}
+        </h2>
         <button
           class="text-button"
           type="button"
-          on:click={() => (allocationRequirementId = '')}>Close</button
+          on:click={() =>
+            closeSheet('allocation', () => (allocationRequirementId = ''))}
+          >Close</button
         >
       </div>
       <p>Choose the source and quantity held for {activeJob?.number}.</p>
@@ -1181,13 +1412,18 @@
   {/if}
 
   {#if showSourceForm}
-    <section class="work-sheet" aria-labelledby="source-title">
+    <section
+      id="source-sheet"
+      class="work-sheet"
+      aria-labelledby="source-title"
+    >
       <div class="sheet-heading">
-        <h2 id="source-title">Add a source</h2>
+        <h2 id="source-title" tabindex="-1">Add a source</h2>
         <button
           class="text-button"
           type="button"
-          on:click={() => (showSourceForm = false)}>Close</button
+          on:click={() => closeSheet('source', () => (showSourceForm = false))}
+          >Close</button
         >
       </div>
       <form on:submit|preventDefault={createSource}>
@@ -1227,16 +1463,23 @@
   {/if}
 
   {#if showSupplierForm}
-    <section class="work-sheet" aria-labelledby="supplier-title">
+    <section
+      id="supplier-sheet"
+      class="work-sheet"
+      aria-labelledby="supplier-title"
+    >
       <div class="sheet-heading">
-        <h2 id="supplier-title">Attach supplier order evidence</h2>
+        <h2 id="supplier-title" tabindex="-1">
+          Attach supplier order evidence
+        </h2>
         <button
           class="text-button"
           type="button"
-          on:click={() => {
-            showSupplierForm = false;
-            allocationRequirementId = '';
-          }}>Close</button
+          on:click={() =>
+            closeSheet('supplier', () => {
+              showSupplierForm = false;
+              allocationRequirementId = '';
+            })}>Close</button
         >
       </div>
       <p>This marks an expected date. It does not guarantee arrival.</p>
@@ -1274,6 +1517,73 @@
           >Attach supplier evidence</button
         >
       </form>
+    </section>
+  {/if}
+
+  {#if showImportForm}
+    <section
+      id="import-sheet"
+      class="work-sheet"
+      aria-labelledby="import-title"
+    >
+      <div class="sheet-heading">
+        <h2 id="import-title" tabindex="-1">Import this workspace</h2>
+        <button
+          class="text-button"
+          type="button"
+          on:click={() =>
+            closeSheet('import', () => {
+              showImportForm = false;
+              importPreview = null;
+            })}>Close</button
+        >
+      </div>
+      <p>
+        CSV adds jobs, required parts, and van or warehouse sources. A JSON
+        backup replaces this {demo ? 'sample' : 'local'} workspace after preview.
+      </p>
+      <button class="text-button" type="button" on:click={downloadCsvTemplate}
+        >Download CSV template</button
+      >
+      <label
+        >Choose a CSV or Parts Promise JSON backup<input
+          type="file"
+          accept=".csv,text/csv,.json,application/json"
+          on:change={previewImport}
+        /></label
+      >
+      {#if importPreview}
+        <section
+          class="import-preview"
+          aria-live="polite"
+          aria-labelledby="preview-import-title"
+        >
+          <h3 id="preview-import-title">Import preview</h3>
+          <p>
+            {importPreview.counts.jobs} jobs · {importPreview.counts
+              .requirements}
+            required parts · {importPreview.counts.sources} sources · {importPreview
+              .counts.allocations}
+            allocations
+          </p>
+          {#if importPreview.errors.length}
+            <div class="form-error" role="alert">
+              <strong>Fix these rows before importing:</strong>
+              <ul>
+                {#each importPreview.errors as error}<li>{error}</li>{/each}
+              </ul>
+            </div>
+          {:else}
+            <p>
+              No row errors found. Only the {demo ? 'sample' : 'local'} workspace
+              will change.
+            </p>
+            <button class="button" type="button" on:click={applyImport}
+              >Import {importFileName}</button
+            >
+          {/if}
+        </section>
+      {/if}
     </section>
   {/if}
 

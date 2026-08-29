@@ -29,10 +29,10 @@
   },
   {
     "id": "demo-reset-isolated",
-    "claim": "Demo changes reset to the bundled sample, and leaving demo reopens the unchanged live local workspace.",
+    "claim": "Demo changes reset to the bundled sample, and every demo exit discards them before reopening the unchanged live local workspace.",
     "where": "M1 demo banner, privacy page, demo guide, and README",
     "test": "npm run test:e2e -- --grep @claim:demo-reset-isolated",
-    "sandbox": "fresh browser context; create a live job, change RD-1042 in demo, reset it, then leave demo and assert the live job survives unchanged"
+    "sandbox": "fresh browser context; create a live job, change RD-1042, leave by wordmark and browser Back, assert the demo database is deleted each time, then use the confirmed exit and assert the live job survives unchanged"
   },
   {
     "id": "offline-reload",
@@ -82,6 +82,27 @@
     "where": "privacy page",
     "test": "npm run test:e2e -- --grep @claim:clear-local-records",
     "sandbox": "fresh Chromium context; create a live job, clear IndexedDB and local storage through the browser storage controls, reload, and assert the live workspace is empty"
+  },
+  {
+    "id": "workspace-backup-roundtrip",
+    "claim": "Export workspace downloads a versioned JSON backup that restores every job, required part, source, allocation, and timestamp.",
+    "where": "jobs toolbar, privacy page, README",
+    "test": "npm run test:e2e -- --grep @claim:workspace-backup-roundtrip",
+    "sandbox": "fresh demo workspace; export JSON, inspect its version and all record lists, change the sample, import the backup after preview, and assert the original promise status is restored"
+  },
+  {
+    "id": "csv-import-validation",
+    "claim": "Import workspace previews CSV jobs, required parts, and sources with row-level validation before saving.",
+    "where": "jobs import sheet and README",
+    "test": "npm run test:e2e -- --grep @claim:csv-import-validation",
+    "sandbox": "fresh live workspace; preview and import valid CSV rows, then preview an invalid quantity and assert its row number is shown and saving is unavailable"
+  },
+  {
+    "id": "demo-transfer-isolated",
+    "claim": "Importing or exporting the sample uses only the demo workspace and never changes the live workspace.",
+    "where": "jobs import sheet, demo guide, README",
+    "test": "npm run test:e2e -- --grep @claim:demo-transfer-isolated",
+    "sandbox": "fresh browser context; create a live job, import a different CSV job while in demo, leave demo, and assert only the original live job exists"
   },
   {
     "id": "container-runtime",

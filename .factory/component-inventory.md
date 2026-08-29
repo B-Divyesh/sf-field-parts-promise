@@ -24,4 +24,4 @@ The Svelte implementation should expose these components from `src/lib/component
 | `ToastRegion` | M1 | Brief noncritical feedback and Undo; info/success/error. | `aria-live` politeness matches severity; timeout pauses on hover/focus; critical errors also appear inline. |
 | `ConfirmDialog` | M1 | Specific destructive or boundary confirmation. | Native/inert background behavior, initial non-destructive focus, Escape, focus restoration, named consequence. |
 | `EmptyState` | M1 | Disconnected-leader fragment, plain explanation, one next action. | Image decorative when text repeats meaning; no dead end; no fabricated data. |
-
+| `WorkspaceTransferSheet` | M1 polish | CSV preview/import and versioned JSON backup/restore in the active workspace. | Row errors announced; import waits for explicit confirmation; opening and closing manage focus; demo/live namespaces never cross. |

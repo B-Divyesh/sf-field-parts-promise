@@ -10,4 +10,6 @@ The demo reads and writes `parts-promise-demo-v1` in IndexedDB. Its browser traf
 
 - **Reset demo** writes the bundled fixture back into the demo database.
 - **Start for real** confirms the boundary, deletes the demo database, and opens `/jobs` with live records unchanged.
+- The wordmark and browser Back also delete the demo database before leaving. Re-entry starts from the bundled fixture.
+- **Import workspace** and **Export workspace** operate only on `parts-promise-demo-v1` while the banner is visible. They never read or write the live database.
 - The service worker caches the shell and sample fixture on the first online visit. Reloading `/?demo=1` and allocating the pump works while offline.

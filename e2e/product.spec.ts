@@ -4,23 +4,31 @@ import { expect, test } from '@playwright/test';
 test('public and app routes have no serious accessibility findings', async ({
   page
 }) => {
-  for (const route of [
-    '/',
-    '/?demo=1',
-    '/jobs',
-    '/privacy',
-    '/terms',
-    '/not-on-this-drawing'
-  ]) {
-    await page.goto(route);
-    await expect(page.locator('main')).toBeVisible();
-    await expect(page.locator('h1')).toHaveCount(1);
-    const results = await new AxeBuilder({ page }).analyze();
-    expect(
-      results.violations
-        .filter((issue) => ['serious', 'critical'].includes(issue.impact ?? ''))
-        .map((issue) => issue.id)
-    ).toEqual([]);
+  for (const theme of ['light', 'dark']) {
+    for (const route of [
+      '/',
+      '/?demo=1',
+      '/jobs',
+      '/privacy',
+      '/terms',
+      '/not-on-this-drawing'
+    ]) {
+      await page.goto(route);
+      await page.evaluate((nextTheme) => {
+        localStorage.setItem('parts-promise-theme', nextTheme);
+      }, theme);
+      await page.reload();
+      await expect(page.locator('main')).toBeVisible();
+      await expect(page.locator('h1')).toHaveCount(1);
+      const results = await new AxeBuilder({ page }).analyze();
+      expect(
+        results.violations
+          .filter((issue) =>
+            ['serious', 'critical'].includes(issue.impact ?? '')
+          )
+          .map((issue) => `${theme}:${route}:${issue.id}`)
+      ).toEqual([]);
+    }
   }
 });
 
@@ -100,6 +108,95 @@ test('each route owns one correct metadata set', async ({ page }) => {
       page.locator('meta[name="twitter:description"]')
     ).toHaveAttribute('content', route.description);
   }
+
+  await page.goto('/jobs/not-a-real-job');
+  await expect(
+    page.getByRole('heading', { name: 'Page not found' })
+  ).toBeVisible();
+  await expect(page).toHaveTitle('Page not found — Parts Promise');
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+    'content',
+    'Page not found — Parts Promise'
+  );
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+    'content',
+    'The requested Parts Promise page is not available.'
+  );
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    'href',
+    'https://field-parts-promise.sociobot.in/'
+  );
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    'content',
+    'noindex'
+  );
+});
+
+test('each work form expands, becomes visible, receives focus, and restores its trigger', async ({
+  page
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'mobile-chromium',
+    'Disclosure geometry runs at the phone viewport.'
+  );
+
+  const checkDisclosure = async (
+    trigger: import('@playwright/test').Locator,
+    sheetId: string,
+    heading: string
+  ) => {
+    await trigger.click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    const sheet = page.locator(`#${sheetId}`);
+    const title = sheet.getByRole('heading', { name: heading });
+    await expect(title).toBeFocused();
+    await expect
+      .poll(async () => {
+        const box = await title.boundingBox();
+        return box !== null && box.y >= 0 && box.y < 844;
+      })
+      .toBe(true);
+    await sheet.getByRole('button', { name: 'Close' }).click();
+    await expect(trigger).toBeFocused();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  };
+
+  await page.goto('/jobs?demo=1');
+  await checkDisclosure(
+    page.getByRole('button', { name: 'Add a job' }),
+    'add-job-sheet',
+    'Add a job and its first required part'
+  );
+  await page.getByRole('link', { name: 'Review parts' }).click();
+  await checkDisclosure(
+    page.getByRole('button', { name: 'Edit job' }),
+    'edit-job-sheet',
+    'Edit this job'
+  );
+  await checkDisclosure(
+    page
+      .getByLabel('Parts held for this job')
+      .getByRole('button', { name: 'Add required part' }),
+    'add-part-sheet',
+    'Add a required part'
+  );
+  await checkDisclosure(
+    page.getByTestId('allocate-pump'),
+    'allocation-sheet',
+    'Allocate Condensate pump'
+  );
+  await checkDisclosure(
+    page
+      .getByTestId('part-req-pump')
+      .getByRole('button', { name: 'Check supplier date' }),
+    'supplier-sheet',
+    'Attach supplier order evidence'
+  );
+  await checkDisclosure(
+    page.getByRole('button', { name: 'Add a source' }),
+    'source-sheet',
+    'Add a source'
+  );
 });
 
 test('forward and browser-history route changes focus the new heading', async ({

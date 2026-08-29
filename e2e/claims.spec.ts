@@ -170,6 +170,45 @@ test('@claim:demo-reset-isolated Demo reset restores the fixture and leaving pre
   await page.getByRole('button', { name: 'Save job and part' }).click();
   await expect(page.locator('h1')).toHaveText('Existing Live Customer parts');
   await openPumpAllocation(page);
+  await page.getByRole('link', { name: 'Parts Promise' }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect
+    .poll(() =>
+      page.evaluate(async () =>
+        (await indexedDB.databases()).some(
+          (database) => database.name === 'parts-promise-demo-v1'
+        )
+      )
+    )
+    .toBe(false);
+  await page
+    .getByLabel('Main navigation')
+    .getByRole('link', { name: 'Demo' })
+    .click();
+  await expect(page.locator('.status-plate').first()).toContainText(
+    'Date at risk'
+  );
+  await page.getByTestId('allocate-pump').click();
+  await page.getByLabel(/Van 2/).check();
+  await page.getByRole('button', { name: 'Hold this quantity' }).click();
+  await expect(page.locator('.status-plate').first()).toContainText(
+    'Parts in hand'
+  );
+  await page.goBack();
+  await expect(page).toHaveURL(/\/$/);
+  await expect
+    .poll(() =>
+      page.evaluate(async () =>
+        (await indexedDB.databases()).some(
+          (database) => database.name === 'parts-promise-demo-v1'
+        )
+      )
+    )
+    .toBe(false);
+  await page.goto('/?demo=1');
+  await expect(page.locator('.status-plate').first()).toContainText(
+    'Date at risk'
+  );
   await page.getByRole('button', { name: 'Reset demo' }).first().click();
   await page
     .locator('dialog')
@@ -194,6 +233,142 @@ test('@claim:demo-reset-isolated Demo reset restores the fixture and leaving pre
     requests.every((url) => new URL(url).origin === new URL(page.url()).origin)
   ).toBe(true);
   await context.close();
+});
+
+test('@claim:workspace-backup-roundtrip A versioned backup restores every workspace record', async ({
+  page
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Claim evidence runs once on desktop Chromium.'
+  );
+  await page.goto('/jobs?demo=1');
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export workspace' }).click();
+  const download = await downloadPromise;
+  const stream = await download.createReadStream();
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+  const backupText = Buffer.concat(chunks).toString('utf8');
+  const backup = JSON.parse(backupText);
+  expect(backup).toMatchObject({
+    format: 'parts-promise-workspace',
+    version: 1,
+    workspace: {
+      schemaVersion: 1,
+      jobs: expect.any(Array),
+      requirements: expect.any(Array),
+      sources: expect.any(Array),
+      allocations: expect.any(Array)
+    }
+  });
+  expect(backup.workspace.allocations.length).toBeGreaterThan(0);
+
+  await page.getByRole('link', { name: 'Review parts' }).click();
+  await page.getByTestId('allocate-pump').click();
+  await page.getByLabel(/Van 2/).check();
+  await page.getByRole('button', { name: 'Hold this quantity' }).click();
+  await expect(page.locator('.status-plate').first()).toContainText(
+    'Parts in hand'
+  );
+  await page.goto('/jobs?demo=1');
+  await page.getByRole('button', { name: 'Import workspace' }).click();
+  await page
+    .getByLabel('Choose a CSV or Parts Promise JSON backup')
+    .setInputFiles({
+      name: 'roundtrip.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(backupText)
+    });
+  await expect(
+    page.getByRole('heading', { name: 'Import preview' })
+  ).toBeVisible();
+  await expect(page.locator('.import-preview')).toContainText(
+    '1 jobs · 3 required parts · 4 sources · 3 allocations'
+  );
+  await page.getByRole('button', { name: 'Import roundtrip.json' }).click();
+  await page.getByRole('link', { name: 'Review parts' }).click();
+  await expect(page.locator('.status-plate').first()).toContainText(
+    'Date at risk'
+  );
+});
+
+test('@claim:csv-import-validation CSV import previews valid rows and identifies invalid rows', async ({
+  page
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Claim evidence runs once on desktop Chromium.'
+  );
+  const header =
+    'record_type,job_number,site,visit_date,part,unit,quantity,source_name,source_type,minimum,last_checked_at\n';
+  const valid = `${header}job,CSV-7,Boiler Room,2026-10-04,,,,,,,\nrequired_part,CSV-7,,,Igniter,each,1,,,,\nsource,,,,Igniter,each,2,Van 7,van,1,2026-08-29T09:00:00.000Z\n`;
+  await page.goto('/jobs');
+  await page.getByRole('button', { name: 'Import workspace' }).click();
+  const input = page.getByLabel('Choose a CSV or Parts Promise JSON backup');
+  await input.setInputFiles({
+    name: 'valid.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from(valid)
+  });
+  await expect(page.locator('.import-preview')).toContainText(
+    '1 jobs · 1 required parts · 1 sources · 0 allocations'
+  );
+  await page.getByRole('button', { name: 'Import valid.csv' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Boiler Room' })
+  ).toBeVisible();
+
+  await page.getByRole('button', { name: 'Import workspace' }).click();
+  await input.setInputFiles({
+    name: 'invalid.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from(valid.replace(',each,1,', ',each,0,'))
+  });
+  await expect(page.getByRole('alert')).toContainText('Row 3');
+  await expect(
+    page.getByRole('button', { name: 'Import invalid.csv' })
+  ).toHaveCount(0);
+});
+
+test('@claim:demo-transfer-isolated Importing sample data never changes the live workspace', async ({
+  page
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Claim evidence runs once on desktop Chromium.'
+  );
+  const csv =
+    'record_type,job_number,site,visit_date,part,unit,quantity,source_name,source_type,minimum,last_checked_at\njob,DEMO-CSV,Demo Import,2026-10-04,,,,,,,\nrequired_part,DEMO-CSV,,,Igniter,each,1,,,,\n';
+  await page.goto('/jobs');
+  await page.getByRole('button', { name: 'Add a job' }).click();
+  await page.getByLabel('Job number').fill('LIVE-SAFE');
+  await page.getByLabel('Site or customer name').fill('Live Safe Job');
+  await page.getByLabel('Visit date').fill('2026-10-05');
+  await page.getByLabel('Required part', { exact: true }).fill('Fuse');
+  await page.getByLabel('Quantity', { exact: true }).fill('1');
+  await page.getByRole('button', { name: 'Save job and part' }).click();
+  await page.goto('/jobs?demo=1');
+  await page.getByRole('button', { name: 'Import workspace' }).click();
+  await page
+    .getByLabel('Choose a CSV or Parts Promise JSON backup')
+    .setInputFiles({
+      name: 'demo.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(csv)
+    });
+  await page.getByRole('button', { name: 'Import demo.csv' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Demo Import' })
+  ).toBeVisible();
+  await page.getByRole('link', { name: 'Parts Promise' }).click();
+  await page.goto('/jobs');
+  await expect(
+    page.getByRole('heading', { name: 'Live Safe Job' })
+  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Demo Import' })).toHaveCount(
+    0
+  );
 });
 
 test('@claim:offline-reload The sample allocation works after an offline reload', async ({}, testInfo) => {

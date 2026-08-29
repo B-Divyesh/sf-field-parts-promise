@@ -1,6 +1,6 @@
 # Parts Promise venture plan
 
-Status: M1 built and pushed; factory deployment and review/polish are pending.
+Status: M1 released; perfection-loop round 2 repair is in progress.
 
 Product: `field-parts-promise` · artifact: offline-first PWA with a backend
 
@@ -239,7 +239,7 @@ Each milestone is one focused 3–4 hour builder session followed by an independ
 
 ### M1 — Local promise check and one-click demo
 
-Status: **built locally and pushed; factory deployment and review/polish pending**. Goal: a stranger can see the wedge and complete the core job locally without an account.
+Status: **released; perfection-loop round 2 repair in progress**. Goal: a stranger can see the wedge and complete the core job locally without an account.
 
 Routes/screens: `/`, `/?demo=1`, `/jobs`, `/jobs/:jobId`, `/privacy`, `/terms`, and designed 404. The landing page follows the mandated standard skeleton. The demo fixture is Riverside Dental job `RD-1042`, visit 2026-09-02, with a warehouse contactor allocation, four filters split between warehouse and van, and one unallocated condensate pump. Allocating the pump from Van 2 changes the job from **Date at risk** to **Parts in hand** and creates a reorder suggestion because the van falls below its minimum.
 
@@ -337,7 +337,7 @@ Routes/screens added: `/import`, `/settings/integrations`, `/share/:token`; inst
 Scope:
 
 - Meet installable PWA criteria, supply offline icons/screenshots, update handling, and platform-specific install help.
-- Import jobs/required parts from a documented neutral CSV with preview, field mapping, duplicate detection, error download, and full rollback. Provide downloadable templates for Jobber/Tradify exports without claiming an official integration.
+- Extend the shipped neutral CSV import with field mapping, duplicate review, error download, and full rollback. Provide downloadable templates for Jobber/Tradify exports without claiming an official integration.
 - Create revocable, expiring, read-only job update links. Default share fields are job number/site label, visit date, plain promise status, blocking part name, and last updated time; exclude customer contact, internal notes, quantities at other jobs, and source locations.
 - Define a versioned inbound API/webhook contract only after pilot demand; no supplier scraping.
 

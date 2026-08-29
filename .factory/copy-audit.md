@@ -1,6 +1,6 @@
 # Landing copy audit
 
-Audited: 2026-08-28. Route: `/`. Counts treat hyphenated terms and numbers as one word.
+Audited: 2026-08-29 after perfection-loop round 2. Route: `/`. Counts treat hyphenated terms and numbers as one word.
 
 | Copy | Words | Result |
 | --- | ---: | --- |
@@ -43,6 +43,23 @@ Audited: 2026-08-28. Route: `/`. Counts treat hyphenated terms and numbers as on
 | Browser-only release | 2 | Pass |
 
 No sentence exceeds 22 words. The audit found none of the banned terms: leverage, seamless, effortless, robust, powerful, intuitive, reimagine, supercharge, unlock, delightful, journey, ecosystem, or “AI-powered.”
+
+## Round 2 workspace copy
+
+| Copy | Words | Result |
+| --- | ---: | --- |
+| Import workspace | 2 | Pass: result-naming action |
+| Export workspace | 2 | Pass: result-naming action; `workspace-backup-roundtrip` |
+| Import this workspace | 3 | Pass |
+| CSV adds jobs, required parts, and van or warehouse sources. | 10 | Pass: `csv-import-validation` |
+| A JSON backup replaces this local workspace after preview. | 9 | Pass: `workspace-backup-roundtrip` |
+| Download CSV template | 3 | Pass: result-naming action |
+| Choose a CSV or Parts Promise JSON backup | 8 | Pass: file label |
+| Fix these rows before importing | 5 | Pass: recovery instruction |
+| Export a versioned backup before moving devices or clearing browser data. | 11 | Pass: `workspace-backup-roundtrip` |
+| Browser site-data controls remove local records. | 6 | Pass: `clear-local-records` |
+
+No round 2 interface sentence exceeds 22 words or contains a banned term.
 
 ## Canonical terminology
 
