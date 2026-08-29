@@ -1,0 +1,6 @@
+
+> field-parts-promise@0.0.0 format:check
+> prettier --check . && cargo fmt --manifest-path server/Cargo.toml -- --check
+
+Checking formatting...
+All matched files use Prettier code style!

@@ -1,0 +1,1 @@
+{"timestamp":"2026-08-29T15:30:32.715819Z","level":"INFO","fields":{"message":"Parts Promise API scaffold is listening","port":19007,"port_source":"supplied","build_sha":"dev","build_sha_source":"default"},"target":"parts_promise_api"}

@@ -1,0 +1,171 @@
+
+> field-parts-promise@0.0.0 test:e2e
+> playwright test --grep @claim:promise-status-from-allocation
+
+[WebServer] (node:565) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:599) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+    Updating crates.io index
+ Downloading crates ...
+  Downloaded atomic-waker v1.1.2
+  Downloaded matchers v0.2.0
+  Downloaded axum-core v0.5.6
+  Downloaded bitflags v2.13.1
+  Downloaded serde_urlencoded v0.7.1
+  Downloaded nu-ansi-term v0.50.3
+  Downloaded pin-project-lite v0.2.17
+  Downloaded tower-service v0.3.3
+  Downloaded errno v0.3.14
+  Downloaded httparse v1.10.1
+  Downloaded http-body v1.1.0
+  Downloaded serde_path_to_error v0.1.20
+  Downloaded thread_local v1.1.10
+  Downloaded httpdate v1.0.3
+  Downloaded mime v0.3.17
+  Downloaded socket2 v0.6.5
+  Downloaded tower-layer v0.3.3
+  Downloaded form_urlencoded v1.2.2
+  Downloaded futures-sink v0.3.34
+  Downloaded futures-task v0.3.34
+  Downloaded mime_guess v2.0.5
+  Downloaded zmij v1.0.23
+  Downloaded cfg-if v1.0.4
+  Downloaded futures-core v0.3.34
+  Downloaded http-range-header v0.4.2
+  Downloaded signal-hook-registry v1.4.8
+  Downloaded aho-corasick v1.1.5
+  Downloaded tower-http v0.6.11
+  Downloaded axum v0.8.9
+  Downloaded futures-channel v0.3.34
+  Downloaded proc-macro2 v1.0.107
+  Downloaded tracing-core v0.1.36
+  Downloaded unicode-ident v1.0.24
+  Downloaded itoa v1.0.18
+  Downloaded lazy_static v1.5.0
+  Downloaded log v0.4.34
+  Downloaded once_cell v1.21.4
+  Downloaded serde_core v1.0.229
+  Downloaded tokio-macros v2.7.2
+  Downloaded hyper v1.11.1
+  Downloaded http-body-util v0.1.5
+  Downloaded slab v0.4.12
+  Downloaded sync_wrapper v1.0.2
+  Downloaded tracing-serde v0.2.0
+  Downloaded unicase v2.9.0
+  Downloaded futures-util v0.3.34
+  Downloaded smallvec v1.15.2
+  Downloaded tracing-log v0.2.0
+  Downloaded hyper-util v0.1.20
+  Downloaded mio v1.2.2
+  Downloaded percent-encoding v2.3.2
+  Downloaded matchit v0.8.4
+  Downloaded ryu v1.0.23
+  Downloaded sharded-slab v0.1.7
+  Downloaded tower v0.5.3
+  Downloaded tracing-attributes v0.1.31
+  Downloaded serde_derive v1.0.229
+  Downloaded bytes v1.12.1
+  Downloaded http v1.5.0
+  Downloaded serde v1.0.229
+  Downloaded memchr v2.8.3
+  Downloaded quote v1.0.47
+  Downloaded tracing-subscriber v0.3.23
+  Downloaded serde_json v1.0.151
+  Downloaded tokio-util v0.7.19
+  Downloaded syn v3.0.4
+  Downloaded syn v2.0.119
+  Downloaded regex-syntax v0.8.11
+  Downloaded regex-automata v0.4.18
+  Downloaded tracing v0.1.44
+  Downloaded libc v0.2.189
+  Downloaded tokio v1.53.1
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling syn v3.0.4
+   Compiling libc v0.2.189
+   Compiling itoa v1.0.18
+   Compiling pin-project-lite v0.2.17
+   Compiling bytes v1.12.1
+   Compiling futures-core v0.3.34
+   Compiling serde_core v1.0.229
+   Compiling errno v0.3.14
+   Compiling once_cell v1.21.4
+   Compiling tracing-core v0.1.36
+   Compiling signal-hook-registry v1.4.8
+   Compiling http v1.5.0
+   Compiling socket2 v0.6.5
+   Compiling mio v1.2.2
+   Compiling tokio-macros v2.7.2
+   Compiling tokio v1.53.1
+   Compiling http-body v1.1.0
+   Compiling syn v2.0.119
+   Compiling log v0.4.34
+   Compiling serde v1.0.229
+   Compiling tracing-attributes v0.1.31
+   Compiling serde_derive v1.0.229
+   Compiling httparse v1.10.1
+   Compiling zmij v1.0.23
+   Compiling tower-service v0.3.3
+   Compiling tracing v0.1.44
+   Compiling httpdate v1.0.3
+   Compiling unicase v2.9.0
+   Compiling futures-task v0.3.34
+   Compiling tower-layer v0.3.3
+   Compiling serde_json v1.0.151
+   Compiling percent-encoding v2.3.2
+   Compiling mime v0.3.17
+   Compiling slab v0.4.12
+   Compiling smallvec v1.15.2
+   Compiling futures-util v0.3.34
+   Compiling mime_guess v2.0.5
+   Compiling http-body-util v0.1.5
+   Compiling futures-channel v0.3.34
+   Compiling atomic-waker v1.1.2
+   Compiling memchr v2.8.3
+   Compiling regex-syntax v0.8.11
+   Compiling sync_wrapper v1.0.2
+   Compiling regex-automata v0.4.18
+   Compiling hyper v1.11.1
+   Compiling form_urlencoded v1.2.2
+   Compiling ryu v1.0.23
+   Compiling futures-sink v0.3.34
+   Compiling cfg-if v1.0.4
+   Compiling lazy_static v1.5.0
+   Compiling sharded-slab v0.1.7
+   Compiling thread_local v1.1.10
+   Compiling tokio-util v0.7.19
+   Compiling serde_urlencoded v0.7.1
+   Compiling hyper-util v0.1.20
+   Compiling matchers v0.2.0
+   Compiling axum-core v0.5.6
+   Compiling tower v0.5.3
+   Compiling tracing-serde v0.2.0
+   Compiling tracing-log v0.2.0
+   Compiling serde_path_to_error v0.1.20
+   Compiling http-range-header v0.4.2
+   Compiling bitflags v2.13.1
+   Compiling nu-ansi-term v0.50.3
+   Compiling matchit v0.8.4
+   Compiling axum v0.8.9
+   Compiling tracing-subscriber v0.3.23
+   Compiling tower-http v0.6.11
+   Compiling parts-promise-api v0.0.0 (/work/repo/server)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 50.80s
+
+Running 2 tests using 1 worker
+(node:1923) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1923) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+·(node:2008) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2008) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+°
+  1 skipped
+  1 passed (1.2m)
+::notice title=🎭 Playwright Run Summary::  1 skipped%0A  1 passed (1.2m)

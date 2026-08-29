@@ -1,0 +1,108 @@
+LIVE_SHA256
+75b285840606302b2ea005166c12bbac78f2953c995b2f3a8f497b52e0f656d4  /tmp/tmp.wnjcXKPpAy/index.html
+6520aa83230cc64141c2416a3e7dbfa6547b79afe636d969a87c95c2e2ef7c91  /tmp/tmp.wnjcXKPpAy/assets/index-BZXKYKR1.js
+702115ce11760221d05cd9e10a323dee3c42303db9666790c59e5a72f8122d74  /tmp/tmp.wnjcXKPpAy/assets/index-BPxxStax.css
+3787a5a419171630e6890cfa47c4da067474d005cd0ff8dc11ec090fdc3ee2b8  /tmp/tmp.wnjcXKPpAy/fonts/barlow-condensed-latin.woff2
+18b2a1a39a2fa298b0ba5390aca68462669826c90925656f1c1f6796e0e1bbaf  /tmp/tmp.wnjcXKPpAy/fonts/atkinson-hyperlegible-next-latin.woff2
+46be0f29302458b72cc343a61cbe6d1f9f294e0c59650733142ae47094617deb  /tmp/tmp.wnjcXKPpAy/assets/blueprint-hero.svg
+c42b3779dfe30adbebc71767420d9a66d7f67afb9a60b11a6d82eb0674d08934  /tmp/tmp.wnjcXKPpAy/sw.js
+9d4228b4cf8adb6d02d5086195159d3b288663a8dccdc44b39b9343ac352da1f  /tmp/tmp.wnjcXKPpAy/manifest.webmanifest
+LOCAL_SHA256
+75b285840606302b2ea005166c12bbac78f2953c995b2f3a8f497b52e0f656d4  dist/index.html
+6520aa83230cc64141c2416a3e7dbfa6547b79afe636d969a87c95c2e2ef7c91  dist/assets/index-BZXKYKR1.js
+702115ce11760221d05cd9e10a323dee3c42303db9666790c59e5a72f8122d74  dist/assets/index-BPxxStax.css
+3787a5a419171630e6890cfa47c4da067474d005cd0ff8dc11ec090fdc3ee2b8  dist/fonts/barlow-condensed-latin.woff2
+18b2a1a39a2fa298b0ba5390aca68462669826c90925656f1c1f6796e0e1bbaf  dist/fonts/atkinson-hyperlegible-next-latin.woff2
+46be0f29302458b72cc343a61cbe6d1f9f294e0c59650733142ae47094617deb  dist/assets/blueprint-hero.svg
+c42b3779dfe30adbebc71767420d9a66d7f67afb9a60b11a6d82eb0674d08934  dist/sw.js
+9d4228b4cf8adb6d02d5086195159d3b288663a8dccdc44b39b9343ac352da1f  dist/manifest.webmanifest
+HEADERS
+FILE header-0.txt
+HTTP/2 200
+content-type: text/html
+last-modified: Sat, 29 Aug 2026 14:54:19 GMT
+content-length: 2491
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+x-frame-options: DENY
+permissions-policy: camera=(), microphone=(), geolocation=()
+content-security-policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'
+cache-control: no-cache, max-age=0, must-revalidate
+FILE header-1.txt
+HTTP/2 200
+content-type: text/javascript
+last-modified: Sat, 29 Aug 2026 14:54:19 GMT
+content-length: 92332
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+x-frame-options: DENY
+permissions-policy: camera=(), microphone=(), geolocation=()
+content-security-policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'
+cache-control: public, max-age=31536000, immutable
+FILE header-2.txt
+HTTP/2 200
+content-type: text/css
+last-modified: Sat, 29 Aug 2026 14:54:19 GMT
+content-length: 16907
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+x-frame-options: DENY
+permissions-policy: camera=(), microphone=(), geolocation=()
+content-security-policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'
+cache-control: public, max-age=31536000, immutable
+FILE header-3.txt
+HTTP/2 200
+content-type: font/woff2
+last-modified: Sat, 29 Aug 2026 14:54:19 GMT
+content-length: 22444
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+x-frame-options: DENY
+permissions-policy: camera=(), microphone=(), geolocation=()
+content-security-policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'
+cache-control: public, max-age=3600
+FILE header-4.txt
+HTTP/2 200
+content-type: font/woff2
+last-modified: Sat, 29 Aug 2026 14:54:19 GMT
+content-length: 33996
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+x-frame-options: DENY
+permissions-policy: camera=(), microphone=(), geolocation=()
+content-security-policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'
+cache-control: public, max-age=3600
+FILE header-5.txt
+HTTP/2 200
+content-type: image/svg+xml
+last-modified: Sat, 29 Aug 2026 14:54:19 GMT
+content-length: 2321
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+x-frame-options: DENY
+permissions-policy: camera=(), microphone=(), geolocation=()
+content-security-policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'
+cache-control: public, max-age=3600
+FILE header-6.txt
+HTTP/2 200
+content-type: text/javascript
+last-modified: Sat, 29 Aug 2026 14:54:19 GMT
+content-length: 2632
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+x-frame-options: DENY
+permissions-policy: camera=(), microphone=(), geolocation=()
+content-security-policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'
+cache-control: no-cache, max-age=0, must-revalidate
+FILE header-7.txt
+HTTP/2 200
+content-type: application/manifest+json
+last-modified: Sat, 29 Aug 2026 14:54:19 GMT
+content-length: 514
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+x-frame-options: DENY
+permissions-policy: camera=(), microphone=(), geolocation=()
+content-security-policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'
+cache-control: public, max-age=3600
+TEMP=/tmp/tmp.wnjcXKPpAy
