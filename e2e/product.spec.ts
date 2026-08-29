@@ -237,6 +237,56 @@ test('forward and browser-history route changes focus the new heading', async ({
   await expect.poll(headingHasFocus).toBe(true);
 });
 
+test('Back and Forward restore reading position while keeping the new heading focused', async ({
+  page
+}) => {
+  const headingHasFocus = () =>
+    page.evaluate(
+      () => document.activeElement === document.querySelector('main h1')
+    );
+  const scrollToBottom = () =>
+    page.evaluate(() => {
+      window.scrollTo(0, document.documentElement.scrollHeight);
+      return window.scrollY;
+    });
+  const expectScrollNear = async (expected: number) => {
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY))
+      .toBeGreaterThanOrEqual(Math.max(0, expected - 4));
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY))
+      .toBeLessThanOrEqual(expected + 4);
+  };
+
+  await page.goto('/');
+  await expect(
+    page.getByRole('heading', {
+      name: 'Promise dates from parts held for the job'
+    })
+  ).toBeVisible();
+  const homeScroll = await scrollToBottom();
+  expect(homeScroll).toBeGreaterThan(100);
+  await page
+    .locator('.site-footer')
+    .getByRole('link', { name: 'Privacy' })
+    .click();
+  await expect(page.locator('h1')).toHaveText('How Parts Promise handles data');
+  await expect.poll(headingHasFocus).toBe(true);
+  const privacyScroll = await page.evaluate(() => window.scrollY);
+
+  await page.goBack();
+  await expect(page.locator('h1')).toHaveText(
+    'Promise dates from parts held for the job'
+  );
+  await expect.poll(headingHasFocus).toBe(true);
+  await expectScrollNear(homeScroll);
+
+  await page.goForward();
+  await expect(page.locator('h1')).toHaveText('How Parts Promise handles data');
+  await expect.poll(headingHasFocus).toBe(true);
+  await expectScrollNear(privacyScroll);
+});
+
 test('demo deep link, history focus, keyboard allocation, and reset work on a phone', async ({
   page
 }, testInfo) => {

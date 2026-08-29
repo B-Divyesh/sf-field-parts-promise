@@ -1,6 +1,6 @@
 # Landing copy audit
 
-Audited: 2026-08-29 after perfection-loop round 2. Route: `/`. Counts treat hyphenated terms and numbers as one word.
+Audited: 2026-08-29 after perfection-loop round 3. Route: `/`. Counts treat hyphenated terms and numbers as one word.
 
 | Copy | Words | Result |
 | --- | ---: | --- |
@@ -13,19 +13,19 @@ Audited: 2026-08-29 after perfection-loop round 2. Route: `/`. Counts treat hyph
 | Promise dates from parts held for the job | 8 | Pass |
 | For solo tradespeople who need a parts check before agreeing a visit date. | 13 | Pass |
 | Try it with sample data | 5 | Pass |
-| Opens Riverside Dental with one missing pump. | 7 | Pass |
+| Opens Riverside Dental with one missing pump. | 7 | Pass — `sample-fixture` |
 | The sample job and allocation work offline after your first visit. | 11 | Pass — `offline-reload` |
 | Sample changes stay in this browser. | 6 | Pass — `demo-reset-isolated` |
 | Free for one browser in this release. | 8 | Pass — `free-browser-release` |
 | Each required part shows the van, warehouse, or supplier record that covers it. | 13 | Pass |
 | Sample job status | 3 | Pass |
 | See why a visit date is at risk | 9 | Pass |
-| RD-1042 needs one condensate pump. | 5 | Pass |
+| RD-1042 needs one condensate pump. | 5 | Pass — `sample-fixture` |
 | The job stays at risk until a source holds it. | 10 | Pass — `promise-status-from-allocation` |
 | Open the sample job | 4 | Pass |
-| RD-1042 · Riverside Dental | 3 | Pass: sample label |
+| RD-1042 · Riverside Dental | 3 | Pass — `sample-fixture` |
 | Date at risk | 3 | Pass: status |
-| Condensate pump needs 1 each. | 5 | Pass |
+| Condensate pump needs 1 each. | 5 | Pass — `sample-fixture` |
 | How it works | 3 | Pass |
 | Check parts before agreeing a visit date | 8 | Pass |
 | List required parts | 3 | Pass |
@@ -60,6 +60,18 @@ No sentence exceeds 22 words. The audit found none of the banned terms: leverage
 | Browser site-data controls remove local records. | 6 | Pass: `clear-local-records` |
 
 No round 2 interface sentence exceeds 22 words or contains a banned term.
+
+## Round 3 repair copy
+
+| Copy | Words | Result |
+| --- | ---: | --- |
+| Demo — sample data; nothing is saved to your local workspace. | 10 | Pass — `demo-reset-isolated`; names the actual local boundary. |
+| The sample uses a separate browser database named `parts-promise-demo-v1`. | 9 | Pass — one plain storage term. |
+| Imports and exports use only the browser database for the current mode. | 11 | Pass — `demo-transfer-isolated`. |
+| Download the CSV template from the import sheet. | 8 | Pass — `csv-template-download`. |
+| Export workspace downloads a versioned JSON backup with every job, required part, source, allocation, and timestamp. | 16 | Pass — `workspace-backup-roundtrip`. |
+
+All round 3 copy units are 22 words or fewer and contain none of the banned terms.
 
 ## Canonical terminology
 

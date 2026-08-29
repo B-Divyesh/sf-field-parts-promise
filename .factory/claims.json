@@ -1,5 +1,12 @@
 [
   {
+    "id": "sample-fixture",
+    "claim": "The demo opens Riverside Dental job RD-1042 with one missing condensate pump.",
+    "where": "landing action outcome, landing sample preview, README sample guide, and demo guide",
+    "test": "npm run test:e2e -- --grep @claim:sample-fixture",
+    "sandbox": "fresh browser context at /?demo=1; assert Riverside Dental, RD-1042, Condensate pump, zero held, and the one-unit shortage"
+  },
+  {
     "id": "promise-status-from-allocation",
     "claim": "The promise status changes from Date at risk to Parts in hand only after every required quantity has an allocation.",
     "where": "M1 demo job status plate and README",
@@ -88,7 +95,7 @@
     "claim": "Export workspace downloads a versioned JSON backup that restores every job, required part, source, allocation, and timestamp.",
     "where": "jobs toolbar, privacy page, README",
     "test": "npm run test:e2e -- --grep @claim:workspace-backup-roundtrip",
-    "sandbox": "fresh demo workspace; export JSON, inspect its version and all record lists, change the sample, import the backup after preview, and assert the original promise status is restored"
+    "sandbox": "fresh demo workspace; export JSON, deep-compare every original record and timestamp to the download, change the sample, import the backup after preview, and deep-compare the restored workspace"
   },
   {
     "id": "csv-import-validation",
@@ -102,7 +109,14 @@
     "claim": "Importing or exporting the sample uses only the demo workspace and never changes the live workspace.",
     "where": "jobs import sheet, demo guide, README",
     "test": "npm run test:e2e -- --grep @claim:demo-transfer-isolated",
-    "sandbox": "fresh browser context; create a live job, import a different CSV job while in demo, leave demo, and assert only the original live job exists"
+    "sandbox": "fresh browser context; create and snapshot a distinct live workspace, export the demo and inspect it, import a different CSV job while in demo, leave demo, then byte-compare the live workspace to its snapshot"
+  },
+  {
+    "id": "csv-template-download",
+    "claim": "Download CSV template provides a CSV file with a valid job, required part, and source example.",
+    "where": "jobs import sheet and README",
+    "test": "npm run test:e2e -- --grep @claim:csv-template-download",
+    "sandbox": "fresh live workspace; download the template, assert its filename, text/csv media type, exact header, and example rows, then preview it without an error"
   },
   {
     "id": "container-runtime",

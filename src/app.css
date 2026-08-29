@@ -29,7 +29,7 @@
 html {
   min-width: 320px;
   background: var(--color-bg);
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
 }
 body {
   min-width: 320px;

@@ -69,6 +69,8 @@
   let importFileName = '';
   let routeAnnouncement = '';
 
+  type HistoryPosition = { scrollX: number; scrollY: number };
+
   type SheetName =
     | 'add-job'
     | 'edit-job'
@@ -112,8 +114,19 @@
   $: document.documentElement.dataset.theme = theme;
 
   onMount(() => {
-    const updateRoute = () => void syncRoute(true);
+    const updateRoute = (event: PopStateEvent) =>
+      void syncRoute(true, historyPosition(event.state));
     const updateOnline = () => (online = navigator.onLine);
+    let scrollFrame: number | undefined;
+    const recordScroll = () => {
+      if (scrollFrame !== undefined) return;
+      scrollFrame = requestAnimationFrame(() => {
+        scrollFrame = undefined;
+        saveScrollPosition();
+      });
+    };
+    const previousScrollRestoration = history.scrollRestoration;
+    history.scrollRestoration = 'manual';
     currentPath = window.location.pathname;
     demo =
       new URLSearchParams(window.location.search).get('demo') === '1' ||
@@ -121,14 +134,19 @@
     online = navigator.onLine;
     const storedTheme = localStorage.getItem('parts-promise-theme');
     theme = storedTheme === 'dark' ? 'dark' : 'light';
+    saveScrollPosition();
     void loadCurrentWorkspace();
     window.addEventListener('popstate', updateRoute);
+    window.addEventListener('scroll', recordScroll, { passive: true });
     window.addEventListener('online', updateOnline);
     window.addEventListener('offline', updateOnline);
     return () => {
       window.removeEventListener('popstate', updateRoute);
+      window.removeEventListener('scroll', recordScroll);
       window.removeEventListener('online', updateOnline);
       window.removeEventListener('offline', updateOnline);
+      if (scrollFrame !== undefined) cancelAnimationFrame(scrollFrame);
+      history.scrollRestoration = previousScrollRestoration;
     };
   });
 
@@ -266,7 +284,39 @@
     return `${path}${path.includes('?') ? '&' : '?'}demo=1`;
   }
 
-  async function syncRoute(shouldFocus: boolean) {
+  function historyPosition(value: unknown): HistoryPosition | undefined {
+    if (!value || typeof value !== 'object') return undefined;
+    const position = value as Partial<HistoryPosition>;
+    if (
+      typeof position.scrollX !== 'number' ||
+      typeof position.scrollY !== 'number' ||
+      position.scrollX < 0 ||
+      position.scrollY < 0
+    )
+      return undefined;
+    return { scrollX: position.scrollX, scrollY: position.scrollY };
+  }
+
+  function saveScrollPosition() {
+    const previous =
+      history.state && typeof history.state === 'object'
+        ? (history.state as Record<string, unknown>)
+        : {};
+    history.replaceState(
+      {
+        ...previous,
+        scrollX: Math.round(window.scrollX),
+        scrollY: Math.round(window.scrollY)
+      },
+      '',
+      window.location.href
+    );
+  }
+
+  async function syncRoute(
+    shouldFocus: boolean,
+    restorePosition?: HistoryPosition
+  ) {
     const nextPath = window.location.pathname;
     const nextDemo =
       new URLSearchParams(window.location.search).get('demo') === '1' ||
@@ -275,12 +325,17 @@
     currentPath = nextPath;
     demo = nextDemo;
     await loadCurrentWorkspace();
-    if (shouldFocus) await focusPageHeading();
+    if (shouldFocus) await focusPageHeading(Boolean(restorePosition));
+    if (restorePosition)
+      window.scrollTo(restorePosition.scrollX, restorePosition.scrollY);
   }
 
   async function navigate(path: string) {
-    history.pushState({}, '', path);
+    saveScrollPosition();
+    history.pushState({ scrollX: 0, scrollY: 0 }, '', path);
     await syncRoute(true);
+    window.scrollTo(0, 0);
+    saveScrollPosition();
   }
 
   async function follow(event: MouseEvent, path: string) {
@@ -290,9 +345,9 @@
     await navigate(path);
   }
 
-  async function focusPageHeading() {
+  async function focusPageHeading(preventScroll = false) {
     await tick();
-    document.querySelector<HTMLElement>('main h1')?.focus();
+    document.querySelector<HTMLElement>('main h1')?.focus({ preventScroll });
     routeAnnouncement = metadata.title;
   }
 
@@ -798,7 +853,9 @@
 
 {#if demo}
   <aside class="demo-banner" aria-label="Demo workspace">
-    <strong>Demo — sample data, nothing is saved to a firm.</strong>
+    <strong
+      >Demo — sample data; nothing is saved to your local workspace.</strong
+    >
     <span>Changes stay in this browser until you reset or leave.</span>
     <button type="button" on:click={() => openDialog(resetDialog)}
       >Reset demo</button

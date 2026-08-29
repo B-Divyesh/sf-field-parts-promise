@@ -16,6 +16,52 @@ async function openPumpAllocation(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Hold this quantity' }).click();
 }
 
+async function readWorkspace(
+  page: import('@playwright/test').Page,
+  name: string
+) {
+  return page.evaluate(async (databaseName) => {
+    const request = indexedDB.open(databaseName, 1);
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    try {
+      return await new Promise<unknown>((resolve, reject) => {
+        const transaction = database.transaction('workspace', 'readonly');
+        const read = transaction.objectStore('workspace').get('current');
+        read.onsuccess = () => resolve(read.result);
+        read.onerror = () => reject(read.error);
+      });
+    } finally {
+      database.close();
+    }
+  }, name);
+}
+
+async function downloadContents(download: import('@playwright/test').Download) {
+  const stream = await download.createReadStream();
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+  return Buffer.concat(chunks).toString('utf8');
+}
+
+test('@claim:sample-fixture The demo opens Riverside Dental RD-1042 with one missing condensate pump', async ({
+  page
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Claim evidence runs once on desktop Chromium.'
+  );
+  await page.goto('/?demo=1');
+  await expect(page.locator('h1')).toHaveText('Riverside Dental parts');
+  await expect(page.locator('main')).toContainText('RD-1042');
+  const pump = page.getByTestId('part-req-pump');
+  await expect(pump).toContainText('Condensate pump');
+  await expect(pump).toContainText('0 each held of 1 each');
+  await expect(pump).toContainText('1 each still needs a source');
+});
+
 test('@claim:promise-status-from-allocation The sample needs every required quantity before it is in hand', async ({
   page
 }, testInfo) => {
@@ -248,26 +294,22 @@ test('@claim:workspace-backup-roundtrip A versioned backup restores every worksp
     'Claim evidence runs once on desktop Chromium.'
   );
   await page.goto('/jobs?demo=1');
+  const originalWorkspace = await readWorkspace(page, 'parts-promise-demo-v1');
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export workspace' }).click();
   const download = await downloadPromise;
-  const stream = await download.createReadStream();
-  const chunks: Buffer[] = [];
-  for await (const chunk of stream) chunks.push(Buffer.from(chunk));
-  const backupText = Buffer.concat(chunks).toString('utf8');
+  const backupText = await downloadContents(download);
   const backup = JSON.parse(backupText);
-  expect(backup).toMatchObject({
+  expect(backup).toEqual({
     format: 'parts-promise-workspace',
     version: 1,
-    workspace: {
-      schemaVersion: 1,
-      jobs: expect.any(Array),
-      requirements: expect.any(Array),
-      sources: expect.any(Array),
-      allocations: expect.any(Array)
-    }
+    exportedAt: expect.any(String),
+    workspace: originalWorkspace
   });
-  expect(backup.workspace.allocations.length).toBeGreaterThan(0);
+  expect(backup.workspace.jobs).toHaveLength(1);
+  expect(backup.workspace.requirements).toHaveLength(3);
+  expect(backup.workspace.sources).toHaveLength(4);
+  expect(backup.workspace.allocations).toHaveLength(3);
 
   await page.getByRole('link', { name: 'Review parts' }).click();
   await page.getByTestId('allocate-pump').click();
@@ -296,6 +338,8 @@ test('@claim:workspace-backup-roundtrip A versioned backup restores every worksp
   await expect(page.locator('.status-plate').first()).toContainText(
     'Date at risk'
   );
+  const restoredWorkspace = await readWorkspace(page, 'parts-promise-demo-v1');
+  expect(restoredWorkspace).toEqual(originalWorkspace);
 });
 
 test('@claim:csv-import-validation CSV import previews valid rows and identifies invalid rows', async ({
@@ -336,7 +380,7 @@ test('@claim:csv-import-validation CSV import previews valid rows and identifies
   ).toHaveCount(0);
 });
 
-test('@claim:demo-transfer-isolated Importing sample data never changes the live workspace', async ({
+test('@claim:demo-transfer-isolated Importing or exporting sample data never changes the live workspace', async ({
   page
 }, testInfo) => {
   test.skip(
@@ -353,7 +397,20 @@ test('@claim:demo-transfer-isolated Importing sample data never changes the live
   await page.getByLabel('Required part', { exact: true }).fill('Fuse');
   await page.getByLabel('Quantity', { exact: true }).fill('1');
   await page.getByRole('button', { name: 'Save job and part' }).click();
+  const liveWorkspaceBefore = await readWorkspace(
+    page,
+    'parts-promise-live-v1'
+  );
   await page.goto('/jobs?demo=1');
+  const demoWorkspaceBefore = await readWorkspace(
+    page,
+    'parts-promise-demo-v1'
+  );
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export workspace' }).click();
+  const demoBackup = JSON.parse(await downloadContents(await downloadPromise));
+  expect(demoBackup.workspace).toEqual(demoWorkspaceBefore);
+  expect(JSON.stringify(demoBackup.workspace)).not.toContain('LIVE-SAFE');
   await page.getByRole('button', { name: 'Import workspace' }).click();
   await page
     .getByLabel('Choose a CSV or Parts Promise JSON backup')
@@ -374,6 +431,68 @@ test('@claim:demo-transfer-isolated Importing sample data never changes the live
   await expect(page.getByRole('heading', { name: 'Demo Import' })).toHaveCount(
     0
   );
+  const liveWorkspaceAfter = await readWorkspace(page, 'parts-promise-live-v1');
+  expect(JSON.stringify(liveWorkspaceAfter)).toBe(
+    JSON.stringify(liveWorkspaceBefore)
+  );
+});
+
+test('@claim:csv-template-download The CSV template downloads with a valid import example', async ({
+  page
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Claim evidence runs once on desktop Chromium.'
+  );
+  await page.addInitScript(() => {
+    const state = window as unknown as { downloadBlobType?: string };
+    const createObjectUrl = URL.createObjectURL.bind(URL);
+    URL.createObjectURL = (value: Blob) => {
+      state.downloadBlobType = value.type;
+      return createObjectUrl(value);
+    };
+  });
+  await page.goto('/jobs');
+  await page.getByRole('button', { name: 'Import workspace' }).click();
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download CSV template' }).click();
+  const download = await downloadPromise;
+  const template = await downloadContents(download);
+  expect(download.suggestedFilename()).toBe(
+    'parts-promise-import-template.csv'
+  );
+  expect(
+    await page.evaluate(
+      () =>
+        (window as unknown as { downloadBlobType?: string }).downloadBlobType
+    )
+  ).toBe('text/csv');
+  expect(template.split('\n')[0]).toBe(
+    'record_type,job_number,site,visit_date,part,unit,quantity,source_name,source_type,minimum,last_checked_at'
+  );
+  expect(template).toContain('job,JOB-101,Riverside Dental,2026-09-02,,,,,,,');
+  expect(template).toContain(
+    'required_part,JOB-101,,,Condensate pump,each,1,,,,'
+  );
+  expect(template).toContain(
+    'source,,,,Condensate pump,each,2,Van 2,van,1,2026-08-29T09:00:00.000Z'
+  );
+  await page
+    .getByLabel('Choose a CSV or Parts Promise JSON backup')
+    .setInputFiles({
+      name: download.suggestedFilename(),
+      mimeType: 'text/csv',
+      buffer: Buffer.from(template)
+    });
+  await expect(page.locator('.import-preview')).toContainText(
+    '1 jobs · 1 required parts · 1 sources · 0 allocations'
+  );
+  await expect(
+    page.getByRole('button', {
+      name: 'Import parts-promise-import-template.csv'
+    })
+  ).toBeVisible();
+  await expect(page.getByRole('alert')).toHaveCount(0);
 });
 
 test('@claim:offline-reload The sample allocation works after an offline reload', async ({}, testInfo) => {
