@@ -594,7 +594,7 @@ test('@claim:offline-reload The sample allocation works after an offline reload'
       });
     });
     await page.waitForFunction(async () => {
-      const cache = await caches.open('parts-promise-shell-v3');
+      const cache = await caches.open('parts-promise-shell-v5');
       const paths = (await cache.keys()).map(
         (request) => new URL(request.url).pathname
       );
@@ -609,7 +609,7 @@ test('@claim:offline-reload The sample allocation works after an offline reload'
     await context.setOffline(true);
     await page.reload();
     const offlineDiagnostics = await page.evaluate(async () => {
-      const cache = await caches.open('parts-promise-shell-v3');
+      const cache = await caches.open('parts-promise-shell-v5');
       const entries = await Promise.all(
         (await cache.keys()).map(async (request) => {
           const response = await cache.match(request);
