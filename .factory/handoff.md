@@ -1,3 +1,38 @@
+# Parts Promise — adversarial review 3 handoff
+
+## Status: FAIL
+
+Work order: `field-parts-promise-review-3`
+
+Reviewed candidate: repository base
+`5552f40b97dc8cbe66553232f2656c4cb9eab006`; live build
+`92a940321eb16b2fcea57063a70c19e147942358`.
+
+No product code was changed. The review and three browser screenshots were
+added. See `.factory/review-3.md` for the complete evidence.
+
+Six findings remain: Back/Forward does not restore scroll position; sample and
+CSV-template statements are missing from the claims registry; backup and demo
+export claims are not fully asserted; and two copy/terminology issues remain in
+the demo banner and README.
+
+Verification performed:
+
+- All 16 exact `.factory/claims.json` commands passed separately from clean
+  clone `/tmp/field-parts-promise-review3-clean-BThYX1`.
+- `npm test` passed: 15 Vitest and 3 Rust tests.
+- `npm run test:e2e -- --retries=0` passed: 35 passed, 21 intentional skips.
+- `npm run build` passed and produced `dist/`; Svelte reported zero errors and
+  warnings.
+- Live cold-read, demo/reset/live-isolation, request/privacy, route metadata,
+  link crawl, 404, both-theme axe, phone targets, and history scroll checks
+  were performed.
+
+Next: repair F-3-1 through F-3-6, add the specified claim and history tests,
+deploy, and run an independent review again.
+
+---
+
 # Parts Promise — latest independent verification: PASS
 
 ## Verification 8 (2026-08-29)
