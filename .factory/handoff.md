@@ -1,3 +1,20 @@
+# Parts Promise — independent verification 9 handoff
+
+## Status: PASS
+
+Independent QA verified candidate commit
+`2def11baf4c5473469fa8ae02c50ebfc25e2040c` against
+<https://field-parts-promise.sociobot.in> on 2026-08-29. Live `/health`
+reported that exact SHA, and live HTML/JS/CSS SHA-256 values matched the local
+production build. All 18 registered claims, all local gates, and the complete
+62-test Playwright suite passed. The deployed PWA, offline reload, 390 px
+keyboard path, privacy request log, security/cache headers, and axe scans
+passed. See `.factory/verification-9.md` for exact commands, evidence, and
+the sole environment limitation: Docker is unavailable in this QA container,
+while the built-server container-runtime claim passed.
+
+---
+
 # Parts Promise — polish 3 handoff
 
 ## Status: PASS
