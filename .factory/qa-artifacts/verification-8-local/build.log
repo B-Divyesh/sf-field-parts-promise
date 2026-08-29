@@ -1,0 +1,95 @@
+
+> field-parts-promise@0.0.0 build
+> npm run check && vite build && cargo build --manifest-path server/Cargo.toml --release --locked
+
+
+> field-parts-promise@0.0.0 check
+> svelte-check --tsconfig ./tsconfig.json
+
+Loading svelte-check in workspace: /work/repo
+Getting Svelte diagnostics...
+
+svelte-check found 0 errors and 0 warnings
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 118 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                  2.49 kB │ gzip:  0.73 kB
+dist/assets/index-C2rAbGOu.css  16.99 kB │ gzip:  3.97 kB
+dist/assets/index-B1duKIkN.js   92.33 kB │ gzip: 31.12 kB
+
+✓ built in 899ms
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling syn v3.0.4
+   Compiling libc v0.2.189
+   Compiling pin-project-lite v0.2.17
+   Compiling itoa v1.0.18
+   Compiling bytes v1.12.1
+   Compiling futures-core v0.3.34
+   Compiling serde_core v1.0.229
+   Compiling errno v0.3.14
+   Compiling once_cell v1.21.4
+   Compiling tracing-core v0.1.36
+   Compiling signal-hook-registry v1.4.8
+   Compiling http v1.5.0
+   Compiling socket2 v0.6.5
+   Compiling mio v1.2.2
+   Compiling tokio-macros v2.7.2
+   Compiling tokio v1.53.1
+   Compiling http-body v1.1.0
+   Compiling syn v2.0.119
+   Compiling log v0.4.34
+   Compiling serde v1.0.229
+   Compiling tracing-attributes v0.1.31
+   Compiling serde_derive v1.0.229
+   Compiling zmij v1.0.23
+   Compiling httparse v1.10.1
+   Compiling tower-service v0.3.3
+   Compiling tracing v0.1.44
+   Compiling unicase v2.9.0
+   Compiling percent-encoding v2.3.2
+   Compiling httpdate v1.0.3
+   Compiling serde_json v1.0.151
+   Compiling smallvec v1.15.2
+   Compiling tower-layer v0.3.3
+   Compiling mime v0.3.17
+   Compiling slab v0.4.12
+   Compiling futures-task v0.3.34
+   Compiling futures-util v0.3.34
+   Compiling mime_guess v2.0.5
+   Compiling http-body-util v0.1.5
+   Compiling futures-channel v0.3.34
+   Compiling regex-syntax v0.8.11
+   Compiling sync_wrapper v1.0.2
+   Compiling atomic-waker v1.1.2
+   Compiling memchr v2.8.3
+   Compiling hyper v1.11.1
+   Compiling regex-automata v0.4.18
+   Compiling form_urlencoded v1.2.2
+   Compiling cfg-if v1.0.4
+   Compiling futures-sink v0.3.34
+   Compiling ryu v1.0.23
+   Compiling lazy_static v1.5.0
+   Compiling sharded-slab v0.1.7
+   Compiling serde_urlencoded v0.7.1
+   Compiling tokio-util v0.7.19
+   Compiling thread_local v1.1.10
+   Compiling matchers v0.2.0
+   Compiling hyper-util v0.1.20
+   Compiling axum-core v0.5.6
+   Compiling tower v0.5.3
+   Compiling tracing-serde v0.2.0
+   Compiling tracing-log v0.2.0
+   Compiling serde_path_to_error v0.1.20
+   Compiling bitflags v2.13.1
+   Compiling http-range-header v0.4.2
+   Compiling matchit v0.8.4
+   Compiling nu-ansi-term v0.50.3
+   Compiling tracing-subscriber v0.3.23
+   Compiling axum v0.8.9
+   Compiling tower-http v0.6.11
+   Compiling parts-promise-api v0.0.0 (/work/repo/server)
+    Finished `release` profile [optimized] target(s) in 1m 25s

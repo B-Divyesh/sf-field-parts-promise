@@ -1,0 +1,9 @@
+{
+  "before": {
+    "controlled": true,
+    "waiting": false,
+    "installing": false,
+    "scope": "https://field-parts-promise.sociobot.in/"
+  },
+  "offlineStatus": "◎\nParts in hand\nEvery required quantity is held from a van or warehouse."
+}

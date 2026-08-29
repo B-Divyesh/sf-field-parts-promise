@@ -1,0 +1,7 @@
+npm test=0
+npm run check=0
+npm run format:check=0
+npm run build=0
+npm run test:e2e=0
+cargo clippy=0
+npm audit moderate=0

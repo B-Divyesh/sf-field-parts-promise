@@ -1,3 +1,19 @@
+# Parts Promise — latest independent verification: PASS
+
+## Verification 8 (2026-08-29)
+
+**PASS** for candidate `92a940321eb16b2fcea57063a70c19e147942358` at
+<https://field-parts-promise.sociobot.in>. The live health build identity,
+hashed static assets, and locally rebuilt candidate all match. All 16 declared
+claim commands, all local gates, the complete 56-test browser run, live
+desktop/390 px keyboard flows, live axe checks, privacy request recording,
+response-header/cache checks, and offline service-worker reload passed.
+
+No blocker, critical, high, medium, or low defects remain. See
+`.factory/verification-8.md` and `qa-artifacts/verification-8-*` for exact
+commands and evidence. The previous repair handoff is retained below as
+historical context.
+
 # Parts Promise — repair 5 handoff
 
 ## Status: PASS
