@@ -63,7 +63,7 @@ was introduced.
   Clippy passed with zero errors or warnings.
 - Production build: `npm run build` passed. Initial JS is 117,748 bytes raw
   (37,786 gzip), CSS is 18,582 bytes raw (4,203 gzip), and fonts total 56,440
-  bytes. The lazy CIAM chunk is 245,789 bytes raw (62,190 gzip).
+  bytes. The lazy CIAM chunk is 245,789 bytes raw (61,703 gzip).
 - Full browser suite: 52 tests passed with 36 intentional cross-project skips.
   This covered desktop Chromium, 390 px mobile, keyboard focus, axe, privacy,
   offline/update, signed-in outbox retry, conflicts, auth, rate limits, and
@@ -80,6 +80,9 @@ was introduced.
   rendering, keyboard use, axe serious/critical findings, offline demo reload,
   service-worker control/update, privacy destinations, security/cache headers,
   CIAM discovery, invalid-token policy, and enforced rate limits.
+- Fresh live mobile Lighthouse scored 98 performance, 100 accessibility, 100
+  best practices, and 100 SEO. LCP was 1,999.5 ms, CLS was 0, and total
+  blocking time was 94 ms.
 
 ## Run locally
 
