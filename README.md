@@ -45,7 +45,7 @@ Local and demo records use IndexedDB. **Export workspace** downloads a versioned
 
 The Rust server exposes authenticated routes under `/api/v1`, `/health`, and protected `/metrics`. It validates Entra issuer, audience, tenant, signature, and token time. Requests derive the firm from the signed-in user's stable Entra object ID. Read, write, account, and payment paths use a persisted rate-limit bucket and return a positive `Retry-After` header when exceeded. Export uses the five-request critical bucket.
 
-All server state, including the tenant workspace, rate-limit buckets, and generated metrics credential, is stored in `parts-promise.sqlite3` and a token file under `/data`. The deployed app has one replica and a durable `/data` mount. On a developer machine with no `/data` mount, the server falls back to a `data` directory beside its executable so it can still start with only `PORT`.
+All server state, including the tenant workspace, rate-limit buckets, and generated metrics credential, is stored in `parts-promise.sqlite3` and a token file under `/data`. The deployed app has one replica and a durable `/data` mount. Its one-connection SQLite setup uses the `unix-none` VFS with the rollback journal because Azure Files does not provide SQLite's byte-range locks reliably. On a developer machine with no `/data` mount, the server falls back to a `data` directory beside its executable so it can still start with only `PORT`.
 
 ## Deployment configuration
 

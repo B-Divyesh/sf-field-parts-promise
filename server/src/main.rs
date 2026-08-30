@@ -121,11 +121,15 @@ fn billing_acceptance() -> (bool, &'static str) {
 fn sqlite_connection_uri() -> Result<(String, &'static str), Box<dyn std::error::Error>> {
     let (data_dir, source) = data_dir();
     fs::create_dir_all(&data_dir)?;
-    // The earlier WAL-only candidate left its original file locked on the
-    // durable share before it ever became ready. Keep that file untouched and
-    // use this stable SQLite file for the single-writer release.
+    // Azure Files does not provide SQLite's POSIX byte-range locks reliably.
+    // This app is contractually a single replica with one pool connection, so
+    // disable that unreliable lock VFS while keeping the rollback journal.
+    // The earlier WAL-only candidate's original file remains untouched.
     let path = PathBuf::from(data_dir).join("parts-promise.sqlite3");
-    Ok((format!("sqlite://{}?mode=rwc", path.display()), source))
+    Ok((
+        format!("sqlite://{}?mode=rwc&vfs=unix-none", path.display()),
+        source,
+    ))
 }
 
 fn load_or_create_metrics_token(

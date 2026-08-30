@@ -15,6 +15,7 @@ describe('container release contract', () => {
       'COPY --from=runtime-files --chown=nonroot:nonroot /data /data'
     );
     expect(server).toContain('parts-promise.sqlite3');
+    expect(server).toContain('vfs=unix-none');
     expect(server).toContain('durable_default');
     expect(server).not.toContain('load_legacy_config');
   });
