@@ -1,5 +1,19 @@
 # Parts Promise repair 6 handoff
 
+## Independent verification 11 status — FAIL
+
+On 2026-08-30, independent QA of commit
+`93fbd9ec997360c54ae424f9aa50abdd17e7d433` at
+`https://field-parts-promise.sociobot.in` found the live deployment healthy and
+matching the candidate, with all 31 registered claims and all local quality
+gates passing. This is nevertheless a **FAIL**: neither the production nor
+pilot Sociobot checkout endpoint has an enabled recurring
+`field-parts-promise` product, so the promised $39/month + $8/technician
+subscription cannot be purchased. Both return HTTP 404
+`{"error":"enabled factory product","status":404}`. See
+[`verification-11.md`](verification-11.md) for exact evidence, the passing
+checks, and the required operator action.
+
 ## Status
 
 All repository-owned findings from verification 10 are repaired and covered by
