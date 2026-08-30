@@ -2,6 +2,7 @@
 
 Date: 2026-08-30 UTC
 Work order: `field-parts-promise-repair-10`
+Source repair commit: `f32216e`
 
 ## Completed repair
 
