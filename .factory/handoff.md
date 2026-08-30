@@ -77,17 +77,27 @@ are recorded below.
 
 ## Deployment and live evidence
 
-The repair commit `6c3afa6a1aafdc9397dc6783bd821b951115ae42` was pushed to
-`origin/main`, built in ACR as
-`sociobotregistry.azurecr.io/sf-field-parts-promise:6c3afa6a1aaf`, and
-deployed as Container App revision `sf-field-parts-promise--0000023`.
+The initial accessibility repair `6c3afa6a1aafdc9397dc6783bd821b951115ae42`
+was built and deployed as Container App revision
+`sf-field-parts-promise--0000023`. Its live checks exposed the shared-schema
+startup condition described above on the subsequent `--0000024` deployment;
+traffic stayed on `--0000023` while the schema guard was prepared.
 
-`https://field-parts-promise.sociobot.in/health` returned HTTP 200 with:
+The complete repair `b78264509ea8ee01b2a1e358c0231b3ac8764a77` is pushed to
+`origin/main`, built in ACR as
+`sociobotregistry.azurecr.io/sf-field-parts-promise:b78264509ea8`, and
+deployed through the work-order container configuration as revision
+`sf-field-parts-promise--0000025` with 100% latest-revision ingress traffic.
+The revision log records both “Parts Promise is using the verified existing
+product schema” and a listener on port 8080 with that exact build SHA.
+
+After deployment, `https://field-parts-promise.sociobot.in/health` returned
+HTTP 200 with:
 
 ```json
 {
   "status": "ok",
-  "build_sha": "6c3afa6a1aafdc9397dc6783bd821b951115ae42",
+  "build_sha": "b78264509ea8ee01b2a1e358c0231b3ac8764a77",
   "database": "postgres",
   "auth": "ready"
 }
@@ -113,13 +123,19 @@ referrer policy, frame denial, and camera/microphone/geolocation denial. A
 live invalid bearer token was rejected with HTTP 401 and
 `WWW-Authenticate: Bearer`.
 
-This follow-up documentation revision records the deployment evidence; no
-production code changed after the deployed repair commit above.
+The final live `verify-url.sh` check passed in 622 ms with no console or page
+errors, the correct title and language, one H1, a main landmark, no missing
+image alt text, and no unlabeled buttons. A fresh 390 × 844 browser context
+then used the keyboard to enter the demo, allocate the pump to Van 2, and make
+the job “Parts in hand”; it had no console/page errors, no out-of-origin
+requests, and zero serious or critical axe findings. In a separate fresh
+context, the service worker controlled the demo and it reloaded while offline.
+The live malformed-bearer check still returned 401 with
+`WWW-Authenticate: Bearer` and the response security policy headers.
 
-A subsequent evidence-only deployment revealed the shared-schema startup
-condition above on revision `sf-field-parts-promise--0000024`; traffic remained
-on the healthy `--0000023` revision. The committed schema guard is the current
-release candidate and must be deployed before accepting this repair.
+This documentation-only commit was made after the deployed source repair to
+record the final evidence; no production code changed after
+`b78264509ea8ee01b2a1e358c0231b3ac8764a77`.
 
 ## Remaining external release dependency
 
