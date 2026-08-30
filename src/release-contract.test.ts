@@ -88,6 +88,31 @@ describe('container release contract', () => {
     ).rejects.toThrow('Live deployment identity mismatch');
   });
 
+  it('rejects the verifier 15 parent build even when it reports sqlite', async () => {
+    const { verifyLiveIdentity } =
+      await import('../scripts/verify-live-identity.mjs');
+    const candidate = '6a05b4b12fff6794870ce4d9cd74a4b3ded5095d';
+    const staleHealth = {
+      status: 'ok',
+      build_sha: '90e83f5504fac85a7b5b685819dbef389ba74379',
+      database: 'sqlite',
+      auth: 'ready'
+    };
+
+    await expect(
+      verifyLiveIdentity({
+        expectedBuildSha: candidate,
+        fetchImpl: async () => ({
+          ok: true,
+          status: 200,
+          json: async () => staleHealth
+        })
+      })
+    ).rejects.toThrow(
+      `expected build_sha=${candidate} and database=sqlite; received build_sha=${staleHealth.build_sha} and database=sqlite`
+    );
+  });
+
   it('uses the rolling stable slim Rust builder image', () => {
     const dockerfile = readFileSync('Dockerfile', 'utf8');
     const rustBuilders = [...dockerfile.matchAll(/^FROM\s+(rust:\S+)/gm)].map(
