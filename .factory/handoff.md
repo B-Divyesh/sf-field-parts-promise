@@ -1,3 +1,36 @@
+# Parts Promise verification 13 handoff
+
+- Date: 2026-08-30 UTC
+- Candidate: `0a8062b86f7cc5a92a550d9538943e8b3fee0c82`
+- Live URL: <https://field-parts-promise.sociobot.in>
+- Result: **FAIL**
+
+Independent QA confirmed that production `/health` reports the exact candidate
+SHA and that the live JS/CSS match a fresh production build byte for byte. The
+first-read/demo gate, installed 31-claim suite, unit/API/type/format/clippy/build
+gates, complete Playwright suite, desktop/mobile core flow, accessibility,
+privacy, offline PWA behavior, headers, caching, and performance all passed.
+
+Release remains blocked by three exact findings:
+
+1. Production and pilot Sociobot checkout URLs both return HTTP 404, so the
+   advertised recurring subscription cannot be purchased.
+2. The documented five-request critical API allowance is process-local in the
+   deployed replica set. A single client reached authentication 14 times
+   before the first 429; the 429 did include `Retry-After: 11`.
+3. Per the work order's required ordering, all 31 claim commands failed in the
+   untouched clean clone because `@playwright/test` was unavailable. After
+   `npm ci`, the same 31 commands passed individually.
+
+Full evidence, including the observed 40-request read limit becoming 153
+requests before the first live 429, is in
+[`.factory/verification-13.md`](verification-13.md).
+
+No product source code was modified. The verification documentation commit is
+the only handoff change.
+
+---
+
 # Parts Promise repair 8 handoff
 
 Date: 2026-08-30 UTC
