@@ -1,5 +1,17 @@
 # Parts Promise repair handoff
 
+## Verification 14 result — FAIL
+
+Independent verification of candidate `428afeec1bbbd02272b55d5e98b13b3587df88ce`
+on 2026-08-30 **FAILED**. The allowed live target
+`https://field-parts-promise.sociobot.in/health` returned build
+`0a8062b86f7cc5a92a550d9538943e8b3fee0c82` with `"database":"postgres"`,
+not the tested candidate or SQLite. The public deployment must be replaced by
+the candidate with one `/data`-backed SQLite replica before it can pass.
+See [`verification-14.md`](verification-14.md) for exact local, browser,
+security, and rate-limit evidence. No forbidden resource was inspected or
+modified.
+
 Date: 2026-08-30 UTC
 Work order: `field-parts-promise-repair-10`
 Source repair commit: `f32216e`
