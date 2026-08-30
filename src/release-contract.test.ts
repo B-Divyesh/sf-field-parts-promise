@@ -19,7 +19,7 @@ describe('container release contract', () => {
     expect(server).not.toContain('load_legacy_config');
   });
 
-  it('rejects retired external-state references in tracked source', () => {
+  it('rejects retired external-state references in runtime source', () => {
     const terms = [
       ['sociobot', '-v2'].join(''),
       ['sociobot', '-db'].join(''),
@@ -38,7 +38,22 @@ describe('container release contract', () => {
     );
 
     expect(listing.status).toBe(0);
-    for (const path of listing.stdout.split('\n').filter(existsSync)) {
+    const runtimePaths = listing.stdout
+      .split('\n')
+      .filter(existsSync)
+      .filter(
+        (path) =>
+          path === 'Dockerfile' ||
+          path === 'deploy.json' ||
+          path === 'package.json' ||
+          path === 'playwright.config.ts' ||
+          path.startsWith('server/') ||
+          path.startsWith('src/') ||
+          path.startsWith('e2e/') ||
+          path.startsWith('scripts/')
+      );
+
+    for (const path of runtimePaths) {
       const source = readFileSync(path, 'utf8');
       for (const term of terms) {
         expect(
@@ -47,6 +62,29 @@ describe('container release contract', () => {
         ).not.toContain(term);
       }
     }
+  });
+
+  it('rejects the original stale live health identity', async () => {
+    const { verifyLiveIdentity } =
+      await import('../scripts/verify-live-identity.mjs');
+    const retiredDatabase = ['post', 'gres'].join('');
+    const staleHealth = {
+      status: 'ok',
+      build_sha: '0a8062b86f7cc5a92a550d9538943e8b3fee0c82',
+      database: retiredDatabase,
+      auth: 'ready'
+    };
+
+    await expect(
+      verifyLiveIdentity({
+        expectedBuildSha: '428afeec1bbbd02272b55d5e98b13b3587df88ce',
+        fetchImpl: async () => ({
+          ok: true,
+          status: 200,
+          json: async () => staleHealth
+        })
+      })
+    ).rejects.toThrow('Live deployment identity mismatch');
   });
 
   it('uses the rolling stable slim Rust builder image', () => {

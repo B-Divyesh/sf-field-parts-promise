@@ -305,6 +305,18 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn file_backed_sqlite_uses_the_network_mount_safe_journal_mode() {
+        let directory = tempfile::tempdir().unwrap();
+        let sqlite_url = format!(
+            "sqlite://{}?mode=rwc",
+            directory.path().join("mount-safe.sqlite3").display()
+        );
+        let database = Database::connect(&sqlite_url).await.unwrap();
+
+        assert_eq!(database.journal_mode_for_test().await.unwrap(), "delete");
+    }
+
+    #[tokio::test]
     async fn registered_checkout_returns_the_gateway_url_without_following_its_redirect() {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let billing_base_url = format!("http://{}", listener.local_addr().unwrap());

@@ -1,10 +1,13 @@
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::{
+    str::FromStr,
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
 
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use sqlx_core::{row::Row, transaction::Transaction};
-use sqlx_sqlite::{Sqlite, SqlitePool, SqlitePoolOptions};
+use sqlx_sqlite::{Sqlite, SqliteConnectOptions, SqliteJournalMode, SqlitePool, SqlitePoolOptions};
 use uuid::Uuid;
 
 use crate::auth::Identity;
@@ -138,18 +141,17 @@ struct Membership {
 
 impl Database {
     pub async fn connect(sqlite_url: &str) -> Result<Self, DbError> {
-        let max_connections = if sqlite_url.contains(":memory:") {
-            1
-        } else {
-            8
-        };
+        // `/data` is an Azure Files mount in production. WAL needs shared-memory
+        // locking that network filesystems do not reliably provide, so keep the
+        // single-replica SQLite writer on the rollback journal instead.
+        let options = SqliteConnectOptions::from_str(sqlite_url)?
+            .journal_mode(SqliteJournalMode::Delete)
+            .busy_timeout(Duration::from_secs(8))
+            .foreign_keys(true);
         let pool = SqlitePoolOptions::new()
-            .max_connections(max_connections)
+            .max_connections(1)
             .acquire_timeout(Duration::from_secs(8))
-            .connect(sqlite_url)
-            .await?;
-        sqlx::raw_sql("PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 8000;")
-            .execute(&pool)
+            .connect_with(options)
             .await?;
         sqlx::raw_sql(SQLITE_SCHEMA).execute(&pool).await?;
         for statement in [
@@ -159,6 +161,14 @@ impl Database {
             let _ = sqlx::query(statement).execute(&pool).await;
         }
         Ok(Self { pool })
+    }
+
+    #[cfg(test)]
+    pub async fn journal_mode_for_test(&self) -> Result<String, DbError> {
+        let row = sqlx::query("PRAGMA journal_mode")
+            .fetch_one(&self.pool)
+            .await?;
+        Ok(row.get(0))
     }
 
     /// Takes one request from this product's persisted fixed window.
