@@ -4,11 +4,63 @@ use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use sqlx::{any::AnyPoolOptions, Any, AnyPool, Row, Transaction};
+use tracing::info;
 use uuid::Uuid;
 
 use crate::auth::Identity;
 
 const SQLITE_SCHEMA: &str = include_str!("../migrations/sqlite/0001_accounts_sync.sql");
+const PRODUCT_TABLE_COUNT: i64 = 9;
+const PRODUCT_POLICY_COUNT: i64 = 8;
+const PRODUCT_ORGANIZATION_COLUMN_COUNT: i64 = 10;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum ProductSchemaState {
+    Empty,
+    Ready,
+    Incomplete,
+}
+
+fn classify_product_schema(
+    table_count: i64,
+    policy_count: i64,
+    organization_column_count: i64,
+) -> ProductSchemaState {
+    if table_count == 0 {
+        ProductSchemaState::Empty
+    } else if table_count == PRODUCT_TABLE_COUNT
+        && policy_count == PRODUCT_POLICY_COUNT
+        && organization_column_count == PRODUCT_ORGANIZATION_COLUMN_COUNT
+    {
+        ProductSchemaState::Ready
+    } else {
+        ProductSchemaState::Incomplete
+    }
+}
+
+async fn product_schema_state(pool: &sqlx::PgPool) -> Result<ProductSchemaState, sqlx::Error> {
+    let table_count = sqlx::query_scalar::<_, i64>(
+        "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('fpp_users','fpp_organizations','fpp_memberships','fpp_workspaces','fpp_sync_operations','fpp_audit_events','fpp_technician_seats','fpp_billing_accounts','fpp_billing_events')",
+    )
+    .fetch_one(pool)
+    .await?;
+    let policy_count = sqlx::query_scalar::<_, i64>(
+        "SELECT COUNT(*) FROM pg_policies WHERE schemaname = 'public' AND policyname IN ('fpp_organizations_tenant','fpp_memberships_tenant','fpp_workspaces_tenant','fpp_sync_operations_tenant','fpp_audit_events_tenant','fpp_technician_seats_tenant','fpp_billing_accounts_tenant','fpp_billing_events_tenant')",
+    )
+    .fetch_one(pool)
+    .await?;
+    let organization_column_count = sqlx::query_scalar::<_, i64>(
+        "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'fpp_organizations' AND column_name IN ('id','name','locale','time_zone','buffer_days','evidence_stale_hours','created_at','updated_at','deletion_requested_at','deletion_scheduled_for')",
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(classify_product_schema(
+        table_count,
+        policy_count,
+        organization_column_count,
+    ))
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DatabaseKind {
@@ -142,11 +194,30 @@ impl Database {
         };
         if kind == DatabaseKind::Postgres {
             let migrator = sqlx::PgPool::connect(migration_url.unwrap_or(database_url)).await?;
-            let mut product_migrations = sqlx::migrate!("./migrations");
-            product_migrations.set_ignore_missing(true);
-            product_migrations.run(&migrator).await.map_err(|error| {
-                sqlx::Error::Protocol(format!("database migration failed: {error}"))
-            })?;
+            match product_schema_state(&migrator).await? {
+                ProductSchemaState::Empty => {
+                    let mut product_migrations = sqlx::migrate!("./migrations");
+                    product_migrations.set_ignore_missing(true);
+                    product_migrations.run(&migrator).await.map_err(|error| {
+                        sqlx::Error::Protocol(format!("database migration failed: {error}"))
+                    })?;
+                    info!("Parts Promise created its product schema with migrations");
+                }
+                ProductSchemaState::Ready => {
+                    // Factory PostgreSQL is shared with the product's migration
+                    // history owned elsewhere. Replaying this app's bootstrap
+                    // files against an already-complete schema would race a new
+                    // replica and fail on CREATE TABLE. The schema check covers
+                    // every required table, RLS policy, and deletion-hold column.
+                    info!("Parts Promise is using the verified existing product schema");
+                }
+                ProductSchemaState::Incomplete => {
+                    return Err(sqlx::Error::Protocol(
+                        "Parts Promise found a partial PostgreSQL product schema; restore or complete it before starting another replica".to_owned(),
+                    )
+                    .into());
+                }
+            }
             migrator.close().await;
         }
         let max_connections = if database_url.contains(":memory:") {
@@ -1050,4 +1121,34 @@ fn validate_workspace(workspace: &Value) -> Result<(), DbError> {
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod schema_tests {
+    use super::*;
+
+    #[test]
+    fn complete_shared_schema_does_not_replay_bootstrap_migrations() {
+        assert_eq!(
+            classify_product_schema(
+                PRODUCT_TABLE_COUNT,
+                PRODUCT_POLICY_COUNT,
+                PRODUCT_ORGANIZATION_COLUMN_COUNT,
+            ),
+            ProductSchemaState::Ready
+        );
+    }
+
+    #[test]
+    fn empty_database_runs_product_migrations_and_partial_schema_stops() {
+        assert_eq!(classify_product_schema(0, 0, 0), ProductSchemaState::Empty);
+        assert_eq!(
+            classify_product_schema(
+                PRODUCT_TABLE_COUNT,
+                PRODUCT_POLICY_COUNT - 1,
+                PRODUCT_ORGANIZATION_COLUMN_COUNT
+            ),
+            ProductSchemaState::Incomplete
+        );
+    }
 }

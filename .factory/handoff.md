@@ -18,6 +18,16 @@ The change is in `e2e/product.spec.ts`. The test remains the regression
 coverage: it asserts no serious or critical axe findings for each route/theme
 combination in desktop Chromium and at the 390 × 844 mobile viewport.
 
+The provenance rollout also exposed a server startup failure: the factory's
+shared PostgreSQL database already contains the complete Parts Promise schema,
+but its shared `_sqlx_migrations` history does not contain this product's
+bootstrap migration. A new replica therefore attempted `CREATE TABLE
+fpp_users` and stopped. `server/src/db.rs` now verifies all nine required
+tables, all eight RLS policies, and all ten organization columns. An empty
+database still runs the reversible product migrations; a complete schema is
+used without replaying bootstrap DDL; and a partial schema fails closed with a
+clear recovery error. Unit tests cover all three states.
+
 The reported source-provenance mismatch is addressed by the pushed repair
 commit and its container deployment. The deployed commit and `/health` evidence
 are recorded below.
@@ -26,7 +36,7 @@ are recorded below.
 
 - Clean install: `npm ci` — passed; 85 packages installed and `npm audit`
   reported 0 vulnerabilities.
-- Unit and API: `npm test` — 16 Vitest tests and 11 Rust tests passed; the
+- Unit and API: `npm test` — 16 Vitest tests and 13 Rust tests passed; the
   isolated-PostgreSQL round-trip remains intentionally ignored without a
   supplied test database.
 - Types: `npm run check` — 0 errors and 0 warnings.
@@ -57,6 +67,13 @@ are recorded below.
   `no-cache, max-age=0, must-revalidate`; both included the product CSP,
   HSTS, `nosniff`, strict referrer policy, frame denial, and camera/microphone/
   geolocation `Permissions-Policy`.
+- Production-schema startup regression: with the factory runtime and migration
+  database URLs supplied only to the local smoke command, the server started
+  against the existing PostgreSQL schema, logged “using the verified existing
+  product schema”, and returned
+  `{"status":"ok","build_sha":"dev","database":"postgres","auth":"ready"}`.
+  It performed only schema metadata reads before the health request; evidence
+  is `.factory/repair-8-artifacts/production-schema-smoke.json`.
 
 ## Deployment and live evidence
 
@@ -98,6 +115,11 @@ live invalid bearer token was rejected with HTTP 401 and
 
 This follow-up documentation revision records the deployment evidence; no
 production code changed after the deployed repair commit above.
+
+A subsequent evidence-only deployment revealed the shared-schema startup
+condition above on revision `sf-field-parts-promise--0000024`; traffic remained
+on the healthy `--0000023` revision. The committed schema guard is the current
+release candidate and must be deployed before accepting this repair.
 
 ## Remaining external release dependency
 
