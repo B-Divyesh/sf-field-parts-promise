@@ -240,6 +240,12 @@ mod tests {
     use super::*;
 
     async fn test_app() -> (Router, AuthVerifier, Database) {
+        test_app_with_billing_base_url("https://pilot-api.sociobot.in".to_owned()).await
+    }
+
+    async fn test_app_with_billing_base_url(
+        billing_base_url: String,
+    ) -> (Router, AuthVerifier, Database) {
         let db = Database::connect("sqlite::memory:", None).await.unwrap();
         let auth = AuthVerifier::test(b"test-secret-at-least-32-bytes-long");
         (
@@ -248,7 +254,7 @@ mod tests {
                 db.clone(),
                 auth.clone(),
                 "metrics-test".to_owned(),
-                "https://pilot-api.sociobot.in".to_owned(),
+                billing_base_url,
             )
             .await,
             auth,
@@ -290,6 +296,63 @@ mod tests {
         assert_eq!(body["build_sha"], "test-sha");
         assert_eq!(body["database"], "sqlite");
         assert_eq!(body["auth"], "ready");
+    }
+
+    #[tokio::test]
+    async fn registered_checkout_returns_the_gateway_url_without_following_its_redirect() {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let billing_base_url = format!("http://{}", listener.local_addr().unwrap());
+        let billing_gateway = Router::new().route(
+            "/api/v1/products/field-parts-promise/checkout",
+            get(|| async {
+                (
+                    StatusCode::SEE_OTHER,
+                    [(
+                        "location",
+                        "https://test.checkout.dodopayments.com/session/example",
+                    )],
+                )
+            }),
+        );
+        let gateway_task = tokio::spawn(async move {
+            axum::serve(listener, billing_gateway).await.unwrap();
+        });
+
+        let (app, auth, _) = test_app_with_billing_base_url(billing_base_url.clone()).await;
+        let token = auth.issue_test_token("checkout-owner", 600);
+        let onboard = app
+            .clone()
+            .oneshot(request(
+                "POST",
+                "/api/v1/onboarding",
+                Some(&token),
+                json!({
+                    "organization_name":"Checkout redirect firm","locale":"en-US","time_zone":"UTC",
+                    "migrate_local_workspace":false,"local_item_count":0,"workspace":null
+                }),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(onboard.status(), StatusCode::OK);
+
+        let response = app
+            .oneshot(request(
+                "POST",
+                "/api/v1/billing/checkout",
+                Some(&token),
+                json!({}),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            json_body(response).await,
+            json!({
+                "checkout_url":format!("{billing_base_url}/api/v1/products/field-parts-promise/checkout"),
+                "merchant":"Sociobot/Dodo"
+            })
+        );
+        gateway_task.abort();
     }
 
     #[tokio::test]
