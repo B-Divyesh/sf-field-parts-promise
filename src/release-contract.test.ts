@@ -14,7 +14,7 @@ describe('container release contract', () => {
     expect(dockerfile).toContain(
       'COPY --from=runtime-files --chown=nonroot:nonroot /data /data'
     );
-    expect(server).toContain('field-parts-promise.sqlite3');
+    expect(server).toContain('parts-promise.sqlite3');
     expect(server).toContain('durable_default');
     expect(server).not.toContain('load_legacy_config');
   });

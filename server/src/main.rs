@@ -121,7 +121,10 @@ fn billing_acceptance() -> (bool, &'static str) {
 fn sqlite_connection_uri() -> Result<(String, &'static str), Box<dyn std::error::Error>> {
     let (data_dir, source) = data_dir();
     fs::create_dir_all(&data_dir)?;
-    let path = PathBuf::from(data_dir).join("field-parts-promise.sqlite3");
+    // The earlier WAL-only candidate left its original file locked on the
+    // durable share before it ever became ready. Keep that file untouched and
+    // use this stable SQLite file for the single-writer release.
+    let path = PathBuf::from(data_dir).join("parts-promise.sqlite3");
     Ok((format!("sqlite://{}?mode=rwc", path.display()), source))
 }
 
