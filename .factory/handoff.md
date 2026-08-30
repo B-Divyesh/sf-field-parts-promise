@@ -1,31 +1,76 @@
-# Parts Promise handoff — FAIL
+# Parts Promise repair 12 handoff
 
-## Current independent verification — FAIL (supersedes historical PASS below)
+## Result — release candidate ready for exact-identity deployment
 
 Date: 2026-08-30 UTC
-Work order: `field-parts-promise-verify-15`
-Candidate: `6a05b4b12fff6794870ce4d9cd74a4b3ded5095d`
+
+Work order: `field-parts-promise-repair-12`
+
+Verifier report commit: `a8b7b6fc2f1ea85fbc281e48ccb28be80bfa773a`
+
+Rejected candidate: `6a05b4b12fff6794870ce4d9cd74a4b3ded5095d`
+
+Release candidate: the repository HEAD containing this handoff
+
 Live URL: `https://field-parts-promise.sociobot.in`
 
-**Do not accept this candidate.** The permitted live target reports
-`build_sha` `90e83f5504fac85a7b5b685819dbef389ba74379`, not the candidate SHA.
-It does correctly report SQLite. The exact identity check failed; this is a
-critical deployment mismatch. The full independent evidence is in
-[`verification-15.md`](verification-15.md).
+## Release blocker and repair
 
-Verification completed locally: all 31 declared claim tests passed (31
-project-duplicate skips), `npm test` passed (20 Vitest + 14 Rust), type and
-format checks passed, and `npm run build` produced `dist/` and the release
-binary. The release binary also served `/health` with only `PORT` supplied.
-Live first-read, demo allocation, mobile/desktop, keyboard focus,
-reduced-motion, privacy-request, security-header, cache, and 5-request API
-rate-limit checks passed. The only release blocker is that the live deployment
-is not the requested commit. Build and deploy that exact commit, then rerun
-the public health identity check.
+The required failure was reproduced first against the permitted public target.
+`GET /health` returned HTTP 200 with:
 
-No forbidden resource was accessed or modified. An OCI image could not be
-rebuilt here because this worker has no Docker-compatible executable; the
-compiled-server container-runtime claim passed.
+```json
+{"status":"ok","build_sha":"90e83f5504fac85a7b5b685819dbef389ba74379","database":"sqlite","auth":"ready"}
+```
+
+That is the rejected candidate's direct parent, not full SHA `6a05b4b…`.
+The application and SQLite contract were already correct; the root cause was
+that the handoff-only candidate had not been rebuilt and deployed.
+
+The release identity checker already requires an exact supplied build SHA and
+SQLite. Repair commit `888c37e` adds the missing regression for verifier 15's
+exact payload: parent build `90e83f5…` is rejected even though it correctly
+reports SQLite. The production image must be built from the final repository
+HEAD with `BUILD_SHA`, `GIT_SHA`, and `SOURCE_COMMIT` set to that same full
+SHA. The post-deploy gate is:
+
+```sh
+EXPECTED_BUILD_SHA="$(git rev-parse HEAD)" npm run verify:live-identity
+```
+
+## Clean local verification
+
+- `npm ci` installed 85 packages; audit reported 0 vulnerabilities.
+- `npm test` passed: 21 Vitest tests and 14 Rust API tests.
+- `npm run check` passed with 0 errors and 0 warnings.
+- `npm run format:check` passed.
+- `cargo clippy --manifest-path server/Cargo.toml --locked --all-targets -- -D warnings` passed.
+- `npm run build` passed and produced `dist/` plus the release server. Main JS
+  is 38.25 KB gzip, deferred CIAM JS is 62.19 KB gzip, and CSS is 4.19 KB gzip.
+- `npm run test:e2e -- --grep @claim: --retries=0` passed all 31 declared
+  claims with 31 intentional project-duplicate skips.
+- `npm run test:e2e -- --retries=0` passed all 52 runnable browser cases with
+  36 intentional project skips. Coverage includes desktop, 390 px mobile,
+  keyboard and focus management, route/theme axe checks, privacy request
+  recording, offline reload, service-worker update, response policy, and the
+  compiled server started with only `PORT`.
+
+## Deployment boundaries
+
+The permitted target template was checked by querying only
+`sf-field-parts-promise`. It has exactly one `PORT` environment setting, a
+single `/data` mount backed by `sf-field-parts-promise-data`, and
+`minReplicas: 1` / `maxReplicas: 1`. The repair preserves that template and
+changes only the target image. No shared service, secret, database, or other
+product resource was inspected or modified.
+
+## Known gaps and next steps
+
+No product-code gap remains from verification 15. Independent verification
+should compare the permitted public `/health` payload to the full candidate
+SHA and `database: "sqlite"`, then repeat the already-green claim and browser
+matrix. The pre-release WAL file described in the historical handoff remains
+preserved and unused; this repair does not inspect, delete, or migrate it.
 
 ---
 
