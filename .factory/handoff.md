@@ -78,15 +78,36 @@ the product brief and the factory contract.
 
 ## Deploy and live checks
 
-The repair commit is pushed and deployed through:
+Commit `58a687699d98775faf8594af5d866c6ea8a353a3` is pushed to `main` and
+deployed through:
 
 ```sh
 /opt/fleet/lib/deploy-container.sh field-parts-promise /work/repo Dockerfile 8080
 ```
 
-Post-deploy evidence, including the served build identity, desktop/mobile URL
-verification, header/cache checks, and the repeated billing-catalogue probe,
-is recorded in the follow-up deployment commit.
+After deployment, `GET /health` returned 200 with that exact SHA, PostgreSQL,
+and ready auth. `verify-url.sh` passed against the public home and demo URLs
+at desktop and 390 px with no console/page errors. The live mobile probe
+confirmed: same-origin-only demo requests, a controlling worker, successful
+offline demo reload, no horizontal overflow, 44 px minimum visible button
+size, and zero serious/critical axe results. The live sign-in action requested
+only the shared Sociobot CIAM authorization endpoint with client
+`25c704f4-465a-47af-80ab-2c489466b697` and callback
+`https://field-parts-promise.sociobot.in/auth/callback`.
+
+A fresh 80-request invalid-token burst to live `/api/v1/bootstrap` returned
+42 × 401 followed by 38 × 429, all limited responses with `Retry-After: 1`.
+Live headers still provide CSP, HSTS, nosniff, strict referrer policy, frame
+denial, device-permission denial, and no-cache delivery for HTML and `sw.js`.
+
+Mobile Lighthouse against the live demo scored Performance **99**,
+Accessibility **100**, Best Practices **100**, SEO **100**; LCP was
+1,996.962 ms and CLS 0. The served health/header, `verify-url`, screenshot,
+and Lighthouse evidence is retained under `.factory/repair-7-artifacts/`.
+
+The repeated post-deploy pilot and production checkout probes still return the
+documented `404 enabled factory product`; deployment did not and cannot alter
+that separate billing-catalogue state.
 
 ## Remaining release blocker — factory operator action
 

@@ -1,0 +1,9 @@
+{
+  "route": "/api/v1/bootstrap",
+  "requestCount": 80,
+  "responses": {
+    "401": 42,
+    "429": 38
+  },
+  "retryAfterValues": ["1"]
+}
