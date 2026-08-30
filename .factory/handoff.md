@@ -18,9 +18,9 @@ The change is in `e2e/product.spec.ts`. The test remains the regression
 coverage: it asserts no serious or critical axe findings for each route/theme
 combination in desktop Chromium and at the 390 × 844 mobile viewport.
 
-The reported source-provenance mismatch is addressed by this repair's pushed
-commit and container deployment. The final deployed commit and `/health`
-evidence are recorded below after deployment.
+The reported source-provenance mismatch is addressed by the pushed repair
+commit and its container deployment. The deployed commit and `/health` evidence
+are recorded below.
 
 ## Verification completed before deployment
 
@@ -60,13 +60,52 @@ evidence are recorded below after deployment.
 
 ## Deployment and live evidence
 
-Pending the commit and container deployment in this repair work order.
+The repair commit `6c3afa6a1aafdc9397dc6783bd821b951115ae42` was pushed to
+`origin/main`, built in ACR as
+`sociobotregistry.azurecr.io/sf-field-parts-promise:6c3afa6a1aaf`, and
+deployed as Container App revision `sf-field-parts-promise--0000023`.
+
+`https://field-parts-promise.sociobot.in/health` returned HTTP 200 with:
+
+```json
+{
+  "status": "ok",
+  "build_sha": "6c3afa6a1aafdc9397dc6783bd821b951115ae42",
+  "database": "postgres",
+  "auth": "ready"
+}
+```
+
+The live `verify-url.sh` check passed in 615 ms with no browser console or page
+errors, the correct title and language, one H1, a main landmark, no missing
+image alt text, and no unlabeled buttons. It captured both desktop and 390 px
+mobile screenshots in `.factory/repair-8-artifacts/live-verify/`.
+
+An independent live Playwright smoke check opened the sample demo at desktop
+and 390 × 844. Both started and reloaded offline as “Riverside Dental parts”,
+were service-worker controlled, had no console/page errors, made no
+out-of-origin requests, and had zero serious or critical axe violations. A
+separate live 390 px keyboard flow used Enter and Space to allocate Van 2's
+pump; it changed the promise to “Parts in hand” without errors. Evidence is in
+`.factory/repair-8-artifacts/live-browser.json` and
+`.factory/repair-8-artifacts/live-keyboard-mobile.json`.
+
+Live response-policy checks confirmed immutable caching for the hashed main
+script, `no-cache` for `sw.js`, the deployed CSP, HSTS, `nosniff`, strict
+referrer policy, frame denial, and camera/microphone/geolocation denial. A
+live invalid bearer token was rejected with HTTP 401 and
+`WWW-Authenticate: Bearer`.
+
+This follow-up documentation revision records the deployment evidence; no
+production code changed after the deployed repair commit above.
 
 ## Remaining external release dependency
 
-The recurring Sociobot product is still not registered. Immediately before
-this repair, both of these independent gateway requests returned HTTP 404 with
-`{"error":"enabled factory product","status":404}`:
+The recurring Sociobot product is still not registered. Before this repair,
+both gateways returned HTTP 404 with `{"error":"enabled factory
+product","status":404}`. During post-deploy verification, the pilot endpoint
+continued to return that 404 while the production gateway returned HTTP 503 on
+two fresh GETs, so production checkout is unavailable as well:
 
 - `https://pilot-api.sociobot.in/api/v1/products/field-parts-promise/checkout`
 - `https://api.sociobot.in/api/v1/products/field-parts-promise/checkout`
