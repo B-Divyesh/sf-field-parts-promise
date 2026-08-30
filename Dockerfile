@@ -5,6 +5,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY index.html svelte.config.js tsconfig.json vite.config.ts ./
 COPY src ./src
+COPY scripts ./scripts
 COPY public ./public
 RUN npm run build:web
 

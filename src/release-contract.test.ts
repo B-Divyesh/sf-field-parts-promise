@@ -96,6 +96,7 @@ describe('container release contract', () => {
     expect(rustBuilders).toEqual(['rust:1-slim']);
     expect(dockerfile).toContain('ARG BUILD_SHA=dev');
     expect(dockerfile).not.toMatch(/COPY\s+\.git|\bgit\s+/);
+    expect(dockerfile).toContain('COPY scripts ./scripts');
   });
 
   it('allows a clean Rust build to finish before browser claims start', () => {
