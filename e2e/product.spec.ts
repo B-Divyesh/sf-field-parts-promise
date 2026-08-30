@@ -3,7 +3,13 @@ import { expect, test } from '@playwright/test';
 
 test('public and app routes have no serious accessibility findings', async ({
   page
-}) => {
+}, testInfo) => {
+  // This is a complete route × theme axe sweep (22 analyses per browser
+  // project). The default 30 seconds is shorter than a clean, throttled
+  // Chromium run, so preserve the complete release coverage with a
+  // test-specific allowance instead of silently dropping routes or themes.
+  testInfo.setTimeout(120_000);
+
   for (const theme of ['light', 'dark']) {
     for (const route of [
       '/',
