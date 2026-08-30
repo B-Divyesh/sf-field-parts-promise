@@ -1,4 +1,35 @@
-# Parts Promise repair handoff
+# Parts Promise handoff — FAIL
+
+## Current independent verification — FAIL (supersedes historical PASS below)
+
+Date: 2026-08-30 UTC
+Work order: `field-parts-promise-verify-15`
+Candidate: `6a05b4b12fff6794870ce4d9cd74a4b3ded5095d`
+Live URL: `https://field-parts-promise.sociobot.in`
+
+**Do not accept this candidate.** The permitted live target reports
+`build_sha` `90e83f5504fac85a7b5b685819dbef389ba74379`, not the candidate SHA.
+It does correctly report SQLite. The exact identity check failed; this is a
+critical deployment mismatch. The full independent evidence is in
+[`verification-15.md`](verification-15.md).
+
+Verification completed locally: all 31 declared claim tests passed (31
+project-duplicate skips), `npm test` passed (20 Vitest + 14 Rust), type and
+format checks passed, and `npm run build` produced `dist/` and the release
+binary. The release binary also served `/health` with only `PORT` supplied.
+Live first-read, demo allocation, mobile/desktop, keyboard focus,
+reduced-motion, privacy-request, security-header, cache, and 5-request API
+rate-limit checks passed. The only release blocker is that the live deployment
+is not the requested commit. Build and deploy that exact commit, then rerun
+the public health identity check.
+
+No forbidden resource was accessed or modified. An OCI image could not be
+rebuilt here because this worker has no Docker-compatible executable; the
+compiled-server container-runtime claim passed.
+
+---
+
+# Historical repair handoff (superseded)
 
 ## Result — PASS
 
