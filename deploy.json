@@ -1,0 +1,6 @@
+{
+  "deploy": {
+    "data_dir": "/data",
+    "replicas": 1
+  }
+}

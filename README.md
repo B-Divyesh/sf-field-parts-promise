@@ -1,6 +1,6 @@
 # Parts Promise
 
-Parts Promise helps small trade firms promise job dates from parts held for each job. A solo user can work locally. A signed-in firm can share the same workspace across devices.
+Parts Promise helps small trade firms promise job dates from parts held for each job. A solo user can work locally. A signed-in firm can share one workspace across devices.
 
 ## Try it with sample data
 
@@ -12,13 +12,11 @@ The demo uses the separate `parts-promise-demo-v1` browser database. It never si
 
 ## Accounts, sync, and billing
 
-Sign-in uses the shared Sociobot Microsoft Entra tenant. Firm records use PostgreSQL in production and are separated by membership and row-level security. A saved firm workspace appears on another signed-in device. Repeated sync requests with the same operation ID apply once. Offline signed-in edits stay in the `parts-promise-cloud-v1` IndexedDB outbox. They retry after reconnect and back off after a temporary failure.
-
-If two devices change the same revision, the app shows both record counts. Quantity differences cannot be overwritten from the stale device. The user can download that device revision before choosing the shared revision.
+Sign-in uses the Sociobot Microsoft Entra tenant. A saved firm workspace appears on another signed-in device. Repeated sync requests with the same operation ID apply once. Offline signed-in edits stay in the `parts-promise-cloud-v1` IndexedDB outbox. They retry after reconnect and back off after a temporary failure.
 
 Owners can record invitations by work email. The invitation becomes active when that email signs in. Technicians count as $8 monthly seats; the owner does not. The Workshop base is $39 per month.
 
-Billing acceptance is explicitly operator-gated. Before enabling checkout, the factory billing operator verifies a linked Dodo recurring product and enabled `factory_products` row in each gateway. Production uses `api.sociobot.in`; browser tests explicitly use `pilot-api.sociobot.in`. Until both records are verified, the billing screen returns HTTP 424. The operator then sets `SOCIOBOT_BILLING_ACCEPTANCE=registered`. The app does not contact checkout, call Dodo directly, or simulate payment. Existing cloud records and export remain available when a recorded plan is unpaid; new cloud writes stop.
+Billing acceptance is explicitly operator-gated. Until the recurring product is registered in the approved billing gateway, the billing screen returns HTTP 424 and never starts a charge. Existing cloud records and export remain available when a recorded plan is unpaid; new cloud writes stop.
 
 ## Run and verify
 
@@ -33,8 +31,10 @@ Run the complete local suite:
 
 ```sh
 npm test
-npm run test:e2e
+npm run check
+npm run format:check
 npm run build
+npm run test:e2e -- --retries=0
 ```
 
 `npm run build` writes the web app to `dist/` and builds the release server. Each visitor-facing claim and its clean-sandbox command is listed in [`.factory/claims.json`](.factory/claims.json).
@@ -43,17 +43,15 @@ npm run build
 
 Local and demo records use IndexedDB. **Export workspace** downloads a versioned JSON backup. **Import workspace** previews JSON or CSV and reports invalid rows before saving.
 
-The Rust server exposes authenticated routes under `/api/v1`, `/health`, and protected `/metrics`. It validates Entra issuer, audience, tenant, signature, and token time. Requests derive the firm from the signed-in user's stable Entra object ID. Read, write, account, and payment paths have PostgreSQL-backed IP limits shared by every replica, with positive `Retry-After` responses. Export uses the five-request critical bucket. Metrics report request latency/status, sync conflicts, queue age, and notification failures.
+The Rust server exposes authenticated routes under `/api/v1`, `/health`, and protected `/metrics`. It validates Entra issuer, audience, tenant, signature, and token time. Requests derive the firm from the signed-in user's stable Entra object ID. Read, write, account, and payment paths use a persisted rate-limit bucket and return a positive `Retry-After` header when exceeded. Export uses the five-request critical bucket.
 
-The signed-in data page exports the firm workspace, team, billing state, and audit events. Owners can schedule firm deletion with a 14-day recovery hold and cancel it during that hold.
-
-Production obtains separate PostgreSQL runtime and migration URLs from the factory Key Vault through managed identity. A clean container with only `PORT` uses a local SQLite fallback, so it still starts without secrets. Durable generated state uses `/data` when that mounted directory exists; local-only startup falls back to `/tmp/parts-promise`. See [`server/migrations/README.md`](server/migrations/README.md) for the reversible schema.
+All server state, including the tenant workspace, rate-limit buckets, and generated metrics credential, is stored in one SQLite file and token file under `/data`. The deployed app has one replica and a durable `/data` mount. On a developer machine with no `/data` mount, the server falls back to a `data` directory beside its executable so it can still start with only `PORT`.
 
 ## Deployment configuration
 
-The multi-stage image runs as a non-root user and listens on `PORT` (default `8080`). Build identity comes from `BUILD_SHA`. The factory deploys the container to <https://field-parts-promise.sociobot.in>.
+The multi-stage image runs as a non-root user and listens on `PORT` (default `8080`). Build identity comes from `BUILD_SHA`. Its deployment contract is [`deploy.json`](deploy.json): `/data` is the durable data directory and the replica count is one.
 
-Optional overrides are `DATABASE_URL`, `DATABASE_MIGRATION_URL`, `ENTRA_TENANT_ID`, `ENTRA_TENANT_SUBDOMAIN`, `ENTRA_CLIENT_ID`, `METRICS_TOKEN`, `DATA_DIR`, `MANAGED_IDENTITY_CLIENT_ID`, `SOCIOBOT_BILLING_BASE_URL`, and `SOCIOBOT_BILLING_ACCEPTANCE`. Set `SOCIOBOT_BILLING_ACCEPTANCE=registered` only after an operator verifies the Dodo product and enabled `factory_products` row. No override is required to start.
+Optional overrides are `ENTRA_TENANT_ID`, `ENTRA_TENANT_SUBDOMAIN`, `ENTRA_CLIENT_ID`, `METRICS_TOKEN`, `DATA_DIR`, `SOCIOBOT_BILLING_BASE_URL`, and `SOCIOBOT_BILLING_ACCEPTANCE`. No override is required to start.
 
 ## Privacy and legal
 

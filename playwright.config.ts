@@ -30,7 +30,7 @@ export default defineConfig({
     },
     {
       command:
-        'cargo build --manifest-path server/Cargo.toml --locked && test_data_dir=$(mktemp -d); PORT=4174 STATIC_DIR=dist DATABASE_URL="sqlite://$test_data_dir/app.db?mode=rwc" AUTH_TEST_SECRET=playwright-test-secret-at-least-32-bytes METRICS_TOKEN=playwright-metrics-secret SOCIOBOT_BILLING_BASE_URL=https://pilot-api.sociobot.in server/target/debug/parts-promise-api',
+        'cargo build --manifest-path server/Cargo.toml --locked && test_data_dir=$(mktemp -d); PORT=4174 STATIC_DIR=dist DATA_DIR="$test_data_dir" AUTH_TEST_SECRET=playwright-test-secret-at-least-32-bytes METRICS_TOKEN=playwright-metrics-secret SOCIOBOT_BILLING_BASE_URL=https://pilot-api.sociobot.in server/target/debug/parts-promise-api',
       url: 'http://127.0.0.1:4174/health',
       reuseExistingServer: !process.env.CI,
       // A clean stable-Rust compile takes several minutes in the verifier.

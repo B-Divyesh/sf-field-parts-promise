@@ -55,10 +55,7 @@ pub async fn app(
         build_sha: build_sha.into(),
         metrics: metrics.clone(),
     };
-    let database_name = match database.kind() {
-        db::DatabaseKind::Postgres => "postgres",
-        db::DatabaseKind::Sqlite => "sqlite",
-    };
+    let database_name = "sqlite";
     let auth_name = if auth.is_available() {
         "ready"
     } else {
@@ -254,7 +251,7 @@ mod tests {
         billing_base_url: String,
         billing_acceptance_enabled: bool,
     ) -> (Router, AuthVerifier, Database) {
-        let db = Database::connect("sqlite::memory:", None).await.unwrap();
+        let db = Database::connect("sqlite::memory:").await.unwrap();
         let auth = AuthVerifier::test(b"test-secret-at-least-32-bytes-long");
         (
             app(
@@ -592,12 +589,12 @@ mod tests {
     #[tokio::test]
     async fn critical_rate_limit_is_shared_by_two_independent_app_replicas() {
         let directory = tempfile::tempdir().unwrap();
-        let database_url = format!(
+        let sqlite_url = format!(
             "sqlite://{}?mode=rwc",
             directory.path().join("replica-rate-limit.db").display()
         );
-        let database_a = Database::connect(&database_url, None).await.unwrap();
-        let database_b = Database::connect(&database_url, None).await.unwrap();
+        let database_a = Database::connect(&sqlite_url).await.unwrap();
+        let database_b = Database::connect(&sqlite_url).await.unwrap();
         let auth = AuthVerifier::test(b"test-secret-at-least-32-bytes-long");
         let app_a = app(
             "replica-a",
@@ -969,84 +966,61 @@ mod tests {
         }
     }
 
-    #[test]
-    fn postgres_migration_is_reversible_and_tenant_scoped() {
-        let up = include_str!("../migrations/202608290001_accounts_sync.up.sql");
-        let down = include_str!("../migrations/202608290001_accounts_sync.down.sql");
-        let identity_up = include_str!("../migrations/202608290002_rls_identity.up.sql");
-        let identity_down = include_str!("../migrations/202608290002_rls_identity.down.sql");
-        let deletion_up = include_str!("../migrations/202608290003_deletion_hold.up.sql");
-        let deletion_down = include_str!("../migrations/202608290003_deletion_hold.down.sql");
-        assert!(up.contains("ENABLE ROW LEVEL SECURITY"));
-        assert!(up.contains("current_setting('app.organization_id'"));
-        assert!(identity_up.contains("current_setting('app.user_oid'"));
-        assert!(identity_up.contains("current_setting('app.user_email'"));
-        assert!(identity_down.contains("CREATE POLICY fpp_memberships_tenant"));
-        assert!(deletion_up.contains("INTERVAL '14 days'"));
-        assert!(deletion_down.contains("DROP COLUMN IF EXISTS deletion_scheduled_for"));
-        for table in [
-            "fpp_users",
-            "fpp_organizations",
-            "fpp_memberships",
-            "fpp_workspaces",
-            "fpp_sync_operations",
-            "fpp_audit_events",
-            "fpp_technician_seats",
-            "fpp_billing_accounts",
-            "fpp_billing_events",
-        ] {
-            assert!(up.contains(&format!("CREATE TABLE {table}")));
-            assert!(down.contains(&format!("DROP TABLE IF EXISTS {table}")));
-        }
-    }
-
     #[tokio::test]
-    #[ignore = "requires DATABASE_URL pointing to an isolated or factory PostgreSQL database"]
-    async fn postgres_round_trip_uses_the_real_migration_and_queries() {
-        let url = std::env::var("DATABASE_URL").expect("DATABASE_URL is required");
-        let db = Database::connect(&url, Some(&url)).await.unwrap();
-        assert_eq!(db.kind(), db::DatabaseKind::Postgres);
-        db.delete_postgres_smoke_records().await.unwrap();
+    async fn sqlite_state_survives_a_process_restart() {
+        let directory = tempfile::tempdir().unwrap();
+        let sqlite_url = format!(
+            "sqlite://{}?mode=rwc",
+            directory
+                .path()
+                .join("data/field-parts-promise.sqlite3")
+                .display()
+        );
+        std::fs::create_dir_all(directory.path().join("data")).unwrap();
         let identity = auth::Identity {
-            oid: format!("postgres-smoke-{}", Uuid::new_v4()),
-            name: "PostgreSQL smoke".to_owned(),
+            oid: format!("restart-smoke-{}", Uuid::new_v4()),
+            name: "Restart smoke".to_owned(),
             email: None,
         };
-        db.onboard(
-            &identity,
-            &db::OnboardingInput {
-                organization_name: "PostgreSQL smoke firm".to_owned(),
-                locale: "en-US".to_owned(),
-                time_zone: "UTC".to_owned(),
-                migrate_local_workspace: false,
-                local_item_count: 0,
-                workspace: None,
-            },
-        )
-        .await
-        .unwrap();
-        db.set_billing_state_for_test(&identity, "active")
+        let first = Database::connect(&sqlite_url).await.unwrap();
+        first
+            .onboard(
+                &identity,
+                &db::OnboardingInput {
+                    organization_name: "Restart smoke firm".to_owned(),
+                    locale: "en-US".to_owned(),
+                    time_zone: "UTC".to_owned(),
+                    migrate_local_workspace: false,
+                    local_item_count: 0,
+                    workspace: None,
+                },
+            )
             .await
             .unwrap();
-        let result = db
+        first
+            .set_billing_state_for_test(&identity, "active")
+            .await
+            .unwrap();
+        first
             .sync(
                 &identity,
                 &db::SyncInput {
                     idempotency_key: Uuid::new_v4().to_string(),
                     expected_version: 0,
-                    workspace: json!({"schemaVersion":1,"jobs":[{"id":"pg-round-trip"}],"requirements":[],"sources":[],"allocations":[]}),
+                    workspace: json!({"schemaVersion":1,"jobs":[{"id":"restart-proof"}],"requirements":[],"sources":[],"allocations":[]}),
                 },
             )
             .await
             .unwrap();
-        assert_eq!(result.version, 1);
-        assert!(db
-            .export(&identity)
-            .await
+        drop(first);
+
+        let restarted = Database::connect(&sqlite_url).await.unwrap();
+        let bootstrap = restarted.bootstrap(&identity).await.unwrap();
+        assert_eq!(bootstrap.version, Some(1));
+        assert!(bootstrap
+            .workspace
             .unwrap()
             .to_string()
-            .contains("pg-round-trip"));
-        db.delete_test_identity(&identity).await.unwrap();
-        db.delete_postgres_smoke_records().await.unwrap();
+            .contains("restart-proof"));
     }
 }

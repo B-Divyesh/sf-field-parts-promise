@@ -72,8 +72,8 @@ The evidence is directional, not yet a validated willingness-to-pay study. The w
 ### Stack decision
 
 - **Web:** Svelte 5, Vite, strict TypeScript, and a small History API router. Svelte fits a stateful local-first application without React's runtime or ecosystem overhead. The app shell and current jobs live in IndexedDB through Dexie. A versioned service worker precaches only the shell and bundled demo fixtures.
-- **API:** Rust 2021, axum, tokio, serde, sqlx, PostgreSQL, tracing, and tower-governor. Shared firms need transactional allocation, tenancy, and multi-device sync, so the API is not optional after M2.
-- **Deployment shape:** one non-root Container Apps image serves the hashed web assets and the axum API on `PORT` (default `8080`). This corrects the earlier Static Web Apps split, which conflicted with the container work order and same-origin API. In production the app's managed identity reads separate runtime and migration PostgreSQL URLs from the factory Key Vault. Without those platform settings it starts with a local SQLite fallback, so `PORT` remains the only required environment variable. The repository does not modify DNS or billing infrastructure.
+- **API:** Rust 2021, axum, tokio, serde, sqlx with SQLite, and tracing. Shared firms need transactional allocation, tenancy, and multi-device sync, so the API is not optional after M2.
+- **Deployment shape:** one non-root Container Apps image serves the hashed web assets and the axum API on `PORT` (default `8080`). It stores all server state in `/data/field-parts-promise.sqlite3`; the deployment contract mounts durable `/data` and uses exactly one replica. Without a mount, local startup uses a `data` directory beside the executable, so `PORT` remains the only required environment variable. The repository does not modify DNS or billing infrastructure.
 - **Testing:** Vitest for deterministic domain rules, Rust unit/integration tests against an isolated database, and Playwright 1.58.2 for claim and accessibility flows. Each claim test starts from `?demo=1` unless identity or billing is the subject.
 
 The web budgets are initial JS ≤200 KB gzip (landing ≤150 KB), CSS ≤50 KB, self-hosted fonts ≤120 KB, mobile hero ≤300 KB, LCP <2.5 s, INP <200 ms, and CLS <0.1 on a throttled mid-range phone. Target ES2022 and evergreen browsers.
@@ -88,7 +88,7 @@ Svelte PWA
   └─ MSAL session cache: sessionStorage
           │ HTTPS /api/v1, bearer token
           ▼
-axum API ── PostgreSQL (organization-owned truth + audit log)
+axum API ── SQLite under /data (organization-owned truth + audit log)
   ├─ Entra discovery/JWKS cache
   ├─ Sociobot billing adapter ── api.sociobot.in ── Dodo
   ├─ structured logs /health /metrics
@@ -110,7 +110,7 @@ Put these rules in a shared TypeScript domain module for immediate offline feedb
 
 ### Data model
 
-All mutable rows have UUIDs, `organization_id`, `version`, `created_at`, `updated_at`, `created_by`, and `updated_by` unless noted. Server queries derive `organization_id` from the validated membership; they never accept it as authority from a request. PostgreSQL row-level security is defense in depth, and integration tests attempt cross-tenant IDs on every resource route.
+All mutable rows have UUIDs, `organization_id`, `version`, `created_at`, `updated_at`, `created_by`, and `updated_by` unless noted. Server queries derive `organization_id` from the validated membership; they never accept it as authority from a request. Application-level tenant checks and integration tests attempt cross-tenant IDs on every resource route.
 
 | Entity | Important fields and rules |
 | --- | --- |
@@ -136,7 +136,7 @@ All mutable rows have UUIDs, `organization_id`, `version`, `created_at`, `update
 | `push_subscriptions` | Endpoint and encrypted keys; deletable. No marketing use. |
 | `share_links` | M5 only: hashed token, job, expiry, revoked time, allowed fields. |
 
-Migrations live in `server/migrations`, are forward and reversible where PostgreSQL permits, and are tested up/down on an empty and representative database. Store timestamps as UTC; render in the organization's IANA time zone.
+The SQLite schema is idempotently applied at startup. Store timestamps as UTC; render in the organization's IANA time zone. The SQLite persistence test opens a durable file, writes firm state, drops the first handle, and verifies it after reopening the same file.
 
 ### Sync and conflict handling
 
@@ -175,7 +175,7 @@ All exceeded limits return 429 with `Retry-After`. CORS allowlists the productio
 
 ### Background work, files, and messages
 
-PostgreSQL is also the initial job queue using `FOR UPDATE SKIP LOCKED`; do not add Redis before measurements require it. Jobs include stale-evidence recalculation, in-app/browser reminder delivery, share expiry, export cleanup, and coarse daily success counters. Workers retry with capped exponential backoff and a dead-letter state visible to operations.
+Background work is deliberately deferred until it has a product need. Do not add a second state service before measurements require it. Future jobs include stale-evidence recalculation, in-app/browser reminder delivery, share expiry, export cleanup, and coarse daily success counters.
 
 M1–M3 store no uploads. CSV exports are generated on request, encrypted in object storage only if too large for a streamed response, and deleted after 24 hours. Camera frames never leave the device. No marketing email. If transactional email is later added, it must be opt-in where appropriate, send only account/invitation/critical service messages, and use a factory-approved provider.
 
@@ -184,7 +184,7 @@ M1–M3 store no uploads. CSV exports are generated on request, encrypted in obj
 - `/health` returns status and build SHA. `/metrics` is authenticated at ingress and exposes request count/latency/status, sync conflicts, queue depth/age, and notification failures—never job or customer values.
 - JSON logs carry timestamp, level, build SHA, request ID, route template, status, latency, and hashed organization/user correlation. Redact authorization, email, barcode, notes, and query strings.
 - Initial service objectives: 99.9% monthly API availability excluding planned maintenance; p95 read <300 ms and write <600 ms; successful sync batches ≥99.5%; zero tenant-isolation incidents. Alert on 5xx >2% for 5 minutes, oldest job >10 minutes, or health failure.
-- Production PostgreSQL needs encrypted daily backups and point-in-time recovery with a seven-day window. The operator owns platform configuration; M2 records a restore drill and recovery time. Target RPO 15 minutes and RTO 4 hours. Do not claim these publicly until verified.
+- Durable SQLite files live on the `/data` mount. The operator owns volume backup and recovery. Do not claim a recovery window publicly until it is verified.
 - Owners can export the firm's jobs, requirements, sources, allocations, supplier evidence, and audit events as documented CSV/JSON. Account deletion uses a 14-day recoverable hold, then removes tenant rows, push subscriptions, and exports; billing records retain only what law/merchant reporting requires. Demo data is browser-local and resettable.
 
 ### AI decision
@@ -281,20 +281,20 @@ Routes/screens added: `/auth/callback`, `/onboarding`, `/settings/team`, `/setti
 
 Scope:
 
-- Add Entra CIAM PKCE, API JWT validation, organization/onboarding/membership roles, PostgreSQL migrations/RLS, bootstrap/pull/push sync, idempotency, and audit events.
+- Add Entra CIAM PKCE, API JWT validation, organization/onboarding/membership roles, SQLite schema, bootstrap/pull/push sync, idempotency, and audit events.
 - Migrate an explicit live-local workspace into a new organization only after showing the item count and receiving confirmation; demo data can never migrate.
 - Wire Sociobot test-mode recurring checkout for **Workshop base** plus the exact active technician-seat quantity, entitlement reconciliation, grace behavior, cancellation/refund handling, and billing settings. Verify the API contract first as described above.
 - Apply endpoint validation, CORS/security headers, all rate limits, structured logs, `/health`, protected `/metrics`, daily backups, restore drill, and the non-root Docker image.
 
 Claims to append when M2 starts: `entra-sign-in`, `tenant-data-isolation`, `two-device-sync`, `idempotent-sync`, `subscription-checkout`, `technician-seat-charge`, and `expired-plan-keeps-export`. Identity tests use a test-token issuer/harness plus one staging Entra smoke; billing uses Sociobot test mode and recorded webhook fixtures, never a mocked “paid” UI alone.
 
-Tests: Rust route/domain/integration tests with two organizations; JWT audience/tenant/issuer/expiry failures; 100 rps load smoke; 429 + `Retry-After`; migration up/down; two-browser Playwright sync; checkout return and replay; seat increase/decrease; offline cached entitlement; IDOR fuzz cases.
+Tests: Rust route/domain/integration tests with two organizations; JWT audience/tenant/issuer/expiry failures; 100 rps load smoke; 429 + `Retry-After`; durable-file restart persistence; two-browser Playwright sync; checkout return and replay; seat increase/decrease; offline cached entitlement; IDOR fuzz cases.
 
 M2 DoD: production callback is registered or listed under operator action; real test-mode checkout completes at the stated recurring prices; server is the entitlement authority; tenant tests pass; backup restore is timed; demo claims from M1 still pass; container boots with only `PORT` and health reports build SHA.
 
 M2 repair note (2026-08-29): the signed-in client now keeps one idempotent full-workspace operation in a dedicated IndexedDB outbox, restores it offline, retries on reconnect and with capped jittered backoff, and opens an explicit two-revision conflict instead of overwriting quantity evidence. Owners have a signed-in firm export plus a 14-day deletion schedule/cancel path. Export uses the critical five-request bucket, every 429 has a positive `Retry-After`, and protected metrics expose latency, status classes, conflicts, queue age/depth, and notification failures. Every missing README/privacy claim has a registered browser test.
 
-The PostgreSQL migration and runtime query test passed against the production database. A custom logical dump of all nine `fpp_*` tables was restored into isolated database `fpp_restore_drill_20260829_repair6`; 9 tables, 34 constraints, 8 RLS policies, and every table row count matched. The 27,959-byte restore took 7 seconds, and the isolated database was dropped afterward. This proves the product-level logical restore path; the platform's seven-day retention remains the operator's recovery window.
+The current persistence contract is one durable SQLite file under `/data`, one application replica, and a restart regression test. Restore and backup timing remain operator-owned work and are not claimed publicly.
 
 Recurring billing is still the only M2 acceptance blocker. On 2026-08-29 both pilot and production catalogues contained no `field-parts-promise` entry, and both checkout URLs returned `404 {"error":"enabled factory product","status":404}`. The available factory-product contract is a one-time license with one fixed provider price; it cannot represent the researched $39/month base plus a live $8/month seat quantity. The implementation therefore preserves the plan's stop condition: production defaults to `api.sociobot.in`, automated tests explicitly use the pilot gateway, and no direct Dodo call or false recurring product was created.
 

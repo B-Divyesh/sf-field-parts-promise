@@ -1,7 +1,54 @@
-import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 describe('container release contract', () => {
+  it('keeps persistent runtime state local to the one-replica data mount', () => {
+    const deploy = JSON.parse(readFileSync('deploy.json', 'utf8')) as {
+      deploy: { data_dir: string; replicas: number };
+    };
+    const dockerfile = readFileSync('Dockerfile', 'utf8');
+    const server = readFileSync('server/src/main.rs', 'utf8');
+
+    expect(deploy.deploy).toEqual({ data_dir: '/data', replicas: 1 });
+    expect(dockerfile).toContain(
+      'COPY --from=runtime-files --chown=nonroot:nonroot /data /data'
+    );
+    expect(server).toContain('field-parts-promise.sqlite3');
+    expect(server).toContain('durable_default');
+    expect(server).not.toContain('load_legacy_config');
+  });
+
+  it('rejects retired external-state references in tracked source', () => {
+    const terms = [
+      ['sociobot', '-v2'].join(''),
+      ['sociobot', '-db'].join(''),
+      ['sociobot', '-keyvault1'].join(''),
+      ['shared ', 'post', 'gres'].join(''),
+      ['pg', 'bouncer'].join(''),
+      ['data', 'base_url'].join('_'),
+      ['post', 'gres'].join('')
+    ];
+    const listing = spawnSync(
+      'git',
+      ['ls-files', '-co', '--exclude-standard'],
+      {
+        encoding: 'utf8'
+      }
+    );
+
+    expect(listing.status).toBe(0);
+    for (const path of listing.stdout.split('\n').filter(existsSync)) {
+      const source = readFileSync(path, 'utf8');
+      for (const term of terms) {
+        expect(
+          source,
+          `${path} contains a retired state reference`
+        ).not.toContain(term);
+      }
+    }
+  });
+
   it('uses the rolling stable slim Rust builder image', () => {
     const dockerfile = readFileSync('Dockerfile', 'utf8');
     const rustBuilders = [...dockerfile.matchAll(/^FROM\s+(rust:\S+)/gm)].map(

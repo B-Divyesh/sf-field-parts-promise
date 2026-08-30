@@ -1,98 +1,24 @@
-use std::{
-    borrow::Cow,
-    time::{Duration, SystemTime, UNIX_EPOCH},
-};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use sqlx::{any::AnyPoolOptions, Any, AnyPool, Row, Transaction};
-use tracing::info;
+use sqlx_core::{row::Row, transaction::Transaction};
+use sqlx_sqlite::{Sqlite, SqlitePool, SqlitePoolOptions};
 use uuid::Uuid;
 
 use crate::auth::Identity;
 
+mod sqlx {
+    pub use sqlx_core::query::query;
+    pub use sqlx_core::raw_sql::raw_sql;
+    pub use sqlx_core::Error;
+}
+
 const SQLITE_SCHEMA: &str = include_str!("../migrations/sqlite/0001_accounts_sync.sql");
-const PRODUCT_TABLE_COUNT: i64 = 9;
-const PRODUCT_POLICY_COUNT: i64 = 8;
-const PRODUCT_ORGANIZATION_COLUMN_COUNT: i64 = 10;
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum ProductSchemaState {
-    Empty,
-    Ready,
-    Incomplete,
-}
-
-fn classify_product_schema(
-    table_count: i64,
-    policy_count: i64,
-    organization_column_count: i64,
-) -> ProductSchemaState {
-    if table_count == 0 {
-        ProductSchemaState::Empty
-    } else if table_count == PRODUCT_TABLE_COUNT
-        && policy_count == PRODUCT_POLICY_COUNT
-        && organization_column_count == PRODUCT_ORGANIZATION_COLUMN_COUNT
-    {
-        ProductSchemaState::Ready
-    } else {
-        ProductSchemaState::Incomplete
-    }
-}
-
-async fn product_schema_state(pool: &sqlx::PgPool) -> Result<ProductSchemaState, sqlx::Error> {
-    let table_count = sqlx::query_scalar::<_, i64>(
-        "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('fpp_users','fpp_organizations','fpp_memberships','fpp_workspaces','fpp_sync_operations','fpp_audit_events','fpp_technician_seats','fpp_billing_accounts','fpp_billing_events')",
-    )
-    .fetch_one(pool)
-    .await?;
-    let policy_count = sqlx::query_scalar::<_, i64>(
-        "SELECT COUNT(*) FROM pg_policies WHERE schemaname = 'public' AND policyname IN ('fpp_organizations_tenant','fpp_memberships_tenant','fpp_workspaces_tenant','fpp_sync_operations_tenant','fpp_audit_events_tenant','fpp_technician_seats_tenant','fpp_billing_accounts_tenant','fpp_billing_events_tenant')",
-    )
-    .fetch_one(pool)
-    .await?;
-    let organization_column_count = sqlx::query_scalar::<_, i64>(
-        "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'fpp_organizations' AND column_name IN ('id','name','locale','time_zone','buffer_days','evidence_stale_hours','created_at','updated_at','deletion_requested_at','deletion_scheduled_for')",
-    )
-    .fetch_one(pool)
-    .await?;
-
-    Ok(classify_product_schema(
-        table_count,
-        policy_count,
-        organization_column_count,
-    ))
-}
-
-async fn ensure_shared_rate_limit_table(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
-    // The factory database can already have this product's tenant schema but
-    // intentionally lack this newer operational table in its migration ledger.
-    // `IF NOT EXISTS` lets every new replica converge safely without replaying
-    // the account bootstrap migration.
-    sqlx::query(
-        "CREATE TABLE IF NOT EXISTS fpp_rate_limits (bucket_key TEXT PRIMARY KEY, window_started_at_ms BIGINT NOT NULL, request_count BIGINT NOT NULL)",
-    )
-    .execute(pool)
-    .await?;
-    sqlx::query(
-        "CREATE INDEX IF NOT EXISTS fpp_rate_limits_window_idx ON fpp_rate_limits(window_started_at_ms)",
-    )
-    .execute(pool)
-    .await?;
-    Ok(())
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum DatabaseKind {
-    Postgres,
-    Sqlite,
-}
-
 #[derive(Clone)]
 pub struct Database {
-    pool: AnyPool,
-    kind: DatabaseKind,
+    pool: SqlitePool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -211,73 +137,31 @@ struct Membership {
 }
 
 impl Database {
-    pub async fn connect(database_url: &str, migration_url: Option<&str>) -> Result<Self, DbError> {
-        sqlx::any::install_default_drivers();
-        let kind = if database_url.starts_with("postgres://")
-            || database_url.starts_with("postgresql://")
-        {
-            DatabaseKind::Postgres
-        } else {
-            DatabaseKind::Sqlite
-        };
-        if kind == DatabaseKind::Postgres {
-            let migrator = sqlx::PgPool::connect(migration_url.unwrap_or(database_url)).await?;
-            match product_schema_state(&migrator).await? {
-                ProductSchemaState::Empty => {
-                    let mut product_migrations = sqlx::migrate!("./migrations");
-                    product_migrations.set_ignore_missing(true);
-                    product_migrations.run(&migrator).await.map_err(|error| {
-                        sqlx::Error::Protocol(format!("database migration failed: {error}"))
-                    })?;
-                    info!("Parts Promise created its product schema with migrations");
-                }
-                ProductSchemaState::Ready => {
-                    // Factory PostgreSQL is shared with the product's migration
-                    // history owned elsewhere. Replaying this app's bootstrap
-                    // files against an already-complete schema would race a new
-                    // replica and fail on CREATE TABLE. The schema check covers
-                    // every required table, RLS policy, and deletion-hold column.
-                    info!("Parts Promise is using the verified existing product schema");
-                }
-                ProductSchemaState::Incomplete => {
-                    return Err(sqlx::Error::Protocol(
-                        "Parts Promise found a partial PostgreSQL product schema; restore or complete it before starting another replica".to_owned(),
-                    )
-                    .into());
-                }
-            }
-            ensure_shared_rate_limit_table(&migrator).await?;
-            migrator.close().await;
-        }
-        let max_connections = if database_url.contains(":memory:") {
+    pub async fn connect(sqlite_url: &str) -> Result<Self, DbError> {
+        let max_connections = if sqlite_url.contains(":memory:") {
             1
         } else {
             8
         };
-        let pool = AnyPoolOptions::new()
+        let pool = SqlitePoolOptions::new()
             .max_connections(max_connections)
             .acquire_timeout(Duration::from_secs(8))
-            .connect(database_url)
+            .connect(sqlite_url)
             .await?;
-        if kind == DatabaseKind::Sqlite {
-            sqlx::raw_sql(SQLITE_SCHEMA).execute(&pool).await?;
-            for statement in [
-                "ALTER TABLE fpp_organizations ADD COLUMN deletion_requested_at TEXT",
-                "ALTER TABLE fpp_organizations ADD COLUMN deletion_scheduled_for TEXT",
-            ] {
-                let _ = sqlx::query(statement).execute(&pool).await;
-            }
+        sqlx::raw_sql("PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 8000;")
+            .execute(&pool)
+            .await?;
+        sqlx::raw_sql(SQLITE_SCHEMA).execute(&pool).await?;
+        for statement in [
+            "ALTER TABLE fpp_organizations ADD COLUMN deletion_requested_at TEXT",
+            "ALTER TABLE fpp_organizations ADD COLUMN deletion_scheduled_for TEXT",
+        ] {
+            let _ = sqlx::query(statement).execute(&pool).await;
         }
-        Ok(Self { pool, kind })
+        Ok(Self { pool })
     }
 
-    pub fn kind(&self) -> DatabaseKind {
-        self.kind
-    }
-
-    /// Takes one request from a database-backed fixed window. The table is
-    /// shared by every Container App replica, so a client cannot multiply an
-    /// allowance by landing on another process.
+    /// Takes one request from this product's persisted fixed window.
     pub async fn take_shared_rate_limit(
         &self,
         bucket_key: &str,
@@ -291,14 +175,12 @@ impl Database {
             .min(i64::MAX as u128) as i64;
         let window_ms = window.as_millis().max(1).min(i64::MAX as u128) as i64;
         let reset_before_ms = now_ms.saturating_sub(window_ms);
-        let sql = self.sql(
-            "INSERT INTO fpp_rate_limits(bucket_key,window_started_at_ms,request_count) VALUES(?,?,1) \
+        let sql = "INSERT INTO fpp_rate_limits(bucket_key,window_started_at_ms,request_count) VALUES(?,?,1) \
              ON CONFLICT(bucket_key) DO UPDATE SET \
              window_started_at_ms=CASE WHEN fpp_rate_limits.window_started_at_ms<=? THEN excluded.window_started_at_ms ELSE fpp_rate_limits.window_started_at_ms END, \
              request_count=CASE WHEN fpp_rate_limits.window_started_at_ms<=? THEN 1 ELSE fpp_rate_limits.request_count+1 END \
-             RETURNING window_started_at_ms,request_count",
-        );
-        let row = sqlx::query(&sql)
+             RETURNING window_started_at_ms,request_count";
+        let row = sqlx::query(sql)
             .bind(bucket_key)
             .bind(now_ms)
             .bind(reset_before_ms)
@@ -318,49 +200,17 @@ impl Database {
         })
     }
 
-    fn sql<'a>(&self, source: &'a str) -> Cow<'a, str> {
-        if self.kind == DatabaseKind::Sqlite {
-            return Cow::Borrowed(source);
-        }
-        let mut number = 0;
-        let mut output = String::with_capacity(source.len() + 16);
-        for character in source.chars() {
-            if character == '?' {
-                number += 1;
-                output.push('$');
-                output.push_str(&number.to_string());
-            } else {
-                output.push(character);
-            }
-        }
-        Cow::Owned(output)
-    }
-
-    async fn set_context<'a>(
-        &self,
-        tx: &mut Transaction<'a, Any>,
-        identity: &Identity,
-        organization_id: Option<&str>,
-    ) -> Result<(), DbError> {
-        if self.kind == DatabaseKind::Postgres {
-            sqlx::query(&self.sql("SELECT set_config('app.user_oid', ?, true), set_config('app.user_email', ?, true), set_config('app.organization_id', ?, true)"))
-                .bind(&identity.oid)
-                .bind(identity.email.as_deref().unwrap_or(""))
-                .bind(organization_id.unwrap_or(""))
-                .execute(&mut **tx)
-                .await?;
-        }
-        Ok(())
+    fn sql<'a>(&self, source: &'a str) -> &'a str {
+        source
     }
 
     async fn membership<'a>(
         &self,
-        tx: &mut Transaction<'a, Any>,
+        tx: &mut Transaction<'a, Sqlite>,
         identity: &Identity,
     ) -> Result<Option<Membership>, DbError> {
-        self.set_context(tx, identity, None).await?;
         let query = self.sql("SELECT u.id AS user_id, m.organization_id, m.role FROM fpp_users u JOIN fpp_memberships m ON m.user_id=u.id WHERE u.external_oid=? AND m.status='active' LIMIT 1");
-        let row = sqlx::query(&query)
+        let row = sqlx::query(query)
             .bind(&identity.oid)
             .fetch_optional(&mut **tx)
             .await?;
@@ -373,12 +223,10 @@ impl Database {
 
     async fn resolve_membership<'a>(
         &self,
-        tx: &mut Transaction<'a, Any>,
+        tx: &mut Transaction<'a, Sqlite>,
         identity: &Identity,
     ) -> Result<Option<Membership>, DbError> {
         if let Some(membership) = self.membership(tx, identity).await? {
-            self.set_context(tx, identity, Some(&membership.organization_id))
-                .await?;
             return Ok(Some(membership));
         }
         let Some(email) = identity
@@ -390,7 +238,7 @@ impl Database {
             return Ok(None);
         };
         let pending_oid = format!("pending:{}", email.to_lowercase());
-        let row = sqlx::query(&self.sql("SELECT u.id AS user_id,m.id AS membership_id,m.organization_id,m.role FROM fpp_users u JOIN fpp_memberships m ON m.user_id=u.id WHERE u.external_oid=? AND lower(u.email)=? AND m.status='invited' LIMIT 1"))
+        let row = sqlx::query(self.sql("SELECT u.id AS user_id,m.id AS membership_id,m.organization_id,m.role FROM fpp_users u JOIN fpp_memberships m ON m.user_id=u.id WHERE u.external_oid=? AND lower(u.email)=? AND m.status='invited' LIMIT 1"))
             .bind(&pending_oid)
             .bind(email.to_lowercase())
             .fetch_optional(&mut **tx)
@@ -404,15 +252,11 @@ impl Database {
             role: row.get("role"),
         };
         let membership_id: String = row.get("membership_id");
-        self.set_context(tx, identity, Some(&membership.organization_id))
-            .await?;
         let now = Utc::now().to_rfc3339();
-        let user_update = if self.kind == DatabaseKind::Postgres {
-            self.sql("UPDATE fpp_users SET external_oid=?,display_name=?,email=?,updated_at=CAST(? AS TIMESTAMPTZ) WHERE id=? AND external_oid=?")
-        } else {
-            self.sql("UPDATE fpp_users SET external_oid=?,display_name=?,email=?,updated_at=? WHERE id=? AND external_oid=?")
-        };
-        sqlx::query(&user_update)
+        let user_update = self.sql(
+            "UPDATE fpp_users SET external_oid=?,display_name=?,email=?,updated_at=? WHERE id=? AND external_oid=?",
+        );
+        sqlx::query(user_update)
             .bind(&identity.oid)
             .bind(&identity.name)
             .bind(&identity.email)
@@ -421,23 +265,18 @@ impl Database {
             .bind(&pending_oid)
             .execute(&mut **tx)
             .await?;
-        let membership_update = if self.kind == DatabaseKind::Postgres {
-            self.sql("UPDATE fpp_memberships SET status='active',updated_at=CAST(? AS TIMESTAMPTZ) WHERE id=?")
-        } else {
-            self.sql("UPDATE fpp_memberships SET status='active',updated_at=? WHERE id=?")
-        };
-        sqlx::query(&membership_update)
+        let membership_update =
+            self.sql("UPDATE fpp_memberships SET status='active',updated_at=? WHERE id=?");
+        sqlx::query(membership_update)
             .bind(&now)
             .bind(&membership_id)
             .execute(&mut **tx)
             .await?;
         if membership.role == "technician" {
-            let seat_sql = if self.kind == DatabaseKind::Postgres {
-                self.sql("INSERT INTO fpp_technician_seats(id,organization_id,membership_id,active_from,created_at) VALUES(?,?,?,CAST(? AS TIMESTAMPTZ),CAST(? AS TIMESTAMPTZ))")
-            } else {
-                self.sql("INSERT INTO fpp_technician_seats(id,organization_id,membership_id,active_from,created_at) VALUES(?,?,?,?,?)")
-            };
-            sqlx::query(&seat_sql)
+            let seat_sql = self.sql(
+                "INSERT INTO fpp_technician_seats(id,organization_id,membership_id,active_from,created_at) VALUES(?,?,?,?,?)",
+            );
+            sqlx::query(seat_sql)
                 .bind(Uuid::new_v4().to_string())
                 .bind(&membership.organization_id)
                 .bind(&membership_id)
@@ -445,17 +284,15 @@ impl Database {
                 .bind(&now)
                 .execute(&mut **tx)
                 .await?;
-            sqlx::query(&self.sql("UPDATE fpp_billing_accounts SET seat_quantity=seat_quantity+1 WHERE organization_id=?"))
+            sqlx::query(self.sql("UPDATE fpp_billing_accounts SET seat_quantity=seat_quantity+1 WHERE organization_id=?"))
                 .bind(&membership.organization_id)
                 .execute(&mut **tx)
                 .await?;
         }
-        let audit_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'membership.accepted','membership',?,CAST(? AS JSONB),CAST(? AS TIMESTAMPTZ))")
-        } else {
-            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'membership.accepted','membership',?,?,?)")
-        };
-        sqlx::query(&audit_sql)
+        let audit_sql = self.sql(
+            "INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'membership.accepted','membership',?,?,?)",
+        );
+        sqlx::query(audit_sql)
             .bind(Uuid::new_v4().to_string())
             .bind(&membership.organization_id)
             .bind(&membership.user_id)
@@ -469,22 +306,19 @@ impl Database {
 
     async fn upsert_user<'a>(
         &self,
-        tx: &mut Transaction<'a, Any>,
+        tx: &mut Transaction<'a, Sqlite>,
         identity: &Identity,
     ) -> Result<String, DbError> {
         let now = Utc::now().to_rfc3339();
-        let existing = sqlx::query(&self.sql("SELECT id FROM fpp_users WHERE external_oid=?"))
+        let existing = sqlx::query(self.sql("SELECT id FROM fpp_users WHERE external_oid=?"))
             .bind(&identity.oid)
             .fetch_optional(&mut **tx)
             .await?;
         if let Some(row) = existing {
             let id: String = row.get("id");
-            let update_user_sql = if self.kind == DatabaseKind::Postgres {
-                self.sql("UPDATE fpp_users SET display_name=?, email=?, updated_at=CAST(? AS TIMESTAMPTZ) WHERE id=?")
-            } else {
-                self.sql("UPDATE fpp_users SET display_name=?, email=?, updated_at=? WHERE id=?")
-            };
-            sqlx::query(&update_user_sql)
+            let update_user_sql =
+                self.sql("UPDATE fpp_users SET display_name=?, email=?, updated_at=? WHERE id=?");
+            sqlx::query(update_user_sql)
                 .bind(&identity.name)
                 .bind(&identity.email)
                 .bind(&now)
@@ -494,12 +328,10 @@ impl Database {
             return Ok(id);
         }
         let id = Uuid::new_v4().to_string();
-        let insert_user_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("INSERT INTO fpp_users(id,external_oid,display_name,email,created_at,updated_at) VALUES(?,?,?,?,CAST(? AS TIMESTAMPTZ),CAST(? AS TIMESTAMPTZ))")
-        } else {
-            self.sql("INSERT INTO fpp_users(id,external_oid,display_name,email,created_at,updated_at) VALUES(?,?,?,?,?,?)")
-        };
-        sqlx::query(&insert_user_sql)
+        let insert_user_sql = self.sql(
+            "INSERT INTO fpp_users(id,external_oid,display_name,email,created_at,updated_at) VALUES(?,?,?,?,?,?)",
+        );
+        sqlx::query(insert_user_sql)
             .bind(&id)
             .bind(&identity.oid)
             .bind(&identity.name)
@@ -530,14 +362,10 @@ impl Database {
                 deletion: None,
             });
         };
-        let deletion_requested = if self.kind == DatabaseKind::Postgres {
-            "o.deletion_requested_at::text AS deletion_requested_at,o.deletion_scheduled_for::text AS deletion_scheduled_for"
-        } else {
-            "o.deletion_requested_at,o.deletion_scheduled_for"
-        };
-        let query_source = format!("SELECT o.name,o.locale,o.time_zone,{deletion_requested},w.version,CAST(w.workspace AS TEXT) AS workspace FROM fpp_organizations o JOIN fpp_workspaces w ON w.organization_id=o.id WHERE o.id=?");
-        let query = self.sql(&query_source);
-        let row = sqlx::query(&query)
+        let query = self.sql(
+            "SELECT o.name,o.locale,o.time_zone,o.deletion_requested_at,o.deletion_scheduled_for,w.version,w.workspace FROM fpp_organizations o JOIN fpp_workspaces w ON w.organization_id=o.id WHERE o.id=?",
+        );
+        let row = sqlx::query(query)
             .bind(&membership.organization_id)
             .fetch_one(&mut *tx)
             .await?;
@@ -548,6 +376,8 @@ impl Database {
         let members = self
             .members_for(&mut tx, &membership.organization_id)
             .await?;
+        let deletion_requested_at: Option<String> = row.try_get("deletion_requested_at")?;
+        let deletion_scheduled_for: Option<String> = row.try_get("deletion_scheduled_for")?;
         tx.commit().await?;
         Ok(Bootstrap {
             onboarding_required: false,
@@ -562,9 +392,9 @@ impl Database {
             billing: Some(billing),
             members,
             deletion: Some(DeletionStatus {
-                scheduled: row.try_get::<String, _>("deletion_scheduled_for").is_ok(),
-                requested_at: row.try_get("deletion_requested_at").ok(),
-                delete_after: row.try_get("deletion_scheduled_for").ok(),
+                scheduled: deletion_scheduled_for.is_some(),
+                requested_at: deletion_requested_at,
+                delete_after: deletion_scheduled_for,
             }),
         })
     }
@@ -613,16 +443,13 @@ impl Database {
         if self.resolve_membership(&mut tx, identity).await?.is_some() {
             return Err(DbError::AlreadyOnboarded);
         }
-        self.set_context(&mut tx, identity, Some(&org_id)).await?;
         let user_id = self.upsert_user(&mut tx, identity).await?;
         let membership_id = Uuid::new_v4().to_string();
         let now = Utc::now().to_rfc3339();
-        let organization_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("INSERT INTO fpp_organizations(id,name,locale,time_zone,buffer_days,evidence_stale_hours,created_at,updated_at) VALUES(?,?,?,?,1,72,CAST(? AS TIMESTAMPTZ),CAST(? AS TIMESTAMPTZ))")
-        } else {
-            self.sql("INSERT INTO fpp_organizations(id,name,locale,time_zone,buffer_days,evidence_stale_hours,created_at,updated_at) VALUES(?,?,?,?,1,72,?,?)")
-        };
-        sqlx::query(&organization_sql)
+        let organization_sql = self.sql(
+            "INSERT INTO fpp_organizations(id,name,locale,time_zone,buffer_days,evidence_stale_hours,created_at,updated_at) VALUES(?,?,?,?,1,72,?,?)",
+        );
+        sqlx::query(organization_sql)
             .bind(&org_id)
             .bind(input.organization_name.trim())
             .bind(input.locale.trim())
@@ -631,12 +458,10 @@ impl Database {
             .bind(&now)
             .execute(&mut *tx)
             .await?;
-        let membership_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("INSERT INTO fpp_memberships(id,organization_id,user_id,role,status,created_at,updated_at) VALUES(?,?,?,'owner','active',CAST(? AS TIMESTAMPTZ),CAST(? AS TIMESTAMPTZ))")
-        } else {
-            self.sql("INSERT INTO fpp_memberships(id,organization_id,user_id,role,status,created_at,updated_at) VALUES(?,?,?,'owner','active',?,?)")
-        };
-        sqlx::query(&membership_sql)
+        let membership_sql = self.sql(
+            "INSERT INTO fpp_memberships(id,organization_id,user_id,role,status,created_at,updated_at) VALUES(?,?,?,'owner','active',?,?)",
+        );
+        sqlx::query(membership_sql)
             .bind(&membership_id)
             .bind(&org_id)
             .bind(&user_id)
@@ -644,35 +469,29 @@ impl Database {
             .bind(&now)
             .execute(&mut *tx)
             .await?;
-        let workspace_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("INSERT INTO fpp_workspaces(organization_id,version,workspace,updated_by,updated_at) VALUES(?,0,CAST(? AS JSONB),?,CAST(? AS TIMESTAMPTZ))")
-        } else {
-            self.sql("INSERT INTO fpp_workspaces(organization_id,version,workspace,updated_by,updated_at) VALUES(?,0,?,?,?)")
-        };
-        sqlx::query(&workspace_sql)
+        let workspace_sql = self.sql(
+            "INSERT INTO fpp_workspaces(organization_id,version,workspace,updated_by,updated_at) VALUES(?,0,?,?,?)",
+        );
+        sqlx::query(workspace_sql)
             .bind(&org_id)
             .bind(&workspace_text)
             .bind(&user_id)
             .bind(&now)
             .execute(&mut *tx)
             .await?;
-        let billing_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("INSERT INTO fpp_billing_accounts(organization_id,plan,seat_quantity,state,updated_at) VALUES(?,'workshop',0,'pending',CAST(? AS TIMESTAMPTZ))")
-        } else {
-            self.sql("INSERT INTO fpp_billing_accounts(organization_id,plan,seat_quantity,state,updated_at) VALUES(?,'workshop',0,'pending',?)")
-        };
-        sqlx::query(&billing_sql)
+        let billing_sql = self.sql(
+            "INSERT INTO fpp_billing_accounts(organization_id,plan,seat_quantity,state,updated_at) VALUES(?,'workshop',0,'pending',?)",
+        );
+        sqlx::query(billing_sql)
             .bind(&org_id)
             .bind(&now)
             .execute(&mut *tx)
             .await?;
         let summary = json!({"migrated": input.migrate_local_workspace, "item_count": input.local_item_count}).to_string();
-        let audit_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'organization.created','organization',?,CAST(? AS JSONB),CAST(? AS TIMESTAMPTZ))")
-        } else {
-            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'organization.created','organization',?,?,?)")
-        };
-        sqlx::query(&audit_sql)
+        let audit_sql = self.sql(
+            "INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'organization.created','organization',?,?,?)",
+        );
+        sqlx::query(audit_sql)
             .bind(Uuid::new_v4().to_string())
             .bind(&org_id)
             .bind(&user_id)
@@ -711,12 +530,10 @@ impl Database {
         if !billing.cloud_writes_allowed {
             return Err(DbError::EntitlementRequired);
         }
-        let replay_query = if self.kind == DatabaseKind::Postgres {
-            self.sql("SELECT response::text AS response FROM fpp_sync_operations WHERE organization_id=? AND idempotency_key=?")
-        } else {
-            self.sql("SELECT response FROM fpp_sync_operations WHERE organization_id=? AND idempotency_key=?")
-        };
-        let replay = sqlx::query(&replay_query)
+        let replay_query = self.sql(
+            "SELECT response FROM fpp_sync_operations WHERE organization_id=? AND idempotency_key=?",
+        );
+        let replay = sqlx::query(replay_query)
             .bind(&membership.organization_id)
             .bind(&input.idempotency_key)
             .fetch_optional(&mut *tx)
@@ -730,7 +547,7 @@ impl Database {
             return Ok(result);
         }
         let current =
-            sqlx::query(&self.sql("SELECT version FROM fpp_workspaces WHERE organization_id=?"))
+            sqlx::query(self.sql("SELECT version FROM fpp_workspaces WHERE organization_id=?"))
                 .bind(&membership.organization_id)
                 .fetch_optional(&mut *tx)
                 .await?
@@ -741,12 +558,10 @@ impl Database {
         }
         let next_version = version + 1;
         let now = Utc::now().to_rfc3339();
-        let update_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("UPDATE fpp_workspaces SET version=?,workspace=CAST(? AS JSONB),updated_by=?,updated_at=CAST(? AS TIMESTAMPTZ) WHERE organization_id=? AND version=?")
-        } else {
-            self.sql("UPDATE fpp_workspaces SET version=?,workspace=?,updated_by=?,updated_at=? WHERE organization_id=? AND version=?")
-        };
-        let updated = sqlx::query(&update_sql)
+        let update_sql = self.sql(
+            "UPDATE fpp_workspaces SET version=?,workspace=?,updated_by=?,updated_at=? WHERE organization_id=? AND version=?",
+        );
+        let updated = sqlx::query(update_sql)
             .bind(next_version)
             .bind(&workspace_text)
             .bind(&membership.user_id)
@@ -765,12 +580,10 @@ impl Database {
         };
         let response_text =
             serde_json::to_string(&result).map_err(|_| DbError::InvalidWorkspace)?;
-        let op_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("INSERT INTO fpp_sync_operations(id,organization_id,user_id,idempotency_key,expected_version,applied_version,response,created_at) VALUES(?,?,?,?,?,?,CAST(? AS JSONB),CAST(? AS TIMESTAMPTZ))")
-        } else {
-            self.sql("INSERT INTO fpp_sync_operations(id,organization_id,user_id,idempotency_key,expected_version,applied_version,response,created_at) VALUES(?,?,?,?,?,?,?,?)")
-        };
-        sqlx::query(&op_sql)
+        let op_sql = self.sql(
+            "INSERT INTO fpp_sync_operations(id,organization_id,user_id,idempotency_key,expected_version,applied_version,response,created_at) VALUES(?,?,?,?,?,?,?,?)",
+        );
+        sqlx::query(op_sql)
             .bind(Uuid::new_v4().to_string())
             .bind(&membership.organization_id)
             .bind(&membership.user_id)
@@ -781,12 +594,10 @@ impl Database {
             .bind(&now)
             .execute(&mut *tx)
             .await?;
-        let audit_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'workspace.synced','workspace',?,CAST(? AS JSONB),CAST(? AS TIMESTAMPTZ))")
-        } else {
-            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'workspace.synced','workspace',?,?,?)")
-        };
-        sqlx::query(&audit_sql)
+        let audit_sql = self.sql(
+            "INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'workspace.synced','workspace',?,?,?)",
+        );
+        sqlx::query(audit_sql)
             .bind(Uuid::new_v4().to_string())
             .bind(&membership.organization_id)
             .bind(&membership.user_id)
@@ -807,33 +618,26 @@ impl Database {
             .resolve_membership(&mut tx, identity)
             .await?
             .ok_or(DbError::NotOnboarded)?;
-        let workspace_query = if self.kind == DatabaseKind::Postgres {
-            "SELECT version,workspace::text AS workspace,updated_at::text AS updated_at FROM fpp_workspaces WHERE organization_id=?"
-        } else {
-            "SELECT version,workspace,updated_at FROM fpp_workspaces WHERE organization_id=?"
-        };
-        let workspace_row = sqlx::query(&self.sql(workspace_query))
+        let workspace_query =
+            "SELECT version,workspace,updated_at FROM fpp_workspaces WHERE organization_id=?";
+        let workspace_row = sqlx::query(self.sql(workspace_query))
             .bind(&membership.organization_id)
             .fetch_one(&mut *tx)
             .await?;
         let text: String = workspace_row.get("workspace");
         let workspace: Value =
             serde_json::from_str(&text).map_err(|_| DbError::InvalidWorkspace)?;
-        let organization = sqlx::query(
-            &self.sql("SELECT name,locale,time_zone FROM fpp_organizations WHERE id=?"),
-        )
-        .bind(&membership.organization_id)
-        .fetch_one(&mut *tx)
-        .await?;
+        let organization =
+            sqlx::query(self.sql("SELECT name,locale,time_zone FROM fpp_organizations WHERE id=?"))
+                .bind(&membership.organization_id)
+                .fetch_one(&mut *tx)
+                .await?;
         let members = self
             .members_for(&mut tx, &membership.organization_id)
             .await?;
-        let audit_query = if self.kind == DatabaseKind::Postgres {
-            "SELECT action,object_type,object_id,summary::text AS summary,created_at::text AS created_at FROM fpp_audit_events WHERE organization_id=? ORDER BY created_at,id"
-        } else {
-            "SELECT action,object_type,object_id,summary,created_at FROM fpp_audit_events WHERE organization_id=? ORDER BY created_at,id"
-        };
-        let audit_rows = sqlx::query(&self.sql(audit_query))
+        let audit_query =
+            "SELECT action,object_type,object_id,summary,created_at FROM fpp_audit_events WHERE organization_id=? ORDER BY created_at,id";
+        let audit_rows = sqlx::query(self.sql(audit_query))
             .bind(&membership.organization_id)
             .fetch_all(&mut *tx)
             .await?;
@@ -884,7 +688,7 @@ impl Database {
             return Err(DbError::OwnerRequired);
         }
         let organization: String =
-            sqlx::query(&self.sql("SELECT name FROM fpp_organizations WHERE id=?"))
+            sqlx::query(self.sql("SELECT name FROM fpp_organizations WHERE id=?"))
                 .bind(&membership.organization_id)
                 .fetch_one(&mut *tx)
                 .await?
@@ -896,24 +700,20 @@ impl Database {
         let delete_after = requested_at + chrono::Duration::days(14);
         let requested_text = requested_at.to_rfc3339();
         let delete_text = delete_after.to_rfc3339();
-        let update_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("UPDATE fpp_organizations SET deletion_requested_at=CAST(? AS TIMESTAMPTZ),deletion_scheduled_for=CAST(? AS TIMESTAMPTZ),updated_at=CAST(? AS TIMESTAMPTZ) WHERE id=?")
-        } else {
-            self.sql("UPDATE fpp_organizations SET deletion_requested_at=?,deletion_scheduled_for=?,updated_at=? WHERE id=?")
-        };
-        sqlx::query(&update_sql)
+        let update_sql = self.sql(
+            "UPDATE fpp_organizations SET deletion_requested_at=?,deletion_scheduled_for=?,updated_at=? WHERE id=?",
+        );
+        sqlx::query(update_sql)
             .bind(&requested_text)
             .bind(&delete_text)
             .bind(&requested_text)
             .bind(&membership.organization_id)
             .execute(&mut *tx)
             .await?;
-        let audit_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'organization.deletion_scheduled','organization',?,CAST(? AS JSONB),CAST(? AS TIMESTAMPTZ))")
-        } else {
-            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'organization.deletion_scheduled','organization',?,?,?)")
-        };
-        sqlx::query(&audit_sql)
+        let audit_sql = self.sql(
+            "INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'organization.deletion_scheduled','organization',?,?,?)",
+        );
+        sqlx::query(audit_sql)
             .bind(Uuid::new_v4().to_string())
             .bind(&membership.organization_id)
             .bind(&membership.user_id)
@@ -940,22 +740,18 @@ impl Database {
             return Err(DbError::OwnerRequired);
         }
         let now = Utc::now().to_rfc3339();
-        let update_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("UPDATE fpp_organizations SET deletion_requested_at=NULL,deletion_scheduled_for=NULL,updated_at=CAST(? AS TIMESTAMPTZ) WHERE id=?")
-        } else {
-            self.sql("UPDATE fpp_organizations SET deletion_requested_at=NULL,deletion_scheduled_for=NULL,updated_at=? WHERE id=?")
-        };
-        sqlx::query(&update_sql)
+        let update_sql = self.sql(
+            "UPDATE fpp_organizations SET deletion_requested_at=NULL,deletion_scheduled_for=NULL,updated_at=? WHERE id=?",
+        );
+        sqlx::query(update_sql)
             .bind(&now)
             .bind(&membership.organization_id)
             .execute(&mut *tx)
             .await?;
-        let audit_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'organization.deletion_cancelled','organization',?,CAST(? AS JSONB),CAST(? AS TIMESTAMPTZ))")
-        } else {
-            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'organization.deletion_cancelled','organization',?,?,?)")
-        };
-        sqlx::query(&audit_sql)
+        let audit_sql = self.sql(
+            "INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'organization.deletion_cancelled','organization',?,?,?)",
+        );
+        sqlx::query(audit_sql)
             .bind(Uuid::new_v4().to_string())
             .bind(&membership.organization_id)
             .bind(&membership.user_id)
@@ -988,7 +784,7 @@ impl Database {
         {
             return Err(DbError::InvalidWorkspace);
         }
-        let existing = sqlx::query(&self.sql("SELECT m.id FROM fpp_memberships m JOIN fpp_users u ON u.id=m.user_id WHERE m.organization_id=? AND lower(u.email)=?"))
+        let existing = sqlx::query(self.sql("SELECT m.id FROM fpp_memberships m JOIN fpp_users u ON u.id=m.user_id WHERE m.organization_id=? AND lower(u.email)=?"))
             .bind(&membership.organization_id).bind(&email).fetch_optional(&mut *tx).await?;
         if existing.is_some() {
             return Err(DbError::DuplicateMember);
@@ -996,12 +792,10 @@ impl Database {
         let now = Utc::now().to_rfc3339();
         let user_id = Uuid::new_v4().to_string();
         let member_id = Uuid::new_v4().to_string();
-        let invite_user_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("INSERT INTO fpp_users(id,external_oid,display_name,email,created_at,updated_at) VALUES(?,?,?,?,CAST(? AS TIMESTAMPTZ),CAST(? AS TIMESTAMPTZ))")
-        } else {
-            self.sql("INSERT INTO fpp_users(id,external_oid,display_name,email,created_at,updated_at) VALUES(?,?,?,?,?,?)")
-        };
-        sqlx::query(&invite_user_sql)
+        let invite_user_sql = self.sql(
+            "INSERT INTO fpp_users(id,external_oid,display_name,email,created_at,updated_at) VALUES(?,?,?,?,?,?)",
+        );
+        sqlx::query(invite_user_sql)
             .bind(&user_id)
             .bind(format!("pending:{email}"))
             .bind(&email)
@@ -1010,12 +804,10 @@ impl Database {
             .bind(&now)
             .execute(&mut *tx)
             .await?;
-        let invite_membership_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("INSERT INTO fpp_memberships(id,organization_id,user_id,role,status,created_at,updated_at) VALUES(?,?,?,?,'invited',CAST(? AS TIMESTAMPTZ),CAST(? AS TIMESTAMPTZ))")
-        } else {
-            self.sql("INSERT INTO fpp_memberships(id,organization_id,user_id,role,status,created_at,updated_at) VALUES(?,?,?,?,'invited',?,?)")
-        };
-        sqlx::query(&invite_membership_sql)
+        let invite_membership_sql = self.sql(
+            "INSERT INTO fpp_memberships(id,organization_id,user_id,role,status,created_at,updated_at) VALUES(?,?,?,?,'invited',?,?)",
+        );
+        sqlx::query(invite_membership_sql)
             .bind(&member_id)
             .bind(&membership.organization_id)
             .bind(&user_id)
@@ -1024,12 +816,10 @@ impl Database {
             .bind(&now)
             .execute(&mut *tx)
             .await?;
-        let audit_sql = if self.kind == DatabaseKind::Postgres {
-            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'membership.invited','membership',?,CAST(? AS JSONB),CAST(? AS TIMESTAMPTZ))")
-        } else {
-            self.sql("INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'membership.invited','membership',?,?,?)")
-        };
-        sqlx::query(&audit_sql)
+        let audit_sql = self.sql(
+            "INSERT INTO fpp_audit_events(id,organization_id,actor_user_id,action,object_type,object_id,summary,created_at) VALUES(?,?,?,'membership.invited','membership',?,?,?)",
+        );
+        sqlx::query(audit_sql)
             .bind(Uuid::new_v4().to_string())
             .bind(&membership.organization_id)
             .bind(&membership.user_id)
@@ -1040,8 +830,6 @@ impl Database {
             .await?;
         tx.commit().await?;
         let mut tx = self.pool.begin().await?;
-        self.set_context(&mut tx, identity, Some(&membership.organization_id))
-            .await?;
         let members = self
             .members_for(&mut tx, &membership.organization_id)
             .await?;
@@ -1077,15 +865,13 @@ impl Database {
 
     async fn billing_for<'a>(
         &self,
-        tx: &mut Transaction<'a, Any>,
+        tx: &mut Transaction<'a, Sqlite>,
         organization_id: &str,
     ) -> Result<BillingStatus, DbError> {
-        let billing_select = if self.kind == DatabaseKind::Postgres {
-            self.sql("SELECT plan,state,seat_quantity,period_end::text AS period_end FROM fpp_billing_accounts WHERE organization_id=?")
-        } else {
-            self.sql("SELECT plan,state,seat_quantity,period_end FROM fpp_billing_accounts WHERE organization_id=?")
-        };
-        let row = sqlx::query(&billing_select)
+        let billing_select = self.sql(
+            "SELECT plan,state,seat_quantity,period_end FROM fpp_billing_accounts WHERE organization_id=?",
+        );
+        let row = sqlx::query(billing_select)
             .bind(organization_id)
             .fetch_one(&mut **tx)
             .await?;
@@ -1101,10 +887,10 @@ impl Database {
 
     async fn members_for<'a>(
         &self,
-        tx: &mut Transaction<'a, Any>,
+        tx: &mut Transaction<'a, Sqlite>,
         organization_id: &str,
     ) -> Result<Vec<Member>, DbError> {
-        let rows = sqlx::query(&self.sql("SELECT m.id,u.display_name,u.email,m.role,m.status FROM fpp_memberships m JOIN fpp_users u ON u.id=m.user_id WHERE m.organization_id=? ORDER BY CASE m.role WHEN 'owner' THEN 0 ELSE 1 END,u.display_name"))
+        let rows = sqlx::query(self.sql("SELECT m.id,u.display_name,u.email,m.role,m.status FROM fpp_memberships m JOIN fpp_users u ON u.id=m.user_id WHERE m.organization_id=? ORDER BY CASE m.role WHEN 'owner' THEN 0 ELSE 1 END,u.display_name"))
             .bind(organization_id).fetch_all(&mut **tx).await?;
         Ok(rows
             .into_iter()
@@ -1134,9 +920,9 @@ impl Database {
             .resolve_membership(&mut tx, identity)
             .await?
             .ok_or(DbError::NotOnboarded)?;
-        let seats: i64 = sqlx::query(&self.sql("SELECT COUNT(*) AS count FROM fpp_memberships WHERE organization_id=? AND role='technician' AND status='active'"))
+        let seats: i64 = sqlx::query(self.sql("SELECT COUNT(*) AS count FROM fpp_memberships WHERE organization_id=? AND role='technician' AND status='active'"))
             .bind(&membership.organization_id).fetch_one(&mut *tx).await?.get("count");
-        sqlx::query(&self.sql(
+        sqlx::query(self.sql(
             "UPDATE fpp_billing_accounts SET state=?,seat_quantity=? WHERE organization_id=?",
         ))
         .bind(state)
@@ -1152,28 +938,16 @@ impl Database {
     pub async fn delete_test_identity(&self, identity: &Identity) -> Result<(), DbError> {
         let mut tx = self.pool.begin().await?;
         if let Some(membership) = self.resolve_membership(&mut tx, identity).await? {
-            sqlx::query(&self.sql("DELETE FROM fpp_organizations WHERE id=?"))
+            sqlx::query(self.sql("DELETE FROM fpp_organizations WHERE id=?"))
                 .bind(&membership.organization_id)
                 .execute(&mut *tx)
                 .await?;
-            sqlx::query(&self.sql("DELETE FROM fpp_users WHERE id=?"))
+            sqlx::query(self.sql("DELETE FROM fpp_users WHERE id=?"))
                 .bind(&membership.user_id)
                 .execute(&mut *tx)
                 .await?;
         }
         tx.commit().await?;
-        Ok(())
-    }
-
-    #[cfg(test)]
-    pub async fn delete_postgres_smoke_records(&self) -> Result<(), DbError> {
-        if self.kind == DatabaseKind::Postgres {
-            sqlx::query("DELETE FROM fpp_organizations o USING fpp_memberships m, fpp_users u WHERE m.organization_id=o.id AND m.user_id=u.id AND u.display_name IN ('PostgreSQL smoke','Runtime RLS smoke')")
-                .execute(&self.pool).await?;
-            sqlx::query("DELETE FROM fpp_users WHERE display_name IN ('PostgreSQL smoke','Runtime RLS smoke')")
-                .execute(&self.pool)
-                .await?;
-        }
         Ok(())
     }
 }
@@ -1193,34 +967,4 @@ fn validate_workspace(workspace: &Value) -> Result<(), DbError> {
         }
     }
     Ok(())
-}
-
-#[cfg(test)]
-mod schema_tests {
-    use super::*;
-
-    #[test]
-    fn complete_shared_schema_does_not_replay_bootstrap_migrations() {
-        assert_eq!(
-            classify_product_schema(
-                PRODUCT_TABLE_COUNT,
-                PRODUCT_POLICY_COUNT,
-                PRODUCT_ORGANIZATION_COLUMN_COUNT,
-            ),
-            ProductSchemaState::Ready
-        );
-    }
-
-    #[test]
-    fn empty_database_runs_product_migrations_and_partial_schema_stops() {
-        assert_eq!(classify_product_schema(0, 0, 0), ProductSchemaState::Empty);
-        assert_eq!(
-            classify_product_schema(
-                PRODUCT_TABLE_COUNT,
-                PRODUCT_POLICY_COUNT - 1,
-                PRODUCT_ORGANIZATION_COLUMN_COUNT
-            ),
-            ProductSchemaState::Incomplete
-        );
-    }
 }
