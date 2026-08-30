@@ -1474,7 +1474,7 @@ test('@claim:response-policy Export has a five-request bucket and metrics expose
     expect(body).toContain(metric);
 });
 
-test('@claim:subscription-checkout Missing recurring registration stops before any charge', async ({
+test('@claim:subscription-checkout Operator gating stops checkout before any charge', async ({
   request
 }, testInfo) => {
   test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
@@ -1495,7 +1495,7 @@ test('@claim:subscription-checkout Missing recurring registration stops before a
   });
   expect(response.status()).toBe(424);
   expect(await response.json()).toMatchObject({
-    code: 'billing_product_not_registered',
+    code: 'billing_acceptance_operator_gated',
     checkout_url:
       'https://pilot-api.sociobot.in/api/v1/products/field-parts-promise/checkout'
   });

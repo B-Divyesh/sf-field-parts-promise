@@ -2,20 +2,18 @@ use std::sync::{
     atomic::{AtomicU64, Ordering},
     Arc,
 };
+use std::{net::IpAddr, time::Duration};
 
 use axum::{
-    extract::{DefaultBodyLimit, State},
-    http::{HeaderMap, StatusCode},
+    extract::{DefaultBodyLimit, Request, State},
+    http::{HeaderMap, Method, StatusCode},
+    middleware::{self, Next},
     response::{IntoResponse, Response},
     routing::{get, post},
     Json, Router,
 };
 use serde::Serialize;
 use serde_json::{json, Value};
-use tower_governor::{
-    governor::GovernorConfigBuilder, key_extractor::SmartIpKeyExtractor, GovernorError,
-    GovernorLayer,
-};
 
 use crate::{
     auth::{AuthError, AuthVerifier, Identity},
@@ -30,6 +28,7 @@ pub struct ApiState {
     pub auth: AuthVerifier,
     pub metrics_token: Arc<String>,
     pub billing_base_url: Arc<String>,
+    pub billing_acceptance_enabled: bool,
     pub metrics: Arc<MetricsState>,
     pub client: reqwest::Client,
 }
@@ -153,45 +152,12 @@ impl From<DbError> for ApiError {
 }
 
 pub fn router(state: ApiState) -> Router {
-    let read_config = Arc::new(
-        GovernorConfigBuilder::default()
-            .per_millisecond(50)
-            .burst_size(40)
-            .key_extractor(SmartIpKeyExtractor)
-            .use_headers()
-            .finish()
-            .expect("read rate limit"),
-    );
-    let write_config = Arc::new(
-        GovernorConfigBuilder::default()
-            .per_millisecond(200)
-            .burst_size(10)
-            .key_extractor(SmartIpKeyExtractor)
-            .use_headers()
-            .finish()
-            .expect("write rate limit"),
-    );
-    let critical_config = Arc::new(
-        GovernorConfigBuilder::default()
-            .per_second(12)
-            .burst_size(5)
-            .key_extractor(SmartIpKeyExtractor)
-            .use_headers()
-            .finish()
-            .expect("critical rate limit"),
-    );
-
     let reads = Router::new()
         .route("/bootstrap", get(bootstrap))
         .route("/members", get(members))
-        .route("/billing", get(billing))
-        .layer(GovernorLayer::new(read_config.clone()).error_handler(rate_limit_response));
-    let operational = Router::new()
-        .route("/metrics", get(metrics))
-        .layer(GovernorLayer::new(read_config.clone()).error_handler(rate_limit_response));
-    let writes = Router::new()
-        .route("/sync", post(sync))
-        .layer(GovernorLayer::new(write_config).error_handler(rate_limit_response));
+        .route("/billing", get(billing));
+    let operational = Router::new().route("/metrics", get(metrics));
+    let writes = Router::new().route("/sync", post(sync));
     let critical = Router::new()
         .route("/onboarding", post(onboard))
         .route("/members", post(invite))
@@ -200,17 +166,132 @@ pub fn router(state: ApiState) -> Router {
         .route(
             "/account/deletion",
             post(schedule_deletion).delete(cancel_deletion),
-        )
-        .layer(GovernorLayer::new(critical_config).error_handler(rate_limit_response));
+        );
 
     let router = Router::new()
         .nest("/api/v1", reads.merge(writes).merge(critical))
-        .merge(operational)
-        .layer(DefaultBodyLimit::max(256 * 1024))
-        .with_state(state.clone());
+        .merge(operational);
     #[cfg(debug_assertions)]
-    let router = router.route("/api/v1/test/billing", post(test_billing).with_state(state));
+    let router = router.route("/api/v1/test/billing", post(test_billing));
     router
+        .layer(DefaultBodyLimit::max(256 * 1024))
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            shared_rate_limit,
+        ))
+        .with_state(state)
+}
+
+#[derive(Clone, Copy)]
+enum RateLimitBucket {
+    Read,
+    Write,
+    Critical,
+}
+
+impl RateLimitBucket {
+    fn name(self) -> &'static str {
+        match self {
+            Self::Read => "read",
+            Self::Write => "write",
+            Self::Critical => "critical",
+        }
+    }
+
+    fn limit(self) -> i64 {
+        match self {
+            Self::Read => 40,
+            Self::Write => 10,
+            Self::Critical => 5,
+        }
+    }
+
+    fn window(self) -> Duration {
+        match self {
+            Self::Read => Duration::from_secs(2),
+            Self::Write => Duration::from_secs(2),
+            Self::Critical => Duration::from_secs(60),
+        }
+    }
+}
+
+fn route_rate_limit(method: &Method, path: &str) -> Option<RateLimitBucket> {
+    match (method, path) {
+        (&Method::GET, "/api/v1/bootstrap" | "/api/v1/members" | "/api/v1/billing")
+        | (&Method::GET, "/metrics") => Some(RateLimitBucket::Read),
+        (&Method::POST, "/api/v1/sync") => Some(RateLimitBucket::Write),
+        (&Method::POST, "/api/v1/onboarding" | "/api/v1/members" | "/api/v1/billing/checkout")
+        | (&Method::GET, "/api/v1/export")
+        | (&Method::POST | &Method::DELETE, "/api/v1/account/deletion") => {
+            Some(RateLimitBucket::Critical)
+        }
+        #[cfg(debug_assertions)]
+        (&Method::POST, "/api/v1/test/billing") => Some(RateLimitBucket::Critical),
+        _ if path.starts_with("/api/v1/") => Some(RateLimitBucket::Read),
+        _ => None,
+    }
+}
+
+fn forwarded_client_ip(headers: &HeaderMap) -> String {
+    headers
+        .get("x-forwarded-for")
+        .and_then(|value| value.to_str().ok())
+        .and_then(|value| value.split(',').next())
+        .map(str::trim)
+        .and_then(|value| value.parse::<IpAddr>().ok())
+        .map(|value| value.to_string())
+        .unwrap_or_else(|| "unknown".to_owned())
+}
+
+async fn shared_rate_limit(
+    State(state): State<ApiState>,
+    request: Request,
+    next: Next,
+) -> Response {
+    let Some(bucket) = route_rate_limit(request.method(), request.uri().path()) else {
+        return next.run(request).await;
+    };
+    let client_ip = forwarded_client_ip(request.headers());
+    let key = format!("{}:{client_ip}", bucket.name());
+    let decision = match state
+        .database
+        .take_shared_rate_limit(&key, bucket.limit(), bucket.window())
+        .await
+    {
+        Ok(decision) => decision,
+        Err(error) => return ApiError::from(error).into_response(),
+    };
+    if !decision.allowed {
+        return rate_limit_response(bucket.limit(), decision.retry_after_seconds);
+    }
+
+    let mut response = next.run(request).await;
+    let headers = response.headers_mut();
+    headers.insert(
+        "x-ratelimit-limit",
+        bucket
+            .limit()
+            .to_string()
+            .parse()
+            .expect("valid rate limit"),
+    );
+    headers.insert(
+        "x-ratelimit-remaining",
+        decision
+            .remaining
+            .to_string()
+            .parse()
+            .expect("valid rate limit"),
+    );
+    headers.insert(
+        "x-ratelimit-reset",
+        decision
+            .retry_after_seconds
+            .to_string()
+            .parse()
+            .expect("valid rate limit"),
+    );
+    response
 }
 
 async fn identity(state: &ApiState, headers: &HeaderMap) -> Result<Identity, ApiError> {
@@ -330,11 +411,37 @@ struct CheckoutUnavailable {
     checkout_url: String,
 }
 
+fn checkout_unavailable(
+    code: &'static str,
+    message: &'static str,
+    action: &'static str,
+    checkout_url: String,
+) -> Response {
+    (
+        StatusCode::FAILED_DEPENDENCY,
+        Json(CheckoutUnavailable {
+            code,
+            message,
+            action,
+            checkout_url,
+        }),
+    )
+        .into_response()
+}
+
 async fn checkout(State(state): State<ApiState>, headers: HeaderMap) -> Result<Response, ApiError> {
     let identity = identity(&state, &headers).await?;
     state.database.require_owner(&identity).await?;
     let _billing = state.database.billing(&identity).await?;
     let checkout_url = format!("{}{}", state.billing_base_url, CHECKOUT_PATH);
+    if !state.billing_acceptance_enabled {
+        return Ok(checkout_unavailable(
+            "billing_acceptance_operator_gated",
+            "Checkout is waiting for an operator to verify the Dodo product and enabled factory product record.",
+            "No charge was made. The product operator must complete and verify registration before enabling checkout.",
+            checkout_url,
+        ));
+    }
     let response = state.client.get(&checkout_url).send().await.map_err(|_| {
         ApiError::new(
             StatusCode::BAD_GATEWAY,
@@ -344,12 +451,12 @@ async fn checkout(State(state): State<ApiState>, headers: HeaderMap) -> Result<R
         )
     })?;
     if response.status() == StatusCode::NOT_FOUND {
-        return Ok((StatusCode::FAILED_DEPENDENCY, Json(CheckoutUnavailable {
-            code: "billing_product_not_registered",
-            message: "Checkout is not available because the recurring product is not registered in this Sociobot gateway.",
-            action: "No charge was made. Try again after the product operator completes registration.",
+        return Ok(checkout_unavailable(
+            "billing_product_not_registered",
+            "Checkout is not available because the recurring product is not registered in this Sociobot gateway.",
+            "No charge was made. The product operator must complete registration before enabling checkout.",
             checkout_url,
-        })).into_response());
+        ));
     }
     if response.status().is_redirection() {
         return Ok(
@@ -406,31 +513,26 @@ async fn metrics(State(state): State<ApiState>, headers: HeaderMap) -> Result<St
     ))
 }
 
-fn rate_limit_response(error: GovernorError) -> Response {
-    match error {
-        GovernorError::TooManyRequests { wait_time, .. } => {
-            let retry_after = wait_time.max(1).to_string();
-            let mut response = (
-                StatusCode::TOO_MANY_REQUESTS,
-                Json(json!({
-                    "code":"rate_limited",
-                    "message":"Too many requests were sent.",
-                    "action":format!("Wait {retry_after} second before retrying.")
-                })),
-            )
-                .into_response();
-            response.headers_mut().insert(
-                "retry-after",
-                retry_after.parse().expect("positive retry header"),
-            );
-            response
-        }
-        other => {
-            let source = other.into_response();
-            let (parts, body) = source.into_parts();
-            Response::from_parts(parts, axum::body::Body::from(body))
-        }
-    }
+fn rate_limit_response(limit: i64, retry_after: u64) -> Response {
+    let retry_after = retry_after.max(1).to_string();
+    let mut response = (
+        StatusCode::TOO_MANY_REQUESTS,
+        Json(json!({
+            "code":"rate_limited",
+            "message":"Too many requests were sent.",
+            "action":format!("Wait {retry_after} second before retrying.")
+        })),
+    )
+        .into_response();
+    response.headers_mut().insert(
+        "retry-after",
+        retry_after.parse().expect("positive retry header"),
+    );
+    response.headers_mut().insert(
+        "x-ratelimit-limit",
+        limit.to_string().parse().expect("valid rate limit"),
+    );
+    response
 }
 
 #[cfg(debug_assertions)]

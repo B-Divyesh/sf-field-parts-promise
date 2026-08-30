@@ -190,10 +190,10 @@
   },
   {
     "id": "subscription-checkout",
-    "claim": "If the recurring Sociobot test product is unavailable, checkout stops before any charge and explains the operator action.",
+    "claim": "Until an operator verifies the recurring Sociobot product, checkout stops before any charge and explains the operator action.",
     "where": "billing settings",
     "test": "npm run test:e2e -- --grep @claim:subscription-checkout",
-    "sandbox": "authenticated test firm; call the real pilot gateway adapter and assert its unregistered-product response becomes HTTP 424 with no Dodo request"
+    "sandbox": "authenticated test firm; call the pilot billing adapter while acceptance is operator-gated and assert HTTP 424 before any checkout request"
   },
   {
     "id": "technician-seat-charge",

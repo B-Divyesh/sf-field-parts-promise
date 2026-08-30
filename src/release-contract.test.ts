@@ -26,6 +26,22 @@ describe('container release contract', () => {
     expect(containerClaim).not.toContain('cargo build');
     expect(containerClaim).not.toContain("'cargo'");
   });
+
+  it('makes every claim command install-safe in a clean clone', () => {
+    const packageJson = JSON.parse(readFileSync('package.json', 'utf8')) as {
+      scripts: Record<string, string>;
+    };
+    const bootstrap = readFileSync(
+      'scripts/ensure-e2e-dependencies.mjs',
+      'utf8'
+    );
+
+    expect(packageJson.scripts['test:e2e']).toBe(
+      'node scripts/ensure-e2e-dependencies.mjs && playwright test'
+    );
+    expect(bootstrap).toContain('node_modules/@playwright/test/package.json');
+    expect(bootstrap).toContain("spawnSync(npm, ['ci']");
+  });
 });
 
 describe('public claims contract', () => {

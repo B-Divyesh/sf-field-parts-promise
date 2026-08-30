@@ -46,6 +46,7 @@ pub async fn app(
     auth: AuthVerifier,
     metrics_token: String,
     billing_base_url: String,
+    billing_acceptance_enabled: bool,
 ) -> Router {
     let static_dir = std::env::var("STATIC_DIR").unwrap_or_else(|_| "dist".to_owned());
     let index_file = format!("{static_dir}/index.html");
@@ -69,6 +70,7 @@ pub async fn app(
         auth,
         metrics_token: Arc::new(metrics_token),
         billing_base_url: Arc::new(billing_base_url),
+        billing_acceptance_enabled,
         metrics,
         client: reqwest::Client::builder()
             .redirect(reqwest::redirect::Policy::none())
@@ -229,6 +231,11 @@ fn is_document_path(path: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    };
+
     use axum::{
         body::Body,
         http::{HeaderMap, Request, StatusCode},
@@ -240,11 +247,12 @@ mod tests {
     use super::*;
 
     async fn test_app() -> (Router, AuthVerifier, Database) {
-        test_app_with_billing_base_url("https://pilot-api.sociobot.in".to_owned()).await
+        test_app_with_billing_config("https://pilot-api.sociobot.in".to_owned(), false).await
     }
 
-    async fn test_app_with_billing_base_url(
+    async fn test_app_with_billing_config(
         billing_base_url: String,
+        billing_acceptance_enabled: bool,
     ) -> (Router, AuthVerifier, Database) {
         let db = Database::connect("sqlite::memory:", None).await.unwrap();
         let auth = AuthVerifier::test(b"test-secret-at-least-32-bytes-long");
@@ -255,6 +263,7 @@ mod tests {
                 auth.clone(),
                 "metrics-test".to_owned(),
                 billing_base_url,
+                billing_acceptance_enabled,
             )
             .await,
             auth,
@@ -318,7 +327,7 @@ mod tests {
             axum::serve(listener, billing_gateway).await.unwrap();
         });
 
-        let (app, auth, _) = test_app_with_billing_base_url(billing_base_url.clone()).await;
+        let (app, auth, _) = test_app_with_billing_config(billing_base_url.clone(), true).await;
         let token = auth.issue_test_token("checkout-owner", 600);
         let onboard = app
             .clone()
@@ -352,6 +361,61 @@ mod tests {
                 "merchant":"Sociobot/Dodo"
             })
         );
+        gateway_task.abort();
+    }
+
+    #[tokio::test]
+    async fn checkout_is_operator_gated_before_it_can_contact_a_registered_gateway() {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let billing_base_url = format!("http://{}", listener.local_addr().unwrap());
+        let gateway_requests = Arc::new(AtomicUsize::new(0));
+        let observed_requests = gateway_requests.clone();
+        let billing_gateway = Router::new().route(
+            "/api/v1/products/field-parts-promise/checkout",
+            get(move || {
+                let observed_requests = observed_requests.clone();
+                async move {
+                    observed_requests.fetch_add(1, Ordering::Relaxed);
+                    StatusCode::SEE_OTHER
+                }
+            }),
+        );
+        let gateway_task = tokio::spawn(async move {
+            axum::serve(listener, billing_gateway).await.unwrap();
+        });
+
+        let (app, auth, _) = test_app_with_billing_config(billing_base_url, false).await;
+        let token = auth.issue_test_token("operator-gated-owner", 600);
+        let onboard = app
+            .clone()
+            .oneshot(request(
+                "POST",
+                "/api/v1/onboarding",
+                Some(&token),
+                json!({
+                    "organization_name":"Operator gate firm","locale":"en-US","time_zone":"UTC",
+                    "migrate_local_workspace":false,"local_item_count":0,"workspace":null
+                }),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(onboard.status(), StatusCode::OK);
+
+        let response = app
+            .oneshot(request(
+                "POST",
+                "/api/v1/billing/checkout",
+                Some(&token),
+                json!({}),
+            ))
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::FAILED_DEPENDENCY);
+        assert_eq!(
+            json_body(response).await["code"],
+            "billing_acceptance_operator_gated"
+        );
+        assert_eq!(gateway_requests.load(Ordering::Relaxed), 0);
         gateway_task.abort();
     }
 
@@ -523,6 +587,82 @@ mod tests {
             .parse::<u64>()
             .unwrap();
         assert!(retry_after >= 1);
+    }
+
+    #[tokio::test]
+    async fn critical_rate_limit_is_shared_by_two_independent_app_replicas() {
+        let directory = tempfile::tempdir().unwrap();
+        let database_url = format!(
+            "sqlite://{}?mode=rwc",
+            directory.path().join("replica-rate-limit.db").display()
+        );
+        let database_a = Database::connect(&database_url, None).await.unwrap();
+        let database_b = Database::connect(&database_url, None).await.unwrap();
+        let auth = AuthVerifier::test(b"test-secret-at-least-32-bytes-long");
+        let app_a = app(
+            "replica-a",
+            database_a,
+            auth.clone(),
+            "metrics-test".to_owned(),
+            "https://pilot-api.sociobot.in".to_owned(),
+            false,
+        )
+        .await;
+        let app_b = app(
+            "replica-b",
+            database_b,
+            auth.clone(),
+            "metrics-test".to_owned(),
+            "https://pilot-api.sociobot.in".to_owned(),
+            false,
+        )
+        .await;
+        let token = auth.issue_test_token("shared-rate-owner", 600);
+
+        let mut onboarding = request(
+            "POST",
+            "/api/v1/onboarding",
+            Some(&token),
+            json!({
+                "organization_name":"Shared rate firm","locale":"en-US","time_zone":"UTC",
+                "migrate_local_workspace":false,"local_item_count":0,"workspace":null
+            }),
+        );
+        onboarding
+            .headers_mut()
+            .insert("x-forwarded-for", "198.51.100.200".parse().unwrap());
+        assert_eq!(
+            app_a.clone().oneshot(onboarding).await.unwrap().status(),
+            StatusCode::OK
+        );
+
+        for attempt in 1..=6 {
+            let app = if attempt % 2 == 0 {
+                app_b.clone()
+            } else {
+                app_a.clone()
+            };
+            let mut export = request("GET", "/api/v1/export", Some(&token), json!({}));
+            export.headers_mut().insert(
+                "x-forwarded-for",
+                "198.51.100.201, 10.0.0.15".parse().unwrap(),
+            );
+            let response = app.oneshot(export).await.unwrap();
+            if attempt <= 5 {
+                assert_eq!(response.status(), StatusCode::OK);
+            } else {
+                assert_eq!(response.status(), StatusCode::TOO_MANY_REQUESTS);
+                assert_eq!(response.headers()["x-ratelimit-limit"], "5");
+                assert!(
+                    response.headers()["retry-after"]
+                        .to_str()
+                        .unwrap()
+                        .parse::<u64>()
+                        .unwrap()
+                        >= 1
+                );
+            }
+        }
     }
 
     #[tokio::test]

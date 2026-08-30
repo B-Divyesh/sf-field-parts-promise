@@ -43,8 +43,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         "discovery_unavailable"
     };
-    let (metrics_token, metrics_token_source) = load_or_create_metrics_token()?;
+    let (metrics_token, metrics_token_source, data_dir_source) = load_or_create_metrics_token()?;
     let (billing_base_url, billing_base_url_source) = billing_base_url();
+    let (billing_acceptance_enabled, billing_acceptance_source) = billing_acceptance();
 
     let address = SocketAddr::from(([0, 0, 0, 0], port));
     let listener = TcpListener::bind(address).await?;
@@ -56,16 +57,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         build_sha_source,
         database_source,
         metrics_token_source,
+        data_dir_source,
         billing_base_url_source,
+        billing_acceptance_source,
+        billing_acceptance_enabled,
         auth_source,
         "Parts Promise is listening"
     );
 
     axum::serve(
         listener,
-        parts_promise_api::app(build_sha, database, auth, metrics_token, billing_base_url)
-            .await
-            .into_make_service_with_connect_info::<SocketAddr>(),
+        parts_promise_api::app(
+            build_sha,
+            database,
+            auth,
+            metrics_token,
+            billing_base_url,
+            billing_acceptance_enabled,
+        )
+        .await
+        .into_make_service_with_connect_info::<SocketAddr>(),
     )
     .with_graceful_shutdown(shutdown_signal())
     .await?;
@@ -82,6 +93,16 @@ fn billing_base_url() -> (String, &'static str) {
             ("https://api.sociobot.in".to_owned(), "supplied_production")
         }
         _ => ("https://api.sociobot.in".to_owned(), "production_default"),
+    }
+}
+
+fn billing_acceptance() -> (bool, &'static str) {
+    match env::var("SOCIOBOT_BILLING_ACCEPTANCE").as_deref() {
+        // This value is deliberately narrow. An operator may set it only after
+        // confirming the target gateway has the enabled `factory_products` row
+        // and its linked Dodo recurring product.
+        Ok("registered") => (true, "operator_enabled_after_registration"),
+        _ => (false, "operator_gate"),
     }
 }
 
@@ -149,15 +170,16 @@ async fn key_vault_database_urls() -> Option<(String, String)> {
     Some((runtime, migration))
 }
 
-fn load_or_create_metrics_token() -> Result<(String, &'static str), Box<dyn std::error::Error>> {
+fn load_or_create_metrics_token(
+) -> Result<(String, &'static str, &'static str), Box<dyn std::error::Error>> {
     if let Ok(token) = env::var("METRICS_TOKEN") {
-        return Ok((token, "supplied"));
+        return Ok((token, "supplied", "not_used"));
     }
-    let data_dir = env::var("DATA_DIR").unwrap_or_else(|_| "/tmp/parts-promise".to_owned());
+    let (data_dir, data_dir_source) = data_dir();
     let path = PathBuf::from(data_dir).join("metrics.token");
     if let Ok(token) = fs::read_to_string(&path) {
         if !token.trim().is_empty() {
-            return Ok((token.trim().to_owned(), "persisted"));
+            return Ok((token.trim().to_owned(), "persisted", data_dir_source));
         }
     }
     if let Some(parent) = path.parent() {
@@ -169,7 +191,17 @@ fn load_or_create_metrics_token() -> Result<(String, &'static str), Box<dyn std:
         uuid::Uuid::new_v4().simple()
     );
     fs::write(path, &token)?;
-    Ok((token, "generated"))
+    Ok((token, "generated", data_dir_source))
+}
+
+fn data_dir() -> (String, &'static str) {
+    if let Ok(value) = env::var("DATA_DIR") {
+        return (value, "supplied");
+    }
+    if PathBuf::from("/data").is_dir() {
+        return ("/data".to_owned(), "durable_default");
+    }
+    ("/tmp/parts-promise".to_owned(), "local_fallback")
 }
 
 async fn shutdown_signal() {

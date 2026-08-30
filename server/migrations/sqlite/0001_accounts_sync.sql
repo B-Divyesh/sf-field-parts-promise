@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS fpp_audit_events (id TEXT PRIMARY KEY, organization_i
 CREATE TABLE IF NOT EXISTS fpp_technician_seats (id TEXT PRIMARY KEY, organization_id TEXT NOT NULL, membership_id TEXT NOT NULL UNIQUE, active_from TEXT NOT NULL, active_to TEXT, created_at TEXT NOT NULL, FOREIGN KEY(organization_id) REFERENCES fpp_organizations(id) ON DELETE CASCADE, FOREIGN KEY(membership_id) REFERENCES fpp_memberships(id) ON DELETE CASCADE);
 CREATE TABLE IF NOT EXISTS fpp_billing_accounts (organization_id TEXT PRIMARY KEY, external_customer_id TEXT, external_subscription_id TEXT, plan TEXT NOT NULL, seat_quantity INTEGER NOT NULL, state TEXT NOT NULL, period_end TEXT, last_event_id TEXT, updated_at TEXT NOT NULL, FOREIGN KEY(organization_id) REFERENCES fpp_organizations(id) ON DELETE CASCADE);
 CREATE TABLE IF NOT EXISTS fpp_billing_events (event_id TEXT PRIMARY KEY, organization_id TEXT NOT NULL, event_type TEXT NOT NULL, payload TEXT NOT NULL, received_at TEXT NOT NULL, FOREIGN KEY(organization_id) REFERENCES fpp_organizations(id) ON DELETE CASCADE);
+CREATE TABLE IF NOT EXISTS fpp_rate_limits (bucket_key TEXT PRIMARY KEY, window_started_at_ms INTEGER NOT NULL, request_count INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS fpp_memberships_user_idx ON fpp_memberships(user_id,status);
 CREATE INDEX IF NOT EXISTS fpp_sync_operations_org_created_idx ON fpp_sync_operations(organization_id,created_at);
 CREATE INDEX IF NOT EXISTS fpp_audit_events_org_created_idx ON fpp_audit_events(organization_id,created_at);
+CREATE INDEX IF NOT EXISTS fpp_rate_limits_window_idx ON fpp_rate_limits(window_started_at_ms);

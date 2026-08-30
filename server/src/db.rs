@@ -1,4 +1,7 @@
-use std::{borrow::Cow, time::Duration};
+use std::{
+    borrow::Cow,
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
 
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
@@ -62,6 +65,24 @@ async fn product_schema_state(pool: &sqlx::PgPool) -> Result<ProductSchemaState,
     ))
 }
 
+async fn ensure_shared_rate_limit_table(pool: &sqlx::PgPool) -> Result<(), sqlx::Error> {
+    // The factory database can already have this product's tenant schema but
+    // intentionally lack this newer operational table in its migration ledger.
+    // `IF NOT EXISTS` lets every new replica converge safely without replaying
+    // the account bootstrap migration.
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS fpp_rate_limits (bucket_key TEXT PRIMARY KEY, window_started_at_ms BIGINT NOT NULL, request_count BIGINT NOT NULL)",
+    )
+    .execute(pool)
+    .await?;
+    sqlx::query(
+        "CREATE INDEX IF NOT EXISTS fpp_rate_limits_window_idx ON fpp_rate_limits(window_started_at_ms)",
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DatabaseKind {
     Postgres,
@@ -72,6 +93,13 @@ pub enum DatabaseKind {
 pub struct Database {
     pool: AnyPool,
     kind: DatabaseKind,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct RateLimitDecision {
+    pub allowed: bool,
+    pub remaining: i64,
+    pub retry_after_seconds: u64,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -218,6 +246,7 @@ impl Database {
                     .into());
                 }
             }
+            ensure_shared_rate_limit_table(&migrator).await?;
             migrator.close().await;
         }
         let max_connections = if database_url.contains(":memory:") {
@@ -244,6 +273,49 @@ impl Database {
 
     pub fn kind(&self) -> DatabaseKind {
         self.kind
+    }
+
+    /// Takes one request from a database-backed fixed window. The table is
+    /// shared by every Container App replica, so a client cannot multiply an
+    /// allowance by landing on another process.
+    pub async fn take_shared_rate_limit(
+        &self,
+        bucket_key: &str,
+        limit: i64,
+        window: Duration,
+    ) -> Result<RateLimitDecision, DbError> {
+        let now_ms = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_millis()
+            .min(i64::MAX as u128) as i64;
+        let window_ms = window.as_millis().max(1).min(i64::MAX as u128) as i64;
+        let reset_before_ms = now_ms.saturating_sub(window_ms);
+        let sql = self.sql(
+            "INSERT INTO fpp_rate_limits(bucket_key,window_started_at_ms,request_count) VALUES(?,?,1) \
+             ON CONFLICT(bucket_key) DO UPDATE SET \
+             window_started_at_ms=CASE WHEN fpp_rate_limits.window_started_at_ms<=? THEN excluded.window_started_at_ms ELSE fpp_rate_limits.window_started_at_ms END, \
+             request_count=CASE WHEN fpp_rate_limits.window_started_at_ms<=? THEN 1 ELSE fpp_rate_limits.request_count+1 END \
+             RETURNING window_started_at_ms,request_count",
+        );
+        let row = sqlx::query(&sql)
+            .bind(bucket_key)
+            .bind(now_ms)
+            .bind(reset_before_ms)
+            .bind(reset_before_ms)
+            .fetch_one(&self.pool)
+            .await?;
+        let window_started_at_ms: i64 = row.get("window_started_at_ms");
+        let request_count: i64 = row.get("request_count");
+        let elapsed_ms = now_ms.saturating_sub(window_started_at_ms);
+        let remaining_ms = window_ms.saturating_sub(elapsed_ms);
+        let retry_after_seconds = ((remaining_ms.saturating_add(999)) / 1_000).max(1) as u64;
+
+        Ok(RateLimitDecision {
+            allowed: request_count <= limit,
+            remaining: (limit - request_count).max(0),
+            retry_after_seconds,
+        })
     }
 
     fn sql<'a>(&self, source: &'a str) -> Cow<'a, str> {

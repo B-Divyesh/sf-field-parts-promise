@@ -44,7 +44,7 @@ Audited: 2026-08-29 for M2. Route: `/`. Counts treat hyphenated terms and prices
 | Each active technician costs $8 each month. | 7 | Pass: stated price |
 | The owner does not use a technician seat. | 8 | Pass: `technician-seat-charge` |
 | Sociobot and Dodo handle payment. | 5 | Pass: merchant information |
-| Checkout is waiting for this product's recurring plan registration. | 9 | Pass: `subscription-checkout` |
+| Checkout stays off until a product operator verifies its recurring plan registration. | 12 | Pass: `subscription-checkout` |
 | Set up your firm | 4 | Pass: action |
 
 No sentence exceeds 22 words. None contains a banned term.
@@ -73,6 +73,7 @@ Repair-added account copy:
 | Download this device's revision before using the shared revision. | 9 | Pass: conflict instruction |
 | Download device revision | 3 | Pass: backup action |
 | Use shared revision | 3 | Pass: resolution action |
+| The product operator must verify its Dodo plan and factory record before a charge can start. | 15 | Pass: `subscription-checkout` |
 
 No repair-added sentence exceeds 22 words or contains a banned term.
 

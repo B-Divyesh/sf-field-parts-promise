@@ -1567,8 +1567,8 @@
         month. The owner does not use a technician seat.
       </p>
       <p>
-        Sociobot and Dodo handle payment. Checkout is waiting for this product’s
-        recurring plan registration.
+        Sociobot and Dodo handle payment. Checkout stays off until a product
+        operator verifies its recurring plan registration.
       </p>
       <a href="/onboarding" on:click={(event) => follow(event, '/onboarding')}
         >Set up your firm</a
@@ -2118,9 +2118,8 @@
         refunds.
       </p>
       <p>
-        Checkout begins only after you press its button. The current test
-        product still needs operator registration, so no charge can be started
-        yet.
+        Checkout begins only after you press its button. The product operator
+        must verify its Dodo plan and factory record before a charge can start.
       </p>
     </section>
   {:else}

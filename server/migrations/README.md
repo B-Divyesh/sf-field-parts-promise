@@ -15,3 +15,8 @@ PostgreSQL when `DATABASE_URL` is supplied or obtained from the factory Key
 Vault through the container's managed identity.
 `202608290003_deletion_hold` adds the owner-controlled 14-day firm-deletion
 hold. Its down migration removes only those nullable scheduling columns.
+
+`202608300001_shared_rate_limit` adds the short-lived, IP-keyed request-window
+table used by every replica. Existing shared product schemas create this
+operational table safely at startup with `IF NOT EXISTS`, rather than replaying
+the product bootstrap migration.
