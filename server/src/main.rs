@@ -1,7 +1,7 @@
-use std::{env, fs, net::SocketAddr, path::PathBuf};
+use std::{env, fs, net::SocketAddr, path::PathBuf, time::Duration};
 
 use tokio::net::TcpListener;
-use tracing::info;
+use tracing::{info, warn};
 use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
@@ -25,7 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let (sqlite_url, database_source) = sqlite_connection_uri()?;
-    let database = parts_promise_api::db::Database::connect(&sqlite_url).await?;
+    let database = connect_database(&sqlite_url).await?;
     let auth = parts_promise_api::auth::AuthVerifier::from_environment().await;
     let auth_source = if auth.is_available() {
         "supplied_defaults_discovered"
@@ -71,6 +71,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .await?;
 
     Ok(())
+}
+
+async fn connect_database(
+    sqlite_url: &str,
+) -> Result<parts_promise_api::db::Database, Box<dyn std::error::Error>> {
+    const ATTEMPTS: u8 = 12;
+
+    for attempt in 1..=ATTEMPTS {
+        match parts_promise_api::db::Database::connect(sqlite_url).await {
+            Ok(database) => return Ok(database),
+            Err(error) if error.is_lock_conflict() && attempt < ATTEMPTS => {
+                warn!(
+                    attempt,
+                    attempts = ATTEMPTS,
+                    "SQLite startup lock is clearing; retrying"
+                );
+                tokio::time::sleep(Duration::from_secs(1)).await;
+            }
+            Err(error) => return Err(error.into()),
+        }
+    }
+
+    unreachable!("The retry loop either returns a database or its final error.")
 }
 
 fn billing_base_url() -> (String, &'static str) {

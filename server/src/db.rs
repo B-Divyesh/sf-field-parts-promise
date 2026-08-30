@@ -55,6 +55,12 @@ pub enum DbError {
     InvalidWorkspace,
 }
 
+impl DbError {
+    pub fn is_lock_conflict(&self) -> bool {
+        matches!(self, Self::Sql(sqlx::Error::Database(error)) if error.code().as_deref() == Some("5"))
+    }
+}
+
 #[derive(Clone, Debug, Serialize)]
 pub struct BillingStatus {
     pub state: String,
