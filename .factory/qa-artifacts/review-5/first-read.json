@@ -1,0 +1,360 @@
+{
+  "mobile": {
+    "status": 200,
+    "url": "https://field-parts-promise.sociobot.in/",
+    "title": "Parts Promise — Hold parts for each job",
+    "h1": [
+      "Promise dates from parts held for the job"
+    ],
+    "aboveFold": [
+      {
+        "tag": "A",
+        "text": "Parts Promise",
+        "top": 12
+      },
+      {
+        "tag": "A",
+        "text": "Demo",
+        "top": 64
+      },
+      {
+        "tag": "A",
+        "text": "Jobs",
+        "top": 64
+      },
+      {
+        "tag": "A",
+        "text": "Privacy",
+        "top": 64
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Sign in",
+        "top": 116
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Use dark theme",
+        "top": 168
+      },
+      {
+        "tag": "P",
+        "text": "Parts Promise — Hold parts for each job",
+        "top": 257
+      },
+      {
+        "tag": "P",
+        "text": "Allocate parts to a job",
+        "top": 257
+      },
+      {
+        "tag": "H1",
+        "text": "Promise dates from parts held for the job",
+        "top": 286
+      },
+      {
+        "tag": "P",
+        "text": "For small trade firms that need a parts check before agreeing a visit\n          date.",
+        "top": 379
+      },
+      {
+        "tag": "A",
+        "text": "Try it with sample data",
+        "top": 457
+      },
+      {
+        "tag": "SPAN",
+        "text": "Opens Riverside Dental with one missing pump.",
+        "top": 513
+      },
+      {
+        "tag": "LI",
+        "text": "The sample job and allocation work offline after your first visit.",
+        "top": 579
+      },
+      {
+        "tag": "LI",
+        "text": "Sample changes stay in this browser.",
+        "top": 629
+      },
+      {
+        "tag": "LI",
+        "text": "Workshop is $39/month plus $8 per active technician.",
+        "top": 659
+      }
+    ],
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "bodyText": "Skip to main content\nParts Promise\nDemo\nJobs\nPrivacy\nSign in\nUse dark theme\n\nParts Promise — Hold parts for each job\n\nALLOCATE PARTS TO A JOB\n\nPromise dates from parts held for the job\n\nFor small trade firms that need a parts check before agreeing a visit date.\n\nTry it with sample data\nOpens Riverside Dental with one missing pump.\nThe sample job and allocation work offline after your first visit.\nSample changes stay in this browser.\nWorkshop is $39/month plus $8 per active technician.\nEach required part shows the van, warehouse, or supplier record that covers it.\n\nSAMPLE JOB STATUS\n\nSee why a visit date is at risk\n\nRD-1042 needs one condensate pump. The job stays at risk until a source holds it.\n\nOpen the sample job\n\nRD-1042 · RIVERSIDE DENTAL\n\nDate at risk\nCondensate pump needs 1 each.\n\nHOW IT WORKS\n\nCheck parts before agreeing a visit date\nList required parts\nAdd each required part to the job.\nAllocate each part\nAllocate it from a van or warehouse source.\nReview the visit date\nRead the reason before you agree the visit date.\nWhat this release does not do\n\nIt does not scan barcodes or place supplier orders. The sample stays separate from signed-in firm workspaces.\n\nRead how local data works\n\nFIRM PLAN\n\nPay for the workshop and active technicians\n\nWorkshop costs $39 each month. Each active technician costs $8 each month. The owner does not use a technician seat.\n\nSociobot and Dodo handle payment. Checkout stays off until a product operator verifies its recurring plan registration.\n\nSet up your firm\n\nPromise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+    "links": [
+      {
+        "text": "Skip to main content",
+        "href": "https://field-parts-promise.sociobot.in/#main"
+      },
+      {
+        "text": "Parts Promise",
+        "href": "https://field-parts-promise.sociobot.in/"
+      },
+      {
+        "text": "Demo",
+        "href": "https://field-parts-promise.sociobot.in/?demo=1"
+      },
+      {
+        "text": "Jobs",
+        "href": "https://field-parts-promise.sociobot.in/jobs"
+      },
+      {
+        "text": "Privacy",
+        "href": "https://field-parts-promise.sociobot.in/privacy"
+      },
+      {
+        "text": "Try it with sample data",
+        "href": "https://field-parts-promise.sociobot.in/?demo=1"
+      },
+      {
+        "text": "Open the sample job",
+        "href": "https://field-parts-promise.sociobot.in/?demo=1"
+      },
+      {
+        "text": "Read how local data works",
+        "href": "https://field-parts-promise.sociobot.in/privacy"
+      },
+      {
+        "text": "Set up your firm",
+        "href": "https://field-parts-promise.sociobot.in/onboarding"
+      },
+      {
+        "text": "Privacy",
+        "href": "https://field-parts-promise.sociobot.in/privacy"
+      },
+      {
+        "text": "Terms",
+        "href": "https://field-parts-promise.sociobot.in/terms"
+      },
+      {
+        "text": "Built by Param Factory",
+        "href": "https://sociobot.in/"
+      }
+    ],
+    "requests": [
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-D7A160EW.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-DEJqsrtx.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/ciam-CsuEn5ou.js"
+      }
+    ],
+    "errors": []
+  },
+  "desktop": {
+    "status": 200,
+    "url": "https://field-parts-promise.sociobot.in/",
+    "title": "Parts Promise — Hold parts for each job",
+    "h1": [
+      "Promise dates from parts held for the job"
+    ],
+    "aboveFold": [
+      {
+        "tag": "A",
+        "text": "Parts Promise",
+        "top": 14
+      },
+      {
+        "tag": "A",
+        "text": "Demo",
+        "top": 14
+      },
+      {
+        "tag": "A",
+        "text": "Jobs",
+        "top": 14
+      },
+      {
+        "tag": "A",
+        "text": "Privacy",
+        "top": 14
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Sign in",
+        "top": 14
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Use dark theme",
+        "top": 14
+      },
+      {
+        "tag": "P",
+        "text": "Parts Promise — Hold parts for each job",
+        "top": 168
+      },
+      {
+        "tag": "P",
+        "text": "Allocate parts to a job",
+        "top": 200
+      },
+      {
+        "tag": "H1",
+        "text": "Promise dates from parts held for the job",
+        "top": 229
+      },
+      {
+        "tag": "P",
+        "text": "For small trade firms that need a parts check before agreeing a visit\n          date.",
+        "top": 392
+      },
+      {
+        "tag": "A",
+        "text": "Try it with sample data",
+        "top": 470
+      },
+      {
+        "tag": "SPAN",
+        "text": "Opens Riverside Dental with one missing pump.",
+        "top": 471
+      },
+      {
+        "tag": "LI",
+        "text": "The sample job and allocation work offline after your first visit.",
+        "top": 538
+      },
+      {
+        "tag": "LI",
+        "text": "Sample changes stay in this browser.",
+        "top": 588
+      },
+      {
+        "tag": "LI",
+        "text": "Workshop is $39/month plus $8 per active technician.",
+        "top": 618
+      },
+      {
+        "tag": "FIGCAPTION",
+        "text": "Each required part shows the van, warehouse, or supplier record that\n      covers it.",
+        "top": 649
+      },
+      {
+        "tag": "P",
+        "text": "Sample job status",
+        "top": 813
+      },
+      {
+        "tag": "H2",
+        "text": "See why a visit date is at risk",
+        "top": 842
+      },
+      {
+        "tag": "P",
+        "text": "RD-1042 · Riverside Dental",
+        "top": 862
+      }
+    ],
+    "scrollWidth": 1440,
+    "innerWidth": 1440,
+    "bodyText": "Skip to main content\nParts Promise\nDemo\nJobs\nPrivacy\nSign in\nUse dark theme\n\nParts Promise — Hold parts for each job\n\nALLOCATE PARTS TO A JOB\n\nPromise dates from parts held for the job\n\nFor small trade firms that need a parts check before agreeing a visit date.\n\nTry it with sample data\nOpens Riverside Dental with one missing pump.\nThe sample job and allocation work offline after your first visit.\nSample changes stay in this browser.\nWorkshop is $39/month plus $8 per active technician.\nEach required part shows the van, warehouse, or supplier record that covers it.\n\nSAMPLE JOB STATUS\n\nSee why a visit date is at risk\n\nRD-1042 needs one condensate pump. The job stays at risk until a source holds it.\n\nOpen the sample job\n\nRD-1042 · RIVERSIDE DENTAL\n\nDate at risk\nCondensate pump needs 1 each.\n\nHOW IT WORKS\n\nCheck parts before agreeing a visit date\nList required parts\nAdd each required part to the job.\nAllocate each part\nAllocate it from a van or warehouse source.\nReview the visit date\nRead the reason before you agree the visit date.\nWhat this release does not do\n\nIt does not scan barcodes or place supplier orders. The sample stays separate from signed-in firm workspaces.\n\nRead how local data works\n\nFIRM PLAN\n\nPay for the workshop and active technicians\n\nWorkshop costs $39 each month. Each active technician costs $8 each month. The owner does not use a technician seat.\n\nSociobot and Dodo handle payment. Checkout stays off until a product operator verifies its recurring plan registration.\n\nSet up your firm\n\nPromise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+    "links": [
+      {
+        "text": "Skip to main content",
+        "href": "https://field-parts-promise.sociobot.in/#main"
+      },
+      {
+        "text": "Parts Promise",
+        "href": "https://field-parts-promise.sociobot.in/"
+      },
+      {
+        "text": "Demo",
+        "href": "https://field-parts-promise.sociobot.in/?demo=1"
+      },
+      {
+        "text": "Jobs",
+        "href": "https://field-parts-promise.sociobot.in/jobs"
+      },
+      {
+        "text": "Privacy",
+        "href": "https://field-parts-promise.sociobot.in/privacy"
+      },
+      {
+        "text": "Try it with sample data",
+        "href": "https://field-parts-promise.sociobot.in/?demo=1"
+      },
+      {
+        "text": "Open the sample job",
+        "href": "https://field-parts-promise.sociobot.in/?demo=1"
+      },
+      {
+        "text": "Read how local data works",
+        "href": "https://field-parts-promise.sociobot.in/privacy"
+      },
+      {
+        "text": "Set up your firm",
+        "href": "https://field-parts-promise.sociobot.in/onboarding"
+      },
+      {
+        "text": "Privacy",
+        "href": "https://field-parts-promise.sociobot.in/privacy"
+      },
+      {
+        "text": "Terms",
+        "href": "https://field-parts-promise.sociobot.in/terms"
+      },
+      {
+        "text": "Built by Param Factory",
+        "href": "https://sociobot.in/"
+      }
+    ],
+    "requests": [
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-D7A160EW.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-DEJqsrtx.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/ciam-CsuEn5ou.js"
+      }
+    ],
+    "errors": []
+  }
+}

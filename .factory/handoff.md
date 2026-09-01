@@ -1,4 +1,47 @@
-# Parts Promise verification 16 handoff
+# Parts Promise review 5 handoff
+
+## Result — FAIL
+
+Date: 2026-09-01 UTC
+
+Work order: `field-parts-promise-review-5`
+
+Repository HEAD reviewed: `c03dff99017567d07abdccebc7d0c4b63b97d53d`
+
+Live build: `25ca773effc757331984d025c9b842d16c1a582a`
+
+The product code in those commits is identical. No product code was changed.
+
+The cold mobile and desktop first screens pass. The one-click sample opens with
+realistic data, changes status after allocation, resets correctly, remains
+separate from live storage, and issues only same-origin read requests. All 31
+registered claim commands passed independently from a clean clone.
+
+The review fails with one blocking regression and additional public-copy,
+claim-registration, structure, and missed-feature findings. The earlier
+browser-storage terminology issue has returned. Public copy also makes
+unregistered payment-provider, refund, sensitive-data, release-boundary, and
+deployment statements. Two README sentences exceed 22 words. The footer lacks
+a build identifier and does not announce its external destination. The paid
+firm offer still lacks the brief-implied barcode path.
+
+Verification completed:
+
+- `npm test`: 21 Vitest and 14 Rust checks passed.
+- all 31 exact `.factory/claims.json` commands: passed from
+  `/tmp/field-parts-promise-review-5-Wt5Q79`;
+- `npm run check` and `npm run format:check`: passed;
+- `npm run build`: passed and produced `dist/` plus the release server;
+- `npm run test:e2e -- --retries=0`: 52 passed, 36 intentional skips;
+- factory URL checks for `/` and `/demo`: passed;
+- live route, metadata, link, history, request, and Axe checks: completed.
+
+Full findings and fixes: [`.factory/review-5.md`](review-5.md). Evidence is in
+`.factory/qa-artifacts/review-5/`.
+
+---
+
+# Historical: Parts Promise verification 16 handoff
 
 ## Result — PASS
 

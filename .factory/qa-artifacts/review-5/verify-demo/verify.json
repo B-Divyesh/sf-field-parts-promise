@@ -1,0 +1,14 @@
+{
+  "url": "https://field-parts-promise.sociobot.in/demo",
+  "loadMs": 585,
+  "errors": [],
+  "a11y": {
+    "title": "Demo — Parts Promise",
+    "lang": "en",
+    "h1": 1,
+    "main": true,
+    "imgsMissingAlt": 0,
+    "buttonsUnlabeled": 0,
+    "textLength": 1218
+  }
+}

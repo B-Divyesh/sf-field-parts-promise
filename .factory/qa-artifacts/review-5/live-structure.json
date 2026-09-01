@@ -1,0 +1,426 @@
+{
+  "routes": {
+    "/": {
+      "status": 200,
+      "url": "https://field-parts-promise.sociobot.in/",
+      "title": "Parts Promise — Hold parts for each job",
+      "lang": "en",
+      "h1": [
+        "Promise dates from parts held for the job"
+      ],
+      "mains": 1,
+      "description": [
+        "Promise job dates from parts held for the job."
+      ],
+      "canonical": [
+        "https://field-parts-promise.sociobot.in/"
+      ],
+      "ogTitle": [
+        "Parts Promise — Hold parts for each job"
+      ],
+      "footer": "Promise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+      "header": "Parts Promise\nDemo\nJobs\nPrivacy\nSign in\nUse dark theme",
+      "active": "Skip to main content Parts Promise Demo Jobs  Privacy Sign in Use dark theme   Parts Promise — Hold parts for each job  Allocate parts to a job Promise dates from parts held for the job For small trade firms that need a parts check before agreeing a visit\n          date. Try it with sample dataOpens Riverside Dental with one missing pump. The sample job and allocation work offline after your first visit. Sample changes stay in this browser. Workshop is $39/month plus $8 per active technician.  Each required part shows the van, warehouse, or supplier record that\n      covers it. Sample job status See why a visit date is at risk RD-1042 needs one condensate pump. The job stays at risk until a\n          source holds it. Open the sample job RD-1042 · Riverside Dental Date at riskCondensate pump needs 1 each. How it works Check parts before agreeing a visit date List required partsAdd each required part to the job. Allocate each partAllocate it from a van or warehouse source. Review the visit dateRead the reason before you agree the visit date. What this release does not do It does not scan barcodes or place supplier orders. The sample stays\n        separate from signed-in firm workspaces. Read how local data works Firm plan Pay for the workshop and active technicians Workshop costs $39 each month. Each active technician costs $8 each\n        month. The owner does not use a technician seat. Sociobot and Dodo handle payment. Checkout stays off until a product\n        operator verifies its recurring plan registration. Set up your firm         Promise job dates from parts held for the job. PrivacyTermsBuilt by Param Factory Account workspace release",
+      "links": [
+        "https://field-parts-promise.sociobot.in/#main",
+        "https://field-parts-promise.sociobot.in/",
+        "https://field-parts-promise.sociobot.in/?demo=1",
+        "https://field-parts-promise.sociobot.in/jobs",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/?demo=1",
+        "https://field-parts-promise.sociobot.in/?demo=1",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/onboarding",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/terms",
+        "https://sociobot.in/"
+      ],
+      "horizontal": false,
+      "seriousCritical": []
+    },
+    "/demo": {
+      "status": 200,
+      "url": "https://field-parts-promise.sociobot.in/demo",
+      "title": "Demo — Parts Promise",
+      "lang": "en",
+      "h1": [
+        "Riverside Dental parts"
+      ],
+      "mains": 1,
+      "description": [
+        "Sample job card for Parts Promise."
+      ],
+      "canonical": [
+        "https://field-parts-promise.sociobot.in/demo"
+      ],
+      "ogTitle": [
+        "Demo — Parts Promise"
+      ],
+      "footer": "Promise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+      "header": "Parts Promise\nDemo\nJobs\nPrivacy\nUse dark theme",
+      "active": "Skip to main content Parts Promise Demo Jobs  Privacy  Use dark theme Demo — sample data; nothing is saved to your local workspace. Changes stay in this browser until you reset or leave. Reset demo Start for real Reset the sample job? This removes sample changes and restores Riverside Dental exactly as\n      shipped. Reset demoKeep changes Leave the sample workspace? Sample changes are discarded. Your local workspace will reopen unchanged. Leave demoStay in demo  Demo — Parts Promise  Sample job Riverside Dental parts RD-1042 · Visit Sep 2, 2026 Edit job ⌁ Date at risk Condensate pump needs 1 each. Required parts and their sources Parts held for this job Add required part Contactor 24V CT-24 1 each held\n              of 1 each Held for RD-1042 from Warehouse A · 1 each · Morgan Lee\n                    · checked Aug 28, 2026, 7:40 AMRemove allocation  Allocate partCheck supplier dateReturn air filter 20×25 AF-2025 4 each held\n              of 4 each Held for RD-1042 from Warehouse A · 3 each · Morgan Lee\n                    · checked Aug 28, 2026, 7:40 AMRemove allocationHeld for RD-1042 from Van 2 · 1 each · Avery Cole\n                    · checked Aug 28, 2026, 8:05 AMRemove allocation  Allocate partCheck supplier dateCondensate pump CP-19 0 each held\n              of 1 each  ⌁ 1 each still needs a source. Allocate partCheck supplier date   Record a source or supplier date Add manual van or warehouse evidence here. A supplier date is evidence,\n        not a guarantee. Add a source         Promise job dates from parts held for the job. PrivacyTermsBuilt by Param Factory Account workspace release",
+      "links": [
+        "https://field-parts-promise.sociobot.in/demo#main",
+        "https://field-parts-promise.sociobot.in/",
+        "https://field-parts-promise.sociobot.in/?demo=1",
+        "https://field-parts-promise.sociobot.in/jobs",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/terms",
+        "https://sociobot.in/"
+      ],
+      "horizontal": false,
+      "seriousCritical": []
+    },
+    "/jobs": {
+      "status": 200,
+      "url": "https://field-parts-promise.sociobot.in/jobs",
+      "title": "Jobs — Parts Promise",
+      "lang": "en",
+      "h1": [
+        "Jobs and their parts status"
+      ],
+      "mains": 1,
+      "description": [
+        "Jobs and their parts status."
+      ],
+      "canonical": [
+        "https://field-parts-promise.sociobot.in/jobs"
+      ],
+      "ogTitle": [
+        "Jobs — Parts Promise"
+      ],
+      "footer": "Promise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+      "header": "Parts Promise\nDemo\nJobs\nPrivacy\nSign in\nUse dark theme",
+      "active": "Skip to main content Parts Promise Demo Jobs  Privacy Sign in Use dark theme   Jobs — Parts Promise  Jobs in this browser Jobs and their parts status Each job shows the one fact that still needs attention. This workspace stays on this device. Sign in to set up team sync Add a jobImport workspaceExport workspace 0 local jobs ⌁ Jobs with required parts will appear here Start with the job you need to check before you agree its visit date.         Promise job dates from parts held for the job. PrivacyTermsBuilt by Param Factory Account workspace release",
+      "links": [
+        "https://field-parts-promise.sociobot.in/jobs#main",
+        "https://field-parts-promise.sociobot.in/",
+        "https://field-parts-promise.sociobot.in/?demo=1",
+        "https://field-parts-promise.sociobot.in/jobs",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/terms",
+        "https://sociobot.in/"
+      ],
+      "horizontal": false,
+      "seriousCritical": []
+    },
+    "/onboarding": {
+      "status": 200,
+      "url": "https://field-parts-promise.sociobot.in/onboarding",
+      "title": "Set up your firm — Parts Promise",
+      "lang": "en",
+      "h1": [
+        "Set up your firm workspace"
+      ],
+      "mains": 1,
+      "description": [
+        "Set up a firm workspace and choose whether to copy local jobs."
+      ],
+      "canonical": [
+        "https://field-parts-promise.sociobot.in/onboarding"
+      ],
+      "ogTitle": [
+        "Set up your firm — Parts Promise"
+      ],
+      "footer": "Promise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+      "header": "Parts Promise\nDemo\nJobs\nPrivacy\nSign in\nUse dark theme",
+      "active": "Skip to main content Parts Promise Demo Jobs  Privacy Sign in Use dark theme   Set up your firm — Parts Promise  Firm setup Set up your firm workspace Sign in with Sociobot before you create a shared workspace.  Sign in with Sociobot         Promise job dates from parts held for the job. PrivacyTermsBuilt by Param Factory Account workspace release",
+      "links": [
+        "https://field-parts-promise.sociobot.in/onboarding#main",
+        "https://field-parts-promise.sociobot.in/",
+        "https://field-parts-promise.sociobot.in/?demo=1",
+        "https://field-parts-promise.sociobot.in/jobs",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/terms",
+        "https://sociobot.in/"
+      ],
+      "horizontal": false,
+      "seriousCritical": []
+    },
+    "/settings/team": {
+      "status": 200,
+      "url": "https://field-parts-promise.sociobot.in/settings/team",
+      "title": "Team — Parts Promise",
+      "lang": "en",
+      "h1": [
+        "People who can update jobs"
+      ],
+      "mains": 1,
+      "description": [
+        "People who can update this firm’s jobs."
+      ],
+      "canonical": [
+        "https://field-parts-promise.sociobot.in/settings/team"
+      ],
+      "ogTitle": [
+        "Team — Parts Promise"
+      ],
+      "footer": "Promise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+      "header": "Parts Promise\nDemo\nJobs\nPrivacy\nSign in\nUse dark theme",
+      "active": "Skip to main content Parts Promise Demo Jobs  Privacy Sign in Use dark theme   Team — Parts Promise  Team and seats People who can update jobs Sign in to view your firm’s team. Sign in with Sociobot         Promise job dates from parts held for the job. PrivacyTermsBuilt by Param Factory Account workspace release",
+      "links": [
+        "https://field-parts-promise.sociobot.in/settings/team#main",
+        "https://field-parts-promise.sociobot.in/",
+        "https://field-parts-promise.sociobot.in/?demo=1",
+        "https://field-parts-promise.sociobot.in/jobs",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/terms",
+        "https://sociobot.in/"
+      ],
+      "horizontal": false,
+      "seriousCritical": []
+    },
+    "/settings/billing": {
+      "status": 200,
+      "url": "https://field-parts-promise.sociobot.in/settings/billing",
+      "title": "Billing — Parts Promise",
+      "lang": "en",
+      "h1": [
+        "Plan and technician seats"
+      ],
+      "mains": 1,
+      "description": [
+        "Workshop plan and technician seat details."
+      ],
+      "canonical": [
+        "https://field-parts-promise.sociobot.in/settings/billing"
+      ],
+      "ogTitle": [
+        "Billing — Parts Promise"
+      ],
+      "footer": "Promise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+      "header": "Parts Promise\nDemo\nJobs\nPrivacy\nSign in\nUse dark theme",
+      "active": "Skip to main content Parts Promise Demo Jobs  Privacy Sign in Use dark theme   Billing — Parts Promise  Billing Plan and technician seats Sign in to view billing for your firm. Sign in with Sociobot         Promise job dates from parts held for the job. PrivacyTermsBuilt by Param Factory Account workspace release",
+      "links": [
+        "https://field-parts-promise.sociobot.in/settings/billing#main",
+        "https://field-parts-promise.sociobot.in/",
+        "https://field-parts-promise.sociobot.in/?demo=1",
+        "https://field-parts-promise.sociobot.in/jobs",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/terms",
+        "https://sociobot.in/"
+      ],
+      "horizontal": false,
+      "seriousCritical": []
+    },
+    "/settings/data": {
+      "status": 200,
+      "url": "https://field-parts-promise.sociobot.in/settings/data",
+      "title": "Data controls — Parts Promise",
+      "lang": "en",
+      "h1": [
+        "Export or delete firm data"
+      ],
+      "mains": 1,
+      "description": [
+        "Export or schedule deletion of firm data."
+      ],
+      "canonical": [
+        "https://field-parts-promise.sociobot.in/settings/data"
+      ],
+      "ogTitle": [
+        "Data controls — Parts Promise"
+      ],
+      "footer": "Promise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+      "header": "Parts Promise\nDemo\nJobs\nPrivacy\nSign in\nUse dark theme",
+      "active": "Skip to main content Parts Promise Demo Jobs  Privacy Sign in Use dark theme   Data controls — Parts Promise  Data controls Export or delete firm data Sign in to manage server-held firm data. Sign in with Sociobot         Promise job dates from parts held for the job. PrivacyTermsBuilt by Param Factory Account workspace release",
+      "links": [
+        "https://field-parts-promise.sociobot.in/settings/data#main",
+        "https://field-parts-promise.sociobot.in/",
+        "https://field-parts-promise.sociobot.in/?demo=1",
+        "https://field-parts-promise.sociobot.in/jobs",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/terms",
+        "https://sociobot.in/"
+      ],
+      "horizontal": false,
+      "seriousCritical": []
+    },
+    "/privacy": {
+      "status": 200,
+      "url": "https://field-parts-promise.sociobot.in/privacy",
+      "title": "Privacy — Parts Promise",
+      "lang": "en",
+      "h1": [
+        "How Parts Promise handles data"
+      ],
+      "mains": 1,
+      "description": [
+        "How Parts Promise handles local data."
+      ],
+      "canonical": [
+        "https://field-parts-promise.sociobot.in/privacy"
+      ],
+      "ogTitle": [
+        "Privacy — Parts Promise"
+      ],
+      "footer": "Promise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+      "header": "Parts Promise\nDemo\nJobs\nPrivacy\nSign in\nUse dark theme",
+      "active": "Skip to main content Parts Promise Demo Jobs  Privacy Sign in Use dark theme   Privacy — Parts Promise  Privacy How Parts Promise handles data Local data in this browser Jobs, required parts, sources, and allocations are stored in IndexedDB\n        on this browser. The live workspace uses parts-promise-live-v1. The sample uses parts-promise-demo-v1. Signed-in firm data A signed-in firm can copy chosen local records to its shared workspace.\n        The server keeps firm records separate by organization and records sync\n        changes in an audit log. Microsoft Entra handles sign-in. Sociobot and Dodo handle checkout.\n        Parts Promise stores no password or payment-card number. The demo is separate Demo records never enter the live local workspace. Reset restores the\n        bundled sample. Leaving demo deletes its browser database. Demo requests The demo makes only same-origin GET requests and never asks for camera\n        access. Your control Export a versioned backup before moving devices or clearing browser\n        data. Browser site-data controls remove local records. Signed-in firms can export server-held data and schedule a 14-day\n        deletion hold from Data controls.         Promise job dates from parts held for the job. PrivacyTermsBuilt by Param Factory Account workspace release",
+      "links": [
+        "https://field-parts-promise.sociobot.in/privacy#main",
+        "https://field-parts-promise.sociobot.in/",
+        "https://field-parts-promise.sociobot.in/?demo=1",
+        "https://field-parts-promise.sociobot.in/jobs",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/settings/data",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/terms",
+        "https://sociobot.in/"
+      ],
+      "horizontal": false,
+      "seriousCritical": []
+    },
+    "/terms": {
+      "status": 200,
+      "url": "https://field-parts-promise.sociobot.in/terms",
+      "title": "Terms — Parts Promise",
+      "lang": "en",
+      "h1": [
+        "Terms for using Parts Promise"
+      ],
+      "mains": 1,
+      "description": [
+        "Terms for using Parts Promise."
+      ],
+      "canonical": [
+        "https://field-parts-promise.sociobot.in/terms"
+      ],
+      "ogTitle": [
+        "Terms — Parts Promise"
+      ],
+      "footer": "Promise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+      "header": "Parts Promise\nDemo\nJobs\nPrivacy\nSign in\nUse dark theme",
+      "active": "Skip to main content Parts Promise Demo Jobs  Privacy Sign in Use dark theme   Terms — Parts Promise  Terms Terms for using Parts Promise Use the evidence, not a guarantee Parts Promise helps you record what is held for a job. Supplier dates\n        and stock checks can change. You decide whether to promise a visit date. This release Sign-in and firm workspaces are available. Barcode scanning and\n        supplier-order actions are not included yet. Plans and payment Workshop is $39 each month plus $8 for each active technician. The owner\n        is included. Sociobot/Dodo is the merchant of record and handles\n        refunds. Checkout begins only after you press its button. The product operator\n        must verify its Dodo plan and factory record before a charge can start.         Promise job dates from parts held for the job. PrivacyTermsBuilt by Param Factory Account workspace release",
+      "links": [
+        "https://field-parts-promise.sociobot.in/terms#main",
+        "https://field-parts-promise.sociobot.in/",
+        "https://field-parts-promise.sociobot.in/?demo=1",
+        "https://field-parts-promise.sociobot.in/jobs",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/terms",
+        "https://sociobot.in/"
+      ],
+      "horizontal": false,
+      "seriousCritical": []
+    },
+    "/not-a-parts-promise-page": {
+      "status": 404,
+      "url": "https://field-parts-promise.sociobot.in/not-a-parts-promise-page",
+      "title": "Page not found — Parts Promise",
+      "lang": "en",
+      "h1": [
+        "Page not found"
+      ],
+      "mains": 1,
+      "description": [
+        "The requested Parts Promise page is not available."
+      ],
+      "canonical": [
+        "https://field-parts-promise.sociobot.in/"
+      ],
+      "ogTitle": [
+        "Page not found — Parts Promise"
+      ],
+      "footer": "Promise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+      "header": "Parts Promise\nDemo\nJobs\nPrivacy\nSign in\nUse dark theme",
+      "active": "Skip to main content Parts Promise Demo Jobs  Privacy Sign in Use dark theme   Page not found — Parts Promise  404 Page not found This address does not match a Parts Promise page. Return to your jobs or\n        the home page. Open jobsGo to home         Promise job dates from parts held for the job. PrivacyTermsBuilt by Param Factory Account workspace release",
+      "links": [
+        "https://field-parts-promise.sociobot.in/not-a-parts-promise-page#main",
+        "https://field-parts-promise.sociobot.in/",
+        "https://field-parts-promise.sociobot.in/?demo=1",
+        "https://field-parts-promise.sociobot.in/jobs",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/jobs",
+        "https://field-parts-promise.sociobot.in/",
+        "https://field-parts-promise.sociobot.in/privacy",
+        "https://field-parts-promise.sociobot.in/terms",
+        "https://sociobot.in/"
+      ],
+      "horizontal": false,
+      "seriousCritical": []
+    }
+  },
+  "history": {
+    "before": 2106,
+    "forward": {
+      "url": "https://field-parts-promise.sociobot.in/privacy",
+      "focus": "H1:How Parts Promise handles data",
+      "scrollY": 0
+    },
+    "back": {
+      "url": "https://field-parts-promise.sociobot.in/",
+      "focus": "H1:Promise dates from parts held for the job",
+      "scrollY": 2106
+    }
+  },
+  "links": {
+    "https://field-parts-promise.sociobot.in/": {
+      "status": 200
+    },
+    "https://field-parts-promise.sociobot.in/#main": {
+      "status": "same-page anchor"
+    },
+    "https://field-parts-promise.sociobot.in/?demo=1": {
+      "status": 200
+    },
+    "https://field-parts-promise.sociobot.in/demo#main": {
+      "status": 200
+    },
+    "https://field-parts-promise.sociobot.in/jobs": {
+      "status": 200
+    },
+    "https://field-parts-promise.sociobot.in/jobs#main": {
+      "status": 200
+    },
+    "https://field-parts-promise.sociobot.in/not-a-parts-promise-page#main": {
+      "status": 404
+    },
+    "https://field-parts-promise.sociobot.in/onboarding": {
+      "status": 200
+    },
+    "https://field-parts-promise.sociobot.in/onboarding#main": {
+      "status": 200
+    },
+    "https://field-parts-promise.sociobot.in/privacy": {
+      "status": 200
+    },
+    "https://field-parts-promise.sociobot.in/privacy#main": {
+      "status": 200
+    },
+    "https://field-parts-promise.sociobot.in/settings/billing#main": {
+      "status": 200
+    },
+    "https://field-parts-promise.sociobot.in/settings/data": {
+      "status": 200
+    },
+    "https://field-parts-promise.sociobot.in/settings/data#main": {
+      "status": 200
+    },
+    "https://field-parts-promise.sociobot.in/settings/team#main": {
+      "status": 200
+    },
+    "https://field-parts-promise.sociobot.in/terms": {
+      "status": 200
+    },
+    "https://field-parts-promise.sociobot.in/terms#main": {
+      "status": 200
+    },
+    "https://sociobot.in/": {
+      "skipped": "outside permitted product origin"
+    }
+  },
+  "errors": [
+    {
+      "url": "https://field-parts-promise.sociobot.in/not-a-parts-promise-page",
+      "text": "Failed to load resource: the server responded with a status of 404 ()"
+    }
+  ]
+}

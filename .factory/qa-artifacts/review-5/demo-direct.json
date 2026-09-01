@@ -1,0 +1,82 @@
+{
+  "/demo": {
+    "url": "https://field-parts-promise.sociobot.in/demo",
+    "dbs": [
+      "parts-promise-demo-v1"
+    ],
+    "body": "Skip to main content\nParts Promise\nDemo\nJobs\nPrivacy\nUse dark theme\nDemo — sample data; nothing is saved to your local workspace.\nChanges stay in this browser until you reset or leave.\nReset demo\nStart for real\n\nDemo — Parts Promise\n\nSAMPLE JOB\n\nRiverside Dental parts\n\nRD-1042 · Visit Sep 2, 2026\n\nEdit job\n⌁\nDate at risk\nCondensate pump needs 1 each.\n\nREQUIRED PARTS AND THEIR SOURCES\n\nParts held for this job\nAdd required part\nContactor 24V\n\nCT-24\n\n1 each held of 1 each\n\nHeld for RD-1042 from Warehouse A · 1 each · Morgan Lee · checked Aug 28, 2026, 7:40 AM\nRemove allocation\nAllocate part\nCheck supplier date\nReturn air filter 20×25\n\nAF-2025\n\n4 each held of 4 each\n\nHeld for RD-1042 from Warehouse A · 3 each · Morgan Lee · checked Aug 28, 2026, 7:40 AM\nRemove allocation\nHeld for RD-1042 from Van 2 · 1 each · Avery Cole · checked Aug 28, 2026, 8:05 AM\nRemove allocation\nAllocate part\nCheck supplier date\nCondensate pump\n\nCP-19\n\n0 each held of 1 each\n\n⌁ 1 each still needs a source.\n\nAllocate part\nCheck supplier date\nRecord a source or supplier date\n\nAdd manual van or warehouse evidence here. A supplier date is evidence, not a guarantee.\n\nAdd a source\n\nPromise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+    "requests": [
+      "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2",
+      "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2",
+      "https://field-parts-promise.sociobot.in/assets/index-D7A160EW.js",
+      "https://field-parts-promise.sociobot.in/assets/index-DEJqsrtx.css",
+      "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    ],
+    "eventRequests": [
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/demo"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-D7A160EW.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-DEJqsrtx.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      }
+    ]
+  },
+  "/?demo=1": {
+    "url": "https://field-parts-promise.sociobot.in/?demo=1",
+    "dbs": [
+      "parts-promise-demo-v1"
+    ],
+    "body": "Skip to main content\nParts Promise\nDemo\nJobs\nPrivacy\nUse dark theme\nDemo — sample data; nothing is saved to your local workspace.\nChanges stay in this browser until you reset or leave.\nReset demo\nStart for real\n\nDemo — Parts Promise\n\nSAMPLE JOB\n\nRiverside Dental parts\n\nRD-1042 · Visit Sep 2, 2026\n\nEdit job\n⌁\nDate at risk\nCondensate pump needs 1 each.\n\nREQUIRED PARTS AND THEIR SOURCES\n\nParts held for this job\nAdd required part\nContactor 24V\n\nCT-24\n\n1 each held of 1 each\n\nHeld for RD-1042 from Warehouse A · 1 each · Morgan Lee · checked Aug 28, 2026, 7:40 AM\nRemove allocation\nAllocate part\nCheck supplier date\nReturn air filter 20×25\n\nAF-2025\n\n4 each held of 4 each\n\nHeld for RD-1042 from Warehouse A · 3 each · Morgan Lee · checked Aug 28, 2026, 7:40 AM\nRemove allocation\nHeld for RD-1042 from Van 2 · 1 each · Avery Cole · checked Aug 28, 2026, 8:05 AM\nRemove allocation\nAllocate part\nCheck supplier date\nCondensate pump\n\nCP-19\n\n0 each held of 1 each\n\n⌁ 1 each still needs a source.\n\nAllocate part\nCheck supplier date\nRecord a source or supplier date\n\nAdd manual van or warehouse evidence here. A supplier date is evidence, not a guarantee.\n\nAdd a source\n\nPromise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+    "requests": [
+      "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2",
+      "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2",
+      "https://field-parts-promise.sociobot.in/assets/index-D7A160EW.js",
+      "https://field-parts-promise.sociobot.in/assets/index-DEJqsrtx.css",
+      "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    ],
+    "eventRequests": [
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/?demo=1"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-D7A160EW.js"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/index-DEJqsrtx.css"
+      },
+      {
+        "method": "GET",
+        "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+      }
+    ]
+  }
+}

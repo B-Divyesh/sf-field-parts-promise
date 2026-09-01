@@ -1,0 +1,63 @@
+{
+  "first": {
+    "url": "https://field-parts-promise.sociobot.in/?demo=1",
+    "title": "Demo — Parts Promise",
+    "h1": [
+      "Riverside Dental parts"
+    ],
+    "body": "Skip to main content\nParts Promise\nDemo\nJobs\nPrivacy\nUse dark theme\nDemo — sample data; nothing is saved to your local workspace.\nReset demo\nStart for real\n\nDemo — Parts Promise\n\nSAMPLE JOB\n\nRiverside Dental parts\n\nRD-1042 · Visit Sep 2, 2026\n\nEdit job\n⌁\nDate at risk\nCondensate pump needs 1 each.\n\nREQUIRED PARTS AND THEIR SOURCES\n\nParts held for this job\nAdd required part\nContactor 24V\n\nCT-24\n\n1 each held of 1 each\n\nHeld for RD-1042 from Warehouse A · 1 each · Morgan Lee · checked Aug 28, 2026, 7:40 AM\nRemove allocation\nAllocate part\nCheck supplier date\nReturn air filter 20×25\n\nAF-2025\n\n4 each held of 4 each\n\nHeld for RD-1042 from Warehouse A · 3 each · Morgan Lee · checked Aug 28, 2026, 7:40 AM\nRemove allocation\nHeld for RD-1042 from Van 2 · 1 each · Avery Cole · checked Aug 28, 2026, 8:05 AM\nRemove allocation\nAllocate part\nCheck supplier date\nCondensate pump\n\nCP-19\n\n0 each held of 1 each\n\n⌁ 1 each still needs a source.\n\nAllocate part\nCheck supplier date\nRecord a source or supplier date\n\nAdd manual van or warehouse evidence here. A supplier date is evidence, not a guarantee.\n\nAdd a source\n\nPromise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+    "focused": "Riverside Dental parts",
+    "dbs": [
+      "parts-promise-cloud-v1",
+      "parts-promise-demo-v1",
+      "parts-promise-live-v1"
+    ],
+    "local": []
+  },
+  "allocationSheet": "Allocate Condensate pump\nClose",
+  "afterAllocate": "Skip to main content\nParts Promise\nDemo\nJobs\nPrivacy\nUse dark theme\nDemo — sample data; nothing is saved to your local workspace.\nReset demo\nStart for real\n\nDemo — Parts Promise\n\nSAMPLE JOB\n\nRiverside Dental parts\n\nRD-1042 · Visit Sep 2, 2026\n\nEdit job\n◎\nParts in hand\nEvery required quantity is held from a van or warehouse.\n\nREQUIRED PARTS AND THEIR SOURCES\n\nParts held for this job\nAdd required part\nContactor 24V\n\nCT-24\n\n1 each held of 1 each\n\nHeld for RD-1042 from Warehouse A · 1 each · Morgan Lee · checked Aug 28, 2026, 7:40 AM\nRemove allocation\nAllocate part\nCheck supplier date\nReturn air filter 20×25\n\nAF-2025\n\n4 each held of 4 each\n\nHeld for RD-1042 from Warehouse A · 3 each · Morgan Lee · checked Aug 28, 2026, 7:40 AM\nRemove allocation\nHeld for RD-1042 from Van 2 · 1 each · Avery Cole · checked Aug 28, 2026, 8:05 AM\nRemove allocation\nAllocate part\nCheck supplier date\nCondensate pump\n\nCP-19\n\n1 each held of 1 each\n\nHeld for RD-1042 from Van 2 · 1 each · Field demo · checked Aug 28, 2026, 8:05 AM\nRemove allocation\nAllocate part\nCheck supplier date\nThe last allocation can be reversed.\nUndo allocation\n\nREVIEW, DO NOT ORDER\n\nReorder suggestions\nVan 2 has 0 each of Condensate pump.\n\nMinimum: 1 each. No supplier order has been placed.\n\nRecord a source or supplier date\n\nAdd manual van or warehouse evidence here. A supplier date is evidence, not a guarantee.\n\nAdd a source\nAllocate Condensate pump\nClose\n\nChoose the source and quantity held for RD-1042.\n\nAvailable source\nVan 2 · 0 each available · checked Aug 28, 2026, 8:05 AM\nQuantity held\nHold this quantity\n\nPromise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+  "afterReset": {
+    "body": "Skip to main content\nParts Promise\nDemo\nJobs\nPrivacy\nUse dark theme\nDemo — sample data; nothing is saved to your local workspace.\nReset demo\nStart for real\n\nDemo — Parts Promise\n\nSAMPLE JOB\n\nRiverside Dental parts\n\nRD-1042 · Visit Sep 2, 2026\n\nEdit job\n⌁\nDate at risk\nCondensate pump needs 1 each.\n\nREQUIRED PARTS AND THEIR SOURCES\n\nParts held for this job\nAdd required part\nContactor 24V\n\nCT-24\n\n1 each held of 1 each\n\nHeld for RD-1042 from Warehouse A · 1 each · Morgan Lee · checked Aug 28, 2026, 7:40 AM\nRemove allocation\nAllocate part\nCheck supplier date\nReturn air filter 20×25\n\nAF-2025\n\n4 each held of 4 each\n\nHeld for RD-1042 from Warehouse A · 3 each · Morgan Lee · checked Aug 28, 2026, 7:40 AM\nRemove allocation\nHeld for RD-1042 from Van 2 · 1 each · Avery Cole · checked Aug 28, 2026, 8:05 AM\nRemove allocation\nAllocate part\nCheck supplier date\nCondensate pump\n\nCP-19\n\n0 each held of 1 each\n\n⌁ 1 each still needs a source.\n\nAllocate part\nCheck supplier date\nRecord a source or supplier date\n\nAdd manual van or warehouse evidence here. A supplier date is evidence, not a guarantee.\n\nAdd a source\nThe sample job is back to its starting state.\n×\n\nPromise job dates from parts held for the job.\n\nPrivacy\nTerms\nBuilt by Param Factory\nAccount workspace release",
+    "dbs": [
+      "parts-promise-cloud-v1",
+      "parts-promise-demo-v1",
+      "parts-promise-live-v1"
+    ]
+  },
+  "databases": {
+    "parts-promise-cloud-v1": true,
+    "parts-promise-demo-v1": true,
+    "parts-promise-live-v1": true
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-D7A160EW.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-DEJqsrtx.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/ciam-CsuEn5ou.js"
+    }
+  ],
+  "consoleErrors": []
+}
