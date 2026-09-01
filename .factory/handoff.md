@@ -7,9 +7,13 @@ Work order: `field-parts-promise-polish-5`
 Live URL: <https://field-parts-promise.sociobot.in>
 Implementation commit: `d08d6f05611a20f306552aa5378fb502b915c7c1`
 
-## Result
+Deployed source commit: `f3b33148f1b5d5e56da8a245ebb7affc73d154d6`
 
-The round-5 source repair is complete. Every review-5 finding and every earlier finding ID is mapped in [`.factory/polish-5.md`](polish-5.md). Deployment and cold live evidence will be appended after the committed release is serving.
+Deployment build: ACR run `ch1q5`
+
+## Result — PASS
+
+The round-5 repair is complete and deployed. Every review-5 finding and every earlier finding ID is mapped in [`.factory/polish-5.md`](polish-5.md). No review finding remains open.
 
 ## What changed
 
@@ -55,8 +59,27 @@ Open `http://127.0.0.1:4173/?demo=1` for the isolated sample.
 
 The container starts with only `PORT`, defaults to 8080, runs as non-root, and reports build identity at `/health`. SQLite and the generated metrics token use `/data`; `deploy.json` pins one replica. No raw model, payment-provider, or application secret is shipped.
 
+The factory deployment reused the existing `sf-field-parts-promise-data` mount at `/data` and changed only the target product. No other product or forbidden shared service was accessed.
+
+## Cold live verification
+
+- `/health`: HTTP 200, build `f3b33148f1b5d5e56da8a245ebb7affc73d154d6`, SQLite, auth ready.
+- Exact identity check: `EXPECTED_BUILD_SHA=f3b33148f1b5d5e56da8a245ebb7affc73d154d6 npm run verify:live-identity` passed.
+- Factory URL verifier: correct title, `lang=en`, one H1, main landmark, image alternatives, labelled buttons, and zero console errors.
+- Cold 390×844 audit: all first-screen copy and facts fit without horizontal overflow. The external destination and deployed build ID are visible.
+- Nine stable routes returned 200 with route-specific titles, one H1, one description, and one canonical. The unknown route returned HTTP 404 with its own title and legal links.
+- One-click demo, manual `CP-19` barcode allocation, reorder-without-order, and reset passed against production.
+- Mocked live camera check confirmed zero camera requests on **Scan a part**, one request on **Use camera**, track shutdown after matching, and no frame or cross-origin request.
+- Offline reload passed after the first live demo visit.
+- Ten live Axe runs across light/dark and home/demo/privacy/terms/404 had zero serious or critical findings.
+- Live burst: 100 requests produced 60 HTTP 429 responses with `Retry-After: 2`.
+- Live headers include CSP, HSTS, `nosniff`, strict referrer policy, and `camera=(self)`. Hashed JavaScript is immutable; the service worker is no-cache.
+- Live mobile Lighthouse: performance 99, accessibility 100, best practices 100, SEO 100; LCP 1.8 s, CLS 0, TBT 30 ms.
+
+Evidence is under [`.factory/evidence/polish-5/live/`](evidence/polish-5/live/).
+
 ## Known gaps and operator action
 
-Checkout intentionally remains unavailable because no verified recurring firm-plus-seat contract is active. The UI and API stop before a charge, and the product makes no provider or refund promise. Enabling checkout later requires a separate verified billing registration and new claim evidence.
+Checkout intentionally remains unavailable because no verified recurring firm-plus-seat contract is active. This is a tested release boundary, not an unresolved review finding. The UI and API stop before a charge, and the product makes no provider or refund promise. Enabling checkout later requires a separate verified billing registration and new claim evidence.
 
 If the production Entra callback is not already registered, the operator must register `https://field-parts-promise.sociobot.in/auth/callback` on the shared SPA application. The local and demo workflows do not depend on that registration.

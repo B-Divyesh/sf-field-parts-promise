@@ -72,4 +72,15 @@ This map covers every finding ID in reviews 1–5. Review 4 was a PASS with no f
 
 ## Live verification
 
-Deployment and cold live checks are recorded in `.factory/handoff.md` and will be appended here after the release is serving.
+Deployed source commit `f3b33148f1b5d5e56da8a245ebb7affc73d154d6` through the configured container workflow. ACR run `ch1q5` succeeded. The existing `sf-field-parts-promise-data` mount was reused at `/data`, and the target stayed at one replica.
+
+- `/health` returned HTTP 200 with the exact deployed SHA, `database: "sqlite"`, and `auth: "ready"`.
+- `/opt/fleet/lib/verify-url.sh` passed on the cold live URL: correct title, `lang=en`, one H1, main landmark, image alternatives, button labels, and zero console errors. Evidence: `evidence/polish-5/live/verify.json`.
+- The cold public/demo audit passed 29 checks with zero console or page errors. It covered the first screen at 390×844, all route titles/metadata, storage/payment wording, focus, one-click demo entry, barcode allocation, supplier-order absence, and reset. Evidence: `evidence/polish-5/live/public-demo-audit.json`.
+- Camera, privacy, offline, 404, and accessibility audit passed 15 checks. All 10 route/theme Axe scans had zero serious or critical findings. Evidence: `evidence/polish-5/live/camera-offline-axe.json`.
+- Live mobile Lighthouse scored performance 99, accessibility 100, best practices 100, and SEO 100. LCP was 1.8 s, CLS 0, and TBT 30 ms. Evidence: `evidence/polish-5/live/lighthouse.json`.
+- A 100-request live burst produced 60 HTTP 429 responses with `Retry-After: 2`. Evidence: `evidence/polish-5/live/rate-limit.json`.
+- Root and 404 responses include CSP, HSTS, `nosniff`, strict referrer policy, and `Permissions-Policy: camera=(self), microphone=(), geolocation=()`. Hashed JS is immutable for one year; `sw.js` is no-cache. Evidence: `evidence/polish-5/live/*-headers.txt`.
+- Live screenshots: `evidence/polish-5/live/cold-mobile.png`, `demo-reset-mobile.png`, `camera-match-mobile.png`, `screenshot-desktop.png`, and `screenshot-mobile.png`.
+
+Every review finding is resolved in the deployed product. Checkout unavailability is an explicit, tested release boundary; the public site makes no unsupported provider or refund promise.

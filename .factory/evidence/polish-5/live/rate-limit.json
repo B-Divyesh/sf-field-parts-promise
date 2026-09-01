@@ -1,0 +1,509 @@
+{
+  "url": "https://field-parts-promise.sociobot.in/api/v1/bootstrap",
+  "summary": {
+    "requests": 100,
+    "limited": 60
+  },
+  "results": [
+    {
+      "attempt": 1,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 2,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 3,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 4,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 5,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 6,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 7,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 8,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 9,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 10,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 11,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 12,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 13,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 14,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 15,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 16,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 17,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 18,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 19,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 20,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 21,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 22,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 23,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 24,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 25,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 26,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 27,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 28,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 29,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 30,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 31,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 32,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 33,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 34,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 35,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 36,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 37,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 38,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 39,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 40,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 41,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 42,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 43,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 44,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 45,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 46,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 47,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 48,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 49,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 50,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 51,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 52,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 53,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 54,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 55,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 56,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 57,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 58,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 59,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 60,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 61,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 62,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 63,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 64,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 65,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 66,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 67,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 68,
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "attempt": 69,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 70,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 71,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 72,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 73,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 74,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 75,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 76,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 77,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 78,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 79,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 80,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 81,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 82,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 83,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 84,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 85,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 86,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 87,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 88,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 89,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 90,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 91,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 92,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 93,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 94,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 95,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 96,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 97,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 98,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 99,
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "attempt": 100,
+      "status": 429,
+      "retryAfter": "2"
+    }
+  ]
+}

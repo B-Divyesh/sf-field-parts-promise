@@ -1,0 +1,72 @@
+{
+  "base": "https://field-parts-promise.sociobot.in",
+  "passed": [
+    "camera waits for Use camera",
+    "camera starts once and stops",
+    "camera frames not sent",
+    "offline reload",
+    "HTTP 404 title and legal links",
+    "light / axe",
+    "light /demo axe",
+    "light /privacy axe",
+    "light /terms axe",
+    "light /not-on-this-drawing axe",
+    "dark / axe",
+    "dark /demo axe",
+    "dark /privacy axe",
+    "dark /terms axe",
+    "dark /not-on-this-drawing axe"
+  ],
+  "axe": [
+    {
+      "theme": "light",
+      "route": "/",
+      "serious": []
+    },
+    {
+      "theme": "light",
+      "route": "/demo",
+      "serious": []
+    },
+    {
+      "theme": "light",
+      "route": "/privacy",
+      "serious": []
+    },
+    {
+      "theme": "light",
+      "route": "/terms",
+      "serious": []
+    },
+    {
+      "theme": "light",
+      "route": "/not-on-this-drawing",
+      "serious": []
+    },
+    {
+      "theme": "dark",
+      "route": "/",
+      "serious": []
+    },
+    {
+      "theme": "dark",
+      "route": "/demo",
+      "serious": []
+    },
+    {
+      "theme": "dark",
+      "route": "/privacy",
+      "serious": []
+    },
+    {
+      "theme": "dark",
+      "route": "/terms",
+      "serious": []
+    },
+    {
+      "theme": "dark",
+      "route": "/not-on-this-drawing",
+      "serious": []
+    }
+  ]
+}
