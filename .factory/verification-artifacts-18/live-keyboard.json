@@ -1,0 +1,17 @@
+{
+  "first": {
+    "text": "Skip to main content",
+    "href": "#main"
+  },
+  "primaryTabs": 7,
+  "pumpTabs": 8,
+  "vanTabs": 2,
+  "submitTabs": 2,
+  "status": "Parts in hand",
+  "focusStyle": {
+    "outline": "rgb(107, 53, 195) solid 3px",
+    "outlineWidth": "3px",
+    "outlineColor": "rgb(107, 53, 195)",
+    "outlineOffset": "3px"
+  }
+}

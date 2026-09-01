@@ -1,0 +1,17 @@
+{
+  "motion": {
+    "row": "0s",
+    "status": "0s",
+    "preference": true
+  },
+  "sw": {
+    "controlled": true,
+    "installing": false,
+    "waiting": false,
+    "caches": [
+      "parts-promise-shell-v6"
+    ]
+  },
+  "offlineResult": "Parts in hand",
+  "errors": []
+}

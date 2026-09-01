@@ -1,0 +1,39 @@
+{
+  "before": 0,
+  "after": {
+    "calls": 1,
+    "stops": 1
+  },
+  "requests": [
+    {
+      "url": "https://field-parts-promise.sociobot.in/?demo=1",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/assets/index-WNthq3K4.js",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/assets/index-3bHnSEED.css",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg",
+      "method": "GET",
+      "body": null
+    }
+  ]
+}

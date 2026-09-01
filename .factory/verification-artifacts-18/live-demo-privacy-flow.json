@@ -1,0 +1,74 @@
+{
+  "requests": [
+    {
+      "url": "https://field-parts-promise.sociobot.in/",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/assets/index-WNthq3K4.js",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/assets/index-3bHnSEED.css",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/assets/ciam-CsuEn5ou.js",
+      "method": "GET",
+      "body": null
+    }
+  ],
+  "responses": [
+    {
+      "url": "https://field-parts-promise.sociobot.in/",
+      "status": 200
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/assets/index-3bHnSEED.css",
+      "status": 200
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2",
+      "status": 200
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2",
+      "status": 200
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/assets/index-WNthq3K4.js",
+      "status": 200
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg",
+      "status": 200
+    },
+    {
+      "url": "https://field-parts-promise.sociobot.in/assets/ciam-CsuEn5ou.js",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "cookies": [],
+  "invalidRecovery": true,
+  "finalStatus": "Date at risk",
+  "dialogFocus": true
+}

@@ -1,0 +1,85 @@
+{
+  "invalidEvidence": {
+    "status": 401,
+    "wwwAuthenticate": "Bearer",
+    "body": "{\"action\":\"Sign in again, then retry this action.\",\"code\":\"unauthorized\",\"message\":\"Your sign-in could not be verified. Sign in again.\",\"request_id\":\"8ef7acd7-34c4-4863-adc8-8529eb883b84\"}"
+  },
+  "read": {
+    "name": "read",
+    "path": "/api/v1/bootstrap",
+    "count": 50,
+    "counts": {
+      "401": 40,
+      "429": 10
+    },
+    "retryAfter": [
+      "2"
+    ],
+    "sample401": {
+      "n": 1,
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer",
+      "body": "{\"action\":\"Sign in again, then retry this action.\",\"code\":\"unauthorized\",\"message\":\"Your sign-in could not be verified. Sign in again.\",\"request_id\":\"1488eda9-7"
+    },
+    "sample429": {
+      "n": 10,
+      "status": 429,
+      "retryAfter": "2",
+      "wwwAuthenticate": null,
+      "body": "{\"action\":\"Wait 2 second before retrying.\",\"code\":\"rate_limited\",\"message\":\"Too many requests were sent.\"}"
+    }
+  },
+  "write": {
+    "name": "write",
+    "path": "/api/v1/sync",
+    "count": 20,
+    "counts": {
+      "401": 10,
+      "429": 10
+    },
+    "retryAfter": [
+      "2"
+    ],
+    "sample401": {
+      "n": 1,
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer",
+      "body": "{\"action\":\"Sign in again, then retry this action.\",\"code\":\"unauthorized\",\"message\":\"Your sign-in could not be verified. Sign in again.\",\"request_id\":\"9dbb38bb-e"
+    },
+    "sample429": {
+      "n": 11,
+      "status": 429,
+      "retryAfter": "2",
+      "wwwAuthenticate": null,
+      "body": "{\"action\":\"Wait 2 second before retrying.\",\"code\":\"rate_limited\",\"message\":\"Too many requests were sent.\"}"
+    }
+  },
+  "critical": {
+    "name": "critical",
+    "path": "/api/v1/export",
+    "count": 8,
+    "counts": {
+      "401": 5,
+      "429": 3
+    },
+    "retryAfter": [
+      "60"
+    ],
+    "sample401": {
+      "n": 3,
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer",
+      "body": "{\"action\":\"Sign in again, then retry this action.\",\"code\":\"unauthorized\",\"message\":\"Your sign-in could not be verified. Sign in again.\",\"request_id\":\"70b4aac8-2"
+    },
+    "sample429": {
+      "n": 1,
+      "status": 429,
+      "retryAfter": "60",
+      "wwwAuthenticate": null,
+      "body": "{\"action\":\"Wait 60 second before retrying.\",\"code\":\"rate_limited\",\"message\":\"Too many requests were sent.\"}"
+    }
+  }
+}

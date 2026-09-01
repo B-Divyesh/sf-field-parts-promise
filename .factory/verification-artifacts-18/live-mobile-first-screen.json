@@ -1,0 +1,45 @@
+{
+  "positions": [
+    {
+      "text": "Promise dates from parts held for the job",
+      "bottom": 355,
+      "visible": true
+    },
+    {
+      "text": "For small trade firms that need a parts check before agreeing a visit date.",
+      "bottom": 433,
+      "visible": true
+    },
+    {
+      "text": "Try it with sample data",
+      "bottom": 501,
+      "visible": true
+    },
+    {
+      "text": "Opens Riverside Dental with one missing pump.",
+      "bottom": 555,
+      "visible": true
+    },
+    {
+      "text": "The sample job and allocation work offline after your first visit.",
+      "bottom": 621,
+      "visible": true
+    },
+    {
+      "text": "Sample changes stay in this browser.",
+      "bottom": 651,
+      "visible": true
+    },
+    {
+      "text": "The firm plan is $39/month plus $8 per active technician.",
+      "bottom": 701,
+      "visible": true
+    }
+  ],
+  "errors": [],
+  "zoom": {
+    "computed": "32px",
+    "overflow": false,
+    "clipped": 0
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "origin": "https://sociobotcustomers.ciamlogin.com",
+  "tenant": "35c6fe40-0ec0-46b6-98c6-213ad4de6650",
+  "pathname": "/35c6fe40-0ec0-46b6-98c6-213ad4de6650/oauth2/v2.0/authorize",
+  "client_id": "25c704f4-465a-47af-80ab-2c489466b697",
+  "redirect_uri": "https://field-parts-promise.sociobot.in/auth/callback",
+  "response_type": "code",
+  "code_challenge_method": "S256",
+  "scope": "openid profile email offline_access"
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://field-parts-promise.sociobot.in/",
+    "status": 200
+  },
+  {
+    "url": "https://field-parts-promise.sociobot.in/#main",
+    "status": 200
+  },
+  {
+    "url": "https://field-parts-promise.sociobot.in/?demo=1",
+    "status": 200
+  },
+  {
+    "url": "https://field-parts-promise.sociobot.in/?demo=1#main",
+    "status": 200
+  },
+  {
+    "url": "https://field-parts-promise.sociobot.in/jobs",
+    "status": 200
+  },
+  {
+    "url": "https://field-parts-promise.sociobot.in/jobs#main",
+    "status": 200
+  },
+  {
+    "url": "https://field-parts-promise.sociobot.in/not-on-this-drawing#main",
+    "status": 404
+  },
+  {
+    "url": "https://field-parts-promise.sociobot.in/onboarding",
+    "status": 200
+  },
+  {
+    "url": "https://field-parts-promise.sociobot.in/onboarding#main",
+    "status": 200
+  },
+  {
+    "url": "https://field-parts-promise.sociobot.in/privacy",
+    "status": 200
+  },
+  {
+    "url": "https://field-parts-promise.sociobot.in/privacy#main",
+    "status": 200
+  },
+  {
+    "url": "https://field-parts-promise.sociobot.in/settings/billing#main",
+    "status": 200
+  },
+  {
+    "url": "https://field-parts-promise.sociobot.in/settings/data",
+    "status": 200
+  },
+  {
+    "url": "https://field-parts-promise.sociobot.in/settings/data#main",
+    "status": 200
+  },
+  {
+    "url": "https://field-parts-promise.sociobot.in/settings/team#main",
+    "status": 200
+  },
+  {
+    "url": "https://field-parts-promise.sociobot.in/terms",
+    "status": 200
+  },
+  {
+    "url": "https://field-parts-promise.sociobot.in/terms#main",
+    "status": 200
+  },
+  {
+    "url": "https://sociobot.in/",
+    "status": "external-not-fetched"
+  }
+]
