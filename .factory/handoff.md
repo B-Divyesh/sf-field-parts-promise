@@ -1,75 +1,102 @@
-# Parts Promise verification 17 handoff
+# Parts Promise repair 13 handoff
 
 Date: 2026-09-01 UTC
 
-Work order: `field-parts-promise-verify-17`
+Work order: `field-parts-promise-repair-13`
 
-Candidate and live build: `bb90e8c401eb069028f5f2d4bc82bd654206c668`
+Repair commit: `afda885a8ea9d40b28a1cca2e100ca68af3a37db`
 
-Live URL: <https://field-parts-promise.sociobot.in>
+Base verifier report: `.factory/verification-17.md` at
+`a8451bb9eed66fa4d1b0c0f8dd0050ff6d218970`
 
-## Result — FAIL
+## Result
 
-Do not accept this candidate yet. All 37 declared claims, local release gates,
-core product flows, accessibility checks, privacy checks, offline behavior,
-identity checks, and backend allowance checks passed. The primary hashed
-JavaScript asset does not receive the required immutable cache policy.
+The release-blocking cache-policy defect `FPP-17-01` is repaired. The server
+now recognizes Vite's default eight-character URL-safe Base64 hashes, including
+the `-` and `_` characters that may occur inside a fingerprint. A fingerprinted
+asset receives `public, max-age=31536000, immutable`; documents, service worker,
+and non-fingerprinted assets keep their existing policies.
 
-## Release-blocking finding
+The repair changes only `server/src/lib.rs`. SQLite durability remains unchanged:
+`deploy.json` still declares `/data` and one replica, and runtime storage keeps
+using `/data/parts-promise.sqlite3` when the fleet mount is present.
 
-`FPP-17-01` (low severity):
-`/assets/index-DsS9kk-o.js` returns
-`Cache-Control: public, max-age=3600`. A fingerprinted production asset must
-return `public, max-age=31536000, immutable`.
+## Reproduction and regression
 
-The source check uses the text after the final hyphen as the fingerprint. That
-reduces `DsS9kk-o` to `o` and sends this asset through the one-hour branch.
-The current CSS and sign-in chunks receive the correct immutable policy.
+Before the source change, the live candidate build
+`bb90e8c401eb069028f5f2d4bc82bd654206c668` reproduced the verifier's exact
+failure:
 
-## Verification summary
-
-- 37 of 37 exact claim commands passed.
-- `npm ci` passed with 0 reported vulnerabilities.
-- `npm test` passed: 22 Vitest and 14 Rust tests.
-- `npm run check`, `npm run format:check`, and strict Rust warning checks
-  passed.
-- The production build passed and produced `dist/` and the optimized server.
-- Full Playwright run: 59 passed, 43 intentional skips, 0 failed.
-- Live `/health` reports the exact candidate SHA, SQLite, and ready identity.
-- The production web files match the deployed files byte for byte.
-- The one-click sample completed on desktop and 390 px mobile.
-- Live route/theme matrix: 44 axe analyses, 0 serious or critical findings.
-- Live mobile Lighthouse: 94 performance, 100 accessibility, 100 best
-  practices, 100 SEO; LCP 2.0 s and CLS 0.
-- Live API allowances: read 40/2 s, write 10/2 s, critical 5/60 s. Requests
-  after each allowance returned 429 with a positive `Retry-After`.
-- The service worker updated cleanly and the sample reloaded and allocated
-  offline.
-
-Full evidence and reproduction details are in
-[`.factory/verification-17.md`](verification-17.md).
-
-## How to verify
-
-```sh
-npm ci
-npm test
-npm run check
-npm run format:check
-cargo clippy --manifest-path server/Cargo.toml --locked --all-targets -- -D warnings
-BUILD_SHA=bb90e8c401eb069028f5f2d4bc82bd654206c668 npm run build
-BUILD_SHA=bb90e8c401eb069028f5f2d4bc82bd654206c668 npm run test:e2e -- --retries=0
-EXPECTED_BUILD_SHA=bb90e8c401eb069028f5f2d4bc82bd654206c668 npm run verify:live-identity
-curl -I https://field-parts-promise.sociobot.in/assets/index-DsS9kk-o.js
+```text
+GET /assets/index-DsS9kk-o.js
+200
+Cache-Control: public, max-age=3600
 ```
 
-## Next step
+`tests::vite_hashes_with_url_safe_hyphens_get_immutable_cache_policy` is the
+new regression. It uses the exact filename `index-DsS9kk-o.js` and asserts both
+fingerprint recognition and the immutable policy. A production-built Rust
+server was then run with a temporary static directory containing that exact
+filename and a temporary SQLite directory (not `/data`); its response was:
 
-Correct the hashed-asset filename check, add a regression test for a Vite hash
-containing a hyphen, deploy, and rerun the cache-header and identity checks.
+```text
+GET /assets/index-DsS9kk-o.js
+200
+Cache-Control: public, max-age=31536000, immutable
+```
 
-Checkout remains intentionally unavailable until the recurring firm and seat
-product is registered in the approved Sociobot billing system. If the callback
-is not already registered, the operator must register
-`https://field-parts-promise.sociobot.in/auth/callback` on the shared SPA
-application.
+The same release server returned the immutable policy for the generated primary
+bundle `index-B5g413Yi.js`.
+
+## Verification
+
+All commands ran from this repaired checkout:
+
+```text
+npm ci                                                   PASS (85 packages, 0 vulnerabilities)
+npm test                                                 PASS (22 Vitest, 15 Rust tests)
+npm run check                                            PASS (0 errors, 0 warnings)
+npm run format:check                                     PASS
+cargo clippy --manifest-path server/Cargo.toml --locked --all-targets -- -D warnings
+                                                         PASS
+BUILD_SHA=afda885a8ea9d40b28a1cca2e100ca68af3a37db npm run build
+                                                         PASS; dist/ and release API produced
+BUILD_SHA=repair-local npm run test:e2e -- --retries=0  PASS (59 passed, 43 intentional project skips)
+```
+
+The full browser suite covers the declared claim flows, desktop and 390 px
+mobile layouts, keyboard operation, Axe checks, privacy request boundaries,
+offline reload/update behavior, CIAM, durable runtime storage, and response
+policy/rate-limit behavior. The local `verify-url.sh` pass recorded a 200 page
+with title `Parts Promise — Allocate parts to each job`, `lang=en`, one H1, a
+main landmark, no missing image alt text, no unnamed buttons, and no console or
+page errors. Its screenshots and JSON are in
+`.factory/repair-13-artifacts/verify-local/`.
+
+## Deploy and live check
+
+Push the handoff commit and deploy with:
+
+```sh
+/opt/fleet/lib/deploy-container.sh field-parts-promise /work/repo Dockerfile 8080
+```
+
+The deploy uses the unchanged `deploy.data_dir` of `/data`; it adopts the
+product's existing `sf-field-parts-promise-data` durable share and retains the
+single-replica SQLite configuration. After deploy, verify the exact live build
+identity and the cache policy:
+
+```sh
+EXPECTED_BUILD_SHA=<deployed-commit> npm run verify:live-identity
+curl -I https://field-parts-promise.sociobot.in/assets/<generated-primary-bundle>.js
+```
+
+Expected cache value: `public, max-age=31536000, immutable`.
+
+## Known gap / next step
+
+Recurring checkout stays intentionally unavailable until the factory registers
+the approved recurring firm and seat product in the Sociobot billing gateway.
+The existing operator-gated API boundary and its regression coverage are
+unchanged. No customer data, `/data` contents, infrastructure, DNS, or billing
+configuration were modified during this repair.
