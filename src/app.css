@@ -716,6 +716,26 @@ main {
   background: var(--color-surface);
 }
 
+.scan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.barcode-preview {
+  display: block;
+  width: min(100%, 640px);
+  height: auto;
+  margin-block-end: var(--space-3);
+  border: 2px solid var(--color-blueprint);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+}
+
+.scan-sheet form {
+  max-width: 32rem;
+}
+
 .work-sheet {
   max-width: 900px;
   padding: var(--space-5);

@@ -14,8 +14,8 @@
     "test:e2e": "node scripts/ensure-e2e-dependencies.mjs && playwright test",
     "verify:live-identity": "node scripts/verify-live-identity.mjs",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "build:web": "npm run check && vite build",
-    "build": "npm run check && vite build && cargo build --manifest-path server/Cargo.toml --release --locked",
+    "build:web": "npm run check && vite build && node scripts/stamp-build.mjs",
+    "build": "npm run build:web && cargo build --manifest-path server/Cargo.toml --release --locked",
     "preview": "vite preview",
     "format": "prettier --write . && cargo fmt --manifest-path server/Cargo.toml",
     "format:check": "prettier --check . && cargo fmt --manifest-path server/Cargo.toml -- --check"

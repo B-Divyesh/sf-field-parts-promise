@@ -172,7 +172,7 @@ async fn security_headers(request: Request, next: Next) -> Response {
     );
     headers.insert(
         HeaderName::from_static("permissions-policy"),
-        HeaderValue::from_static("camera=(), microphone=(), geolocation=()"),
+        HeaderValue::from_static("camera=(self), microphone=(), geolocation=()"),
     );
     headers.insert(HeaderName::from_static("content-security-policy"), HeaderValue::from_static(
         "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src https://sociobotcustomers.ciamlogin.com; form-action 'self' https://sociobotcustomers.ciamlogin.com; img-src 'self' data: https://*.msauthimages.net; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self' https://sociobotcustomers.ciamlogin.com https://pilot-api.sociobot.in https://api.sociobot.in; manifest-src 'self'; worker-src 'self'"
@@ -366,8 +366,7 @@ mod tests {
         assert_eq!(
             json_body(response).await,
             json!({
-                "checkout_url":format!("{billing_base_url}/api/v1/products/field-parts-promise/checkout"),
-                "merchant":"Sociobot/Dodo"
+                "checkout_url":format!("{billing_base_url}/api/v1/products/field-parts-promise/checkout")
             })
         );
         gateway_task.abort();

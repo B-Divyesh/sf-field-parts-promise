@@ -108,6 +108,16 @@
     quantityChanged: boolean;
   };
 
+  type BarcodeResult = { rawValue?: string };
+  type BarcodeDetectorLike = {
+    detect(source: HTMLVideoElement): Promise<BarcodeResult[]>;
+  };
+  type BarcodeDetectorConstructor = new (options?: {
+    formats?: string[];
+  }) => BarcodeDetectorLike;
+
+  const buildLabel = (__BUILD_SHA__ || 'dev').slice(0, 8);
+
   class ApiRequestError extends Error {
     readonly status: number;
     readonly code: string;
@@ -135,6 +145,7 @@
   let showSourceForm = false;
   let showSupplierForm = false;
   let showImportForm = false;
+  let showScanForm = false;
   let allocationRequirementId = '';
   let allocationSourceId = '';
   let allocationQuantity = 1;
@@ -163,6 +174,13 @@
   let syncConflict: SyncConflict | null = null;
   let syncRetryAttempt = 0;
   let syncRetryTimer: number | undefined;
+  let scanMode: 'choice' | 'camera' | 'manual' = 'choice';
+  let barcodeValue = '';
+  let scanMessage = '';
+  let scanMatchedRequirementId = '';
+  let scanVideo: HTMLVideoElement | undefined;
+  let scanStream: MediaStream | null = null;
+  let scanDetectionTimer: number | undefined;
 
   type HistoryPosition = { scrollX: number; scrollY: number };
 
@@ -173,16 +191,19 @@
     | 'allocation'
     | 'source'
     | 'supplier'
-    | 'import';
+    | 'import'
+    | 'scan';
   const sheetTriggers: Partial<Record<SheetName, HTMLElement>> = {};
 
   let jobNumber = '';
   let jobSite = '';
   let jobDate = '';
   let jobPart = '';
+  let jobSku = '';
   let jobQuantity = 1;
   let jobUnit = 'each';
   let partDescription = '';
+  let partSku = '';
   let partQuantity = 1;
   let partUnit = 'each';
   let sourceName = '';
@@ -255,6 +276,7 @@
       window.removeEventListener('offline', updateOnline);
       if (scrollFrame !== undefined) cancelAnimationFrame(scrollFrame);
       if (syncRetryTimer !== undefined) window.clearTimeout(syncRetryTimer);
+      stopCamera();
       history.scrollRestoration = previousScrollRestoration;
     };
   });
@@ -328,7 +350,7 @@
     if (currentPage === 'billing')
       return {
         title: 'Billing — Parts Promise',
-        description: 'Workshop plan and technician seat details.',
+        description: 'Firm plan and technician seat details.',
         canonical
       };
     if (currentPage === 'data')
@@ -356,7 +378,7 @@
         canonical: '/'
       };
     return {
-      title: 'Parts Promise — Hold parts for each job',
+      title: 'Parts Promise — Allocate parts to each job',
       description: 'Promise job dates from parts held for the job.',
       canonical
     };
@@ -809,6 +831,10 @@
     shouldFocus: boolean,
     restorePosition?: HistoryPosition
   ) {
+    if (showScanForm) {
+      stopCamera();
+      showScanForm = false;
+    }
     const nextPath = window.location.pathname;
     const nextDemo =
       new URLSearchParams(window.location.search).get('demo') === '1' ||
@@ -879,6 +905,148 @@
     showSourceForm = true;
     formError = '';
     await revealSheet('source', event.currentTarget as HTMLElement);
+  }
+
+  async function openScanForm(event: MouseEvent) {
+    stopCamera();
+    showScanForm = true;
+    scanMode = 'choice';
+    barcodeValue = '';
+    scanMessage = '';
+    scanMatchedRequirementId = '';
+    await revealSheet('scan', event.currentTarget as HTMLElement);
+  }
+
+  function stopCamera() {
+    if (scanDetectionTimer !== undefined) {
+      window.clearTimeout(scanDetectionTimer);
+      scanDetectionTimer = undefined;
+    }
+    scanStream?.getTracks().forEach((track) => track.stop());
+    scanStream = null;
+    if (scanVideo) scanVideo.srcObject = null;
+  }
+
+  async function closeScanForm() {
+    stopCamera();
+    scanMode = 'choice';
+    barcodeValue = '';
+    scanMessage = '';
+    scanMatchedRequirementId = '';
+    await closeSheet('scan', () => (showScanForm = false));
+  }
+
+  async function enterBarcodeInstead(message = '') {
+    stopCamera();
+    scanMode = 'manual';
+    scanMessage = message;
+    await tick();
+    document.getElementById('manual-barcode')?.focus();
+  }
+
+  function findBarcode(value: string) {
+    const normalized = value.trim().toLocaleUpperCase();
+    barcodeValue = value.trim();
+    scanMatchedRequirementId = '';
+    if (!normalized) {
+      scanMessage = 'Enter the barcode printed on the part label.';
+      return;
+    }
+    const requirement = activeJob
+      ? requirementsFor(activeJob).find(
+          (item) => item.sku?.trim().toLocaleUpperCase() === normalized
+        )
+      : undefined;
+    if (!requirement) {
+      scanMessage = `No required part on ${activeJob?.number ?? 'this job'} uses barcode ${barcodeValue}. Check the code or add the part manually.`;
+      return;
+    }
+    if (
+      workspace &&
+      coveredQuantity(workspace, requirement.id) >= requirement.quantity
+    ) {
+      scanMessage = `${requirement.description} is already fully allocated to this job.`;
+      return;
+    }
+    scanMatchedRequirementId = requirement.id;
+    scanMessage = `${requirement.description} matches ${barcodeValue}.`;
+  }
+
+  async function pollForBarcode(detector: BarcodeDetectorLike) {
+    if (!showScanForm || scanMode !== 'camera' || !scanVideo) return;
+    try {
+      const results = await detector.detect(scanVideo);
+      const value = results.find((result) => result.rawValue)?.rawValue;
+      if (value) {
+        findBarcode(value);
+        stopCamera();
+        scanMode = 'manual';
+        return;
+      }
+      scanDetectionTimer = window.setTimeout(
+        () => void pollForBarcode(detector),
+        250
+      );
+    } catch {
+      await enterBarcodeInstead(
+        'The camera could not read this barcode. Enter it instead.'
+      );
+    }
+  }
+
+  async function useCamera() {
+    scanMessage = '';
+    scanMatchedRequirementId = '';
+    if (!navigator.mediaDevices?.getUserMedia) {
+      await enterBarcodeInstead(
+        'This browser cannot use the camera here. Enter the barcode instead.'
+      );
+      return;
+    }
+    scanMode = 'camera';
+    await tick();
+    try {
+      scanStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+        audio: false
+      });
+      if (scanVideo) {
+        scanVideo.srcObject = scanStream;
+        void scanVideo.play().catch(() => undefined);
+      }
+      const Detector = (
+        window as unknown as {
+          BarcodeDetector?: BarcodeDetectorConstructor;
+        }
+      ).BarcodeDetector;
+      if (!Detector) {
+        await enterBarcodeInstead(
+          'This browser cannot read barcodes from the camera. Enter the barcode instead.'
+        );
+        return;
+      }
+      scanMessage =
+        'Point the camera at the barcode. No camera frame is saved.';
+      await pollForBarcode(
+        new Detector({ formats: ['code_128', 'code_39', 'ean_13', 'qr_code'] })
+      );
+    } catch {
+      await enterBarcodeInstead(
+        'Camera access was not available. Enter the barcode instead.'
+      );
+    }
+  }
+
+  async function allocateScannedPart(event: MouseEvent) {
+    const requirement = workspace?.requirements.find(
+      (item) => item.id === scanMatchedRequirementId
+    );
+    if (!requirement) return;
+    const trigger = sheetTriggers.scan ?? (event.currentTarget as HTMLElement);
+    stopCamera();
+    showScanForm = false;
+    scanMatchedRequirementId = '';
+    await openAllocation(requirement, trigger);
   }
 
   function changeTheme() {
@@ -1028,6 +1196,7 @@
       id: crypto.randomUUID(),
       jobId: job.id,
       description: jobPart.trim(),
+      sku: jobSku.trim() || undefined,
       unit: jobUnit.trim() || 'each',
       quantity: Number(jobQuantity)
     };
@@ -1035,6 +1204,7 @@
     next.jobs.push(job);
     next.requirements.push(requirement);
     await commit(next, `${job.number} was added to this device.`);
+    jobSku = '';
     showAddJob = false;
     formError = '';
     navigate(href(`/jobs/${job.id}`));
@@ -1190,12 +1360,14 @@
         id: crypto.randomUUID(),
         jobId: activeJob.id,
         description: partDescription.trim(),
+        sku: partSku.trim() || undefined,
         unit: partUnit.trim() || 'each',
         quantity: Number(partQuantity)
       }),
       'The required part was added.'
     );
     partDescription = '';
+    partSku = '';
     partQuantity = 1;
     await closeSheet('add-part', () => (showPartForm = false));
   }
@@ -1503,7 +1675,7 @@
             The sample job and allocation work offline after your first visit.
           </li>
           <li>Sample changes stay in this browser.</li>
-          <li>Workshop is $39/month plus $8 per active technician.</li>
+          <li>The firm plan is $39/month plus $8 per active technician.</li>
         </ul>
       </div>
       <BlueprintHero />
@@ -1552,8 +1724,8 @@
     <section class="plain-language-section" aria-labelledby="privacy-title">
       <h2 id="privacy-title">What this release does not do</h2>
       <p>
-        It does not scan barcodes or place supplier orders. The sample stays
-        separate from signed-in firm workspaces.
+        It does not place supplier orders. The sample stays separate from
+        signed-in firm workspaces.
       </p>
       <a href="/privacy" on:click={(event) => follow(event, '/privacy')}
         >Read how local data works</a
@@ -1561,15 +1733,13 @@
     </section>
     <section class="pricing-section" aria-labelledby="pricing-title">
       <p class="drawing-label">Firm plan</p>
-      <h2 id="pricing-title">Pay for the workshop and active technicians</h2>
+      <h2 id="pricing-title">Pay for the firm plan and active technicians</h2>
       <p>
-        Workshop costs $39 each month. Each active technician costs $8 each
-        month. The owner does not use a technician seat.
+        The firm plan costs $39 each month. Each active technician costs $8 each
+        month. The owner is included in the $39 base price and does not use a
+        technician seat.
       </p>
-      <p>
-        Sociobot and Dodo handle payment. Checkout stays off until a product
-        operator verifies its recurring plan registration.
-      </p>
+      <p>Checkout is not available yet. No charge will start.</p>
       <a href="/onboarding" on:click={(event) => follow(event, '/onboarding')}
         >Set up your firm</a
       >
@@ -1722,7 +1892,7 @@
       {:else}
         <dl class="billing-summary">
           <div>
-            <dt>Workshop base</dt>
+            <dt>Firm plan base</dt>
             <dd>$39/month</dd>
           </div>
           <div>
@@ -1748,7 +1918,7 @@
             {billingMessage}
           </p>{/if}
         <p>
-          Sociobot/Dodo is the merchant of record. Read the
+          Checkout is not available yet. No charge will start. Read the
           <a href="/terms" on:click={(event) => follow(event, '/terms')}
             >terms</a
           >
@@ -2039,19 +2209,28 @@
           </article>{/each}
       </section>{/if}
     <section class="source-tools" aria-labelledby="source-tools-title">
-      <h2 id="source-tools-title">Record a source or supplier date</h2>
+      <h2 id="source-tools-title">Find a part or record its source</h2>
       <p>
-        Add manual van or warehouse evidence here. A supplier date is evidence,
-        not a guarantee.
+        Scan or enter a barcode to find a required part. You can also add van or
+        warehouse evidence manually.
       </p>
-      <button
-        class="button secondary"
-        type="button"
-        disabled={sharedReadOnly}
-        aria-expanded={showSourceForm}
-        aria-controls="source-sheet"
-        on:click={openSourceForm}>Add a source</button
-      >
+      <div class="part-actions">
+        <button
+          class="button"
+          type="button"
+          disabled={sharedReadOnly}
+          aria-expanded={showScanForm}
+          aria-controls="scan-sheet"
+          on:click={openScanForm}>Scan a part</button
+        ><button
+          class="button secondary"
+          type="button"
+          disabled={sharedReadOnly}
+          aria-expanded={showSourceForm}
+          aria-controls="source-sheet"
+          on:click={openSourceForm}>Add a source</button
+        >
+      </div>
     </section>
   {:else if page === 'privacy'}
     <section class="legal-copy">
@@ -2059,10 +2238,8 @@
       <h1 tabindex="-1">How Parts Promise handles data</h1>
       <h2>Local data in this browser</h2>
       <p>
-        Jobs, required parts, sources, and allocations are stored in IndexedDB
-        on this browser. The live workspace uses
-        <code>parts-promise-live-v1</code>. The sample uses
-        <code>parts-promise-demo-v1</code>.
+        Jobs, required parts, sources, and allocations are stored in a browser
+        database on this device. The sample uses a separate browser database.
       </p>
       <h2>Signed-in firm data</h2>
       <p>
@@ -2071,8 +2248,8 @@
         changes in an audit log.
       </p>
       <p>
-        Microsoft Entra handles sign-in. Sociobot and Dodo handle checkout.
-        Parts Promise stores no password or payment-card number.
+        Sign-in opens Microsoft’s service. You do not enter a password or card
+        number in Parts Promise. Checkout is not available yet.
       </p>
       <h2>The demo is separate</h2>
       <p>
@@ -2081,8 +2258,9 @@
       </p>
       <h2>Demo requests</h2>
       <p>
-        The demo makes only same-origin GET requests and never asks for camera
-        access.
+        The normal sample flow makes only same-origin GET requests. Camera
+        access starts only after you choose <strong>Scan a part</strong> and
+        then <strong>Use camera</strong>. Camera frames stay on this device.
       </p>
       <h2>Your control</h2>
       <p>
@@ -2108,19 +2286,16 @@
       </p>
       <h2>This release</h2>
       <p>
-        Sign-in and firm workspaces are available. Barcode scanning and
-        supplier-order actions are not included yet.
+        Sign-in and firm workspaces are available. Scan or enter a barcode to
+        find a required part. Parts Promise does not place supplier orders.
       </p>
       <h2>Plans and payment</h2>
       <p>
-        Workshop is $39 each month plus $8 for each active technician. The owner
-        is included. Sociobot/Dodo is the merchant of record and handles
-        refunds.
+        The firm plan costs $39 each month plus $8 for each active technician.
+        The owner is included in the $39 base price and does not count as a
+        technician seat.
       </p>
-      <p>
-        Checkout begins only after you press its button. The product operator
-        must verify its Dodo plan and factory record before a charge can start.
-      </p>
+      <p>Checkout is not available yet. No charge will start.</p>
     </section>
   {:else}
     <section class="not-found">
@@ -2169,6 +2344,11 @@
               required
             /></label
           ><label>Required part<input bind:value={jobPart} required /></label
+          ><label
+            >Barcode or part code (optional)<input
+              bind:value={jobSku}
+              autocomplete="off"
+            /></label
           ><label
             >Quantity<input
               type="number"
@@ -2247,6 +2427,11 @@
               required
             /></label
           ><label
+            >Barcode or part code (optional)<input
+              bind:value={partSku}
+              autocomplete="off"
+            /></label
+          ><label
             >Quantity<input
               type="number"
               min="0.01"
@@ -2316,9 +2501,79 @@
         >{#if formError}<p class="form-error" role="alert">
             {formError}
           </p>{/if}<button class="button" type="submit"
-          >Hold this quantity</button
+          >Allocate this quantity</button
         >
       </form>
+    </section>
+  {/if}
+
+  {#if showScanForm}
+    <section
+      id="scan-sheet"
+      class="work-sheet scan-sheet"
+      aria-labelledby="scan-title"
+    >
+      <div class="sheet-heading">
+        <h2 id="scan-title" tabindex="-1">Scan or enter a part barcode</h2>
+        <button class="text-button" type="button" on:click={closeScanForm}
+          >Close</button
+        >
+      </div>
+      <p>
+        Match a barcode to a required part on {activeJob?.number}. Camera frames
+        stay on this device and are never saved.
+      </p>
+      {#if scanMode === 'choice'}
+        <div class="scan-actions">
+          <button class="button" type="button" on:click={useCamera}
+            >Use camera</button
+          ><button
+            class="button secondary"
+            type="button"
+            on:click={() => enterBarcodeInstead()}>Enter barcode instead</button
+          >
+        </div>
+      {:else if scanMode === 'camera'}
+        <video
+          bind:this={scanVideo}
+          class="barcode-preview"
+          aria-label="Live barcode camera preview"
+          width="640"
+          height="480"
+          autoplay
+          muted
+          playsinline
+        ></video>
+        <button
+          class="button secondary"
+          type="button"
+          on:click={() => enterBarcodeInstead()}>Enter barcode instead</button
+        >
+      {:else}
+        <form on:submit|preventDefault={() => findBarcode(barcodeValue)}>
+          <label
+            >Barcode<input
+              id="manual-barcode"
+              bind:value={barcodeValue}
+              inputmode="text"
+              autocomplete="off"
+              required
+            /></label
+          >
+          <button class="button" type="submit">Find required part</button>
+        </form>
+      {/if}
+      {#if scanMessage}<p
+          class:form-error={!scanMatchedRequirementId}
+          role={scanMatchedRequirementId ? 'status' : 'alert'}
+        >
+          {scanMessage}
+        </p>{/if}
+      {#if scanMatchedRequirementId}<button
+          class="button"
+          type="button"
+          on:click={allocateScannedPart}>Allocate matched part</button
+        >{/if}
     </section>
   {/if}
 
@@ -2516,7 +2771,9 @@
     ><a
       href={href('/terms')}
       on:click={(event) => follow(event, href('/terms'))}>Terms</a
-    ><a href="https://sociobot.in" rel="external">Built by Param Factory</a>
+    ><a href="https://sociobot.in" rel="external"
+      >Built by Param Factory (external site)</a
+    >
   </div>
-  <small>Account workspace release</small>
+  <small title={__BUILD_SHA__}>Build {buildLabel}</small>
 </footer>

@@ -1,22 +1,26 @@
 # Parts Promise
 
-Parts Promise helps small trade firms promise job dates from parts held for each job. A solo user can work locally. A signed-in firm can share one workspace across devices.
+Parts Promise helps small trade firms allocate required parts before promising a visit date. A solo user can work locally. A signed-in firm can share one workspace across devices.
 
 ## Try it with sample data
 
 Open `/?demo=1`, or <http://127.0.0.1:4173/?demo=1> during development. The sample opens Riverside Dental job `RD-1042` with one missing condensate pump.
 
-Allocate the pump from Van 2. The status changes from **Date at risk** to **Parts in hand**. Van 2 then has no spare pumps, so the app suggests a reorder. It never places an order.
+Allocate the pump from Van 2. The status changes from **Date at risk** to **Parts in hand**. Van 2 then has no spare pumps. The app suggests a reorder but never places one.
 
-The demo uses the separate `parts-promise-demo-v1` browser database. It never signs in or contacts the account, sync, or billing API. **Reset demo** restores the sample. **Start for real** deletes demo changes and opens the unchanged local workspace.
+The demo uses a separate browser database. It never signs in or contacts the account, sync, or billing API. **Reset demo** restores the sample. **Start for real** deletes demo changes and opens the unchanged local workspace.
+
+Use **Scan a part** to match a required part by barcode. Camera access begins only after **Use camera**. **Enter barcode instead** completes the same allocation without camera access. Camera frames stay on the device and are not sent.
 
 ## Accounts, sync, and billing
 
-Sign-in uses the Sociobot Microsoft Entra tenant. A saved firm workspace appears on another signed-in device. Repeated sync requests with the same operation ID apply once. Offline signed-in edits stay in the `parts-promise-cloud-v1` IndexedDB outbox. They retry after reconnect and back off after a temporary failure.
+Sign-in uses the Sociobot Microsoft Entra tenant. A saved firm workspace appears on another signed-in device. Repeated sync requests with the same operation ID apply once.
 
-Owners can record invitations by work email. The invitation becomes active when that email signs in. Technicians count as $8 monthly seats; the owner does not. The Workshop base is $39 per month.
+Offline signed-in edits stay in a browser database outbox. They survive reload, retry after reconnect, and back off after a temporary failure.
 
-Billing acceptance is explicitly operator-gated. Until the recurring product is registered in the approved billing gateway, the billing screen returns HTTP 424 and never starts a charge. Existing cloud records and export remain available when a recorded plan is unpaid; new cloud writes stop.
+Owners can record invitations by work email. The invitation becomes active when that email signs in. The firm plan costs $39 per month. Each active technician costs $8 per month. The owner is included in the base price without using a technician seat.
+
+Checkout is not available yet. No charge will start. Existing cloud records and export remain available when a recorded plan is unpaid. New cloud writes stop.
 
 ## Run and verify
 
@@ -37,25 +41,41 @@ npm run build
 npm run test:e2e -- --retries=0
 ```
 
-`npm run build` writes the web app to `dist/` and builds the release server. Each visitor-facing claim and its clean-sandbox command is listed in [`.factory/claims.json`](.factory/claims.json).
+`npm run build` writes the web app to `dist/` and builds the release server.
+
+### Claim checks
+
+See [`.factory/claims.json`](.factory/claims.json) for registered claim checks and their clean test commands.
 
 ## Data and API
 
-Local and demo records use IndexedDB. **Export workspace** downloads a versioned JSON backup. **Import workspace** previews JSON or CSV and reports invalid rows before saving.
+Local and demo records use a browser database. **Export workspace** downloads a versioned JSON backup. **Import workspace** previews JSON or CSV and reports invalid rows before saving.
 
-The Rust server exposes authenticated routes under `/api/v1`, `/health`, and protected `/metrics`. It validates Entra issuer, audience, tenant, signature, and token time. Requests derive the firm from the signed-in user's stable Entra object ID. Read, write, account, and payment paths use a persisted rate-limit bucket and return a positive `Retry-After` header when exceeded. Export uses the five-request critical bucket.
+The Rust server exposes authenticated routes under `/api/v1`, `/health`, and protected `/metrics`. It validates Entra issuer, audience, tenant, signature, and token time. Requests derive the firm from the signed-in user's stable Entra object ID.
 
-All server state, including the tenant workspace, rate-limit buckets, and generated metrics credential, is stored in `parts-promise.sqlite3` and a token file under `/data`. The deployed app has one replica and a durable `/data` mount. Its one-connection SQLite setup uses the `unix-none` VFS with the rollback journal because Azure Files does not provide SQLite's byte-range locks reliably. On a developer machine with no `/data` mount, the server falls back to a `data` directory beside its executable so it can still start with only `PORT`.
+Limited API responses include a positive `Retry-After` header. Export uses the five-request critical bucket.
+
+### Developer architecture note
+
+The browser databases use IndexedDB. Local data uses `parts-promise-live-v1`. Demo data uses `parts-promise-demo-v1`. Offline shared edits use the `parts-promise-cloud-v1` outbox.
+
+The deployment uses one replica and a durable `/data` directory. The server stores SQLite data and its generated metrics token there. Firm data remains available after a server restart.
 
 ## Deployment configuration
 
-The multi-stage image runs as a non-root user and listens on `PORT` (default `8080`). Build identity comes from `BUILD_SHA`. Its deployment contract is [`deploy.json`](deploy.json): `/data` is the durable data directory and the replica count is one.
+The multi-stage image runs as a non-root user and listens on `PORT`, which defaults to `8080`. Build identity comes from `BUILD_SHA`.
 
-Optional overrides are `ENTRA_TENANT_ID`, `ENTRA_TENANT_SUBDOMAIN`, `ENTRA_CLIENT_ID`, `METRICS_TOKEN`, `DATA_DIR`, `SOCIOBOT_BILLING_BASE_URL`, and `SOCIOBOT_BILLING_ACCEPTANCE`. No override is required to start.
+[`deploy.json`](deploy.json) sets `/data` as the durable data directory and sets one replica. No optional override is required to start.
+
+The factory deploys this container to <https://field-parts-promise.sociobot.in>.
 
 ## Privacy and legal
 
-The demo sends only same-origin GET requests and never asks for camera access. Account data is sent only to this product API and Microsoft during sign-in. See `/privacy` and `/terms` in the app.
+The normal demo flow sends only same-origin GET requests. It does not ask for camera access. Camera access requires the separate **Use camera** action.
+
+Account data is sent only to this product API and Microsoft during sign-in. A user does not enter a password or payment-card number in Parts Promise.
+
+See `/privacy` and `/terms` in the app.
 
 ## License
 

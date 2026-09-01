@@ -69,13 +69,52 @@ test('public routes load without console errors and internal links resolve', asy
   expect(pageErrors).toEqual([]);
 });
 
+test('the full first-screen promise and action fit at 390 by 844', async ({
+  page
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'mobile-chromium',
+    'First-screen geometry runs at the required phone viewport.'
+  );
+  await page.goto('/');
+  for (const copy of [
+    'Promise dates from parts held for the job',
+    'For small trade firms that need a parts check before agreeing a visit date.',
+    'Try it with sample data',
+    'Opens Riverside Dental with one missing pump.',
+    'The sample job and allocation work offline after your first visit.',
+    'Sample changes stay in this browser.',
+    'The firm plan is $39/month plus $8 per active technician.'
+  ]) {
+    await expect(page.getByText(copy, { exact: true })).toBeVisible();
+  }
+  const lastFact = await page
+    .getByText('The firm plan is $39/month plus $8 per active technician.', {
+      exact: true
+    })
+    .boundingBox();
+  expect(lastFact).not.toBeNull();
+  expect(lastFact!.y + lastFact!.height).toBeLessThanOrEqual(844);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth
+    )
+  ).toBe(true);
+});
+
 test('each route owns one correct metadata set', async ({ page }) => {
   const routes = [
     {
       path: '/',
-      title: 'Parts Promise — Hold parts for each job',
+      title: 'Parts Promise — Allocate parts to each job',
       description: 'Promise job dates from parts held for the job.',
       canonical: 'https://field-parts-promise.sociobot.in/'
+    },
+    {
+      path: '/jobs',
+      title: 'Jobs — Parts Promise',
+      description: 'Jobs and their parts status.',
+      canonical: 'https://field-parts-promise.sociobot.in/jobs'
     },
     {
       path: '/auth/callback',
@@ -100,7 +139,7 @@ test('each route owns one correct metadata set', async ({ page }) => {
     {
       path: '/settings/billing',
       title: 'Billing — Parts Promise',
-      description: 'Workshop plan and technician seat details.',
+      description: 'Firm plan and technician seat details.',
       canonical: 'https://field-parts-promise.sociobot.in/settings/billing'
     },
     {
@@ -252,6 +291,11 @@ test('each work form expands, becomes visible, receives focus, and restores its 
     'source-sheet',
     'Add a source'
   );
+  await checkDisclosure(
+    page.getByRole('button', { name: 'Scan a part' }),
+    'scan-sheet',
+    'Scan or enter a part barcode'
+  );
 });
 
 test('forward and browser-history route changes focus the new heading', async ({
@@ -368,7 +412,9 @@ test('demo deep link, history focus, keyboard allocation, and reset work on a ph
   await page.getByRole('link', { name: 'Review parts' }).press('Enter');
   await page.getByTestId('allocate-pump').press('Enter');
   await page.getByLabel(/Van 2/).check();
-  await page.getByRole('button', { name: 'Hold this quantity' }).press('Enter');
+  await page
+    .getByRole('button', { name: 'Allocate this quantity' })
+    .press('Enter');
   await expect(page.locator('.status-plate').first()).toContainText(
     'Parts in hand'
   );
@@ -518,7 +564,7 @@ test('all phone links and verifier-reported controls provide separated 44px touc
 
   await page.getByTestId('allocate-pump').click();
   await page.getByLabel(/Van 2/).check();
-  await page.getByRole('button', { name: 'Hold this quantity' }).click();
+  await page.getByRole('button', { name: 'Allocate this quantity' }).click();
   await assertTouchTarget(page.locator('.toast button'), 'toast dismiss');
 });
 
@@ -547,10 +593,10 @@ test('privacy copy states the registered network and camera behavior', async ({
     page.getByRole('heading', { name: 'Demo requests' })
   ).toBeVisible();
   await expect(page.locator('.legal-copy')).toContainText(
-    'The demo makes only same-origin GET requests'
+    'The normal sample flow makes only same-origin GET requests'
   );
   await expect(page.locator('.legal-copy')).toContainText(
-    'never asks for camera access'
+    'Camera access starts only after you choose Scan a part and then Use camera'
   );
 });
 
@@ -601,5 +647,5 @@ test('the current service worker controls the app without a pending update', asy
   expect(state.controlled).toBe(true);
   expect(state.installing).toBe(false);
   expect(state.waiting).toBe(false);
-  expect(state.caches).toEqual(['parts-promise-shell-v5']);
+  expect(state.caches).toEqual(['parts-promise-shell-v6']);
 });

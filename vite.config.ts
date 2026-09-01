@@ -3,6 +3,14 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [svelte()],
+  define: {
+    __BUILD_SHA__: JSON.stringify(
+      process.env.BUILD_SHA ??
+        process.env.GIT_SHA ??
+        process.env.SOURCE_COMMIT ??
+        'dev'
+    )
+  },
   server: {
     proxy: {
       '/api': 'http://127.0.0.1:4174',

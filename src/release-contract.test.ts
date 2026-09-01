@@ -179,10 +179,29 @@ describe('service worker update contract', () => {
   it('uses a new cache and checks the network before cached documents', () => {
     const worker = readFileSync('public/sw.js', 'utf8');
 
-    expect(worker).toContain("const CACHE = 'parts-promise-shell-v5'");
+    expect(worker).toContain("const CACHE = 'parts-promise-shell-v6'");
     expect(worker).toContain("request.mode === 'navigate'");
     expect(worker.indexOf('await fetch(request)')).toBeLessThan(
       worker.indexOf("request.mode === 'navigate' ? '/' : request")
     );
+  });
+
+  it('stamps build identity into both app and static 404 surfaces', () => {
+    const dockerfile = readFileSync('Dockerfile', 'utf8');
+    const packageJson = JSON.parse(readFileSync('package.json', 'utf8')) as {
+      scripts: Record<string, string>;
+    };
+    const fallback = readFileSync('public/404.html', 'utf8');
+
+    expect(dockerfile).toContain('ARG BUILD_SHA=dev');
+    expect(dockerfile).toContain('ENV BUILD_SHA=${BUILD_SHA}');
+    expect(packageJson.scripts['build:web']).toContain('stamp-build.mjs');
+    expect(fallback).toContain('Build __BUILD_SHORT_SHA__');
+    expect(fallback).toContain('title="__BUILD_SHA__"');
+    expect(fallback).toContain('<title>Page not found — Parts Promise</title>');
+    expect(fallback).toContain('rel="canonical"');
+    expect(fallback).toContain('name="description"');
+    expect(fallback).toContain('href="/privacy"');
+    expect(fallback).toContain('href="/terms"');
   });
 });

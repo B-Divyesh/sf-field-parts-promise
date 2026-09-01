@@ -57,10 +57,10 @@
   },
   {
     "id": "demo-feature-boundaries",
-    "claim": "The demo stays account-free and cannot sync, scan, place an order, or start payment.",
+    "claim": "The demo stays account-free and cannot sync, place a supplier order, or start payment.",
     "where": "demo banner, landing scope section, and demo guide",
     "test": "npm run test:e2e -- --grep @claim:demo-feature-boundaries",
-    "sandbox": "fresh browser context at /?demo=1; assert no sign-in, invite, scan, order, or checkout action exists"
+    "sandbox": "fresh browser context at /?demo=1; assert no sign-in, invite, supplier-order, or checkout action exists"
   },
   {
     "id": "indexeddb-local-storage",
@@ -71,10 +71,31 @@
   },
   {
     "id": "demo-network-privacy",
-    "claim": "The demo makes only same-origin GET requests and never asks for camera access.",
+    "claim": "The normal demo allocation and reset flow makes only same-origin GET requests and does not ask for camera access.",
     "where": "privacy page, demo guide, and README architecture section",
     "test": "npm run test:e2e -- --grep @claim:demo-network-privacy",
     "sandbox": "fresh browser context with a camera-call sentinel and full request log; allocate and reset the sample, then assert every request is a same-origin GET or HEAD and camera was never requested"
+  },
+  {
+    "id": "manual-barcode-allocation",
+    "claim": "Entering a barcode can find a required part and continue to its allocation.",
+    "where": "job barcode sheet, terms, and README",
+    "test": "npm run test:e2e -- --grep @claim:manual-barcode-allocation",
+    "sandbox": "fresh demo at /?demo=1; open Scan a part, choose Enter barcode instead, enter CP-19, assert the condensate pump match, allocate it from Van 2, and assert Parts in hand"
+  },
+  {
+    "id": "camera-barcode-privacy",
+    "claim": "Camera access starts only after Use camera, and barcode camera frames are not saved or sent.",
+    "where": "job barcode sheet, privacy page, README, and demo guide",
+    "test": "npm run test:e2e -- --grep @claim:camera-barcode-privacy",
+    "sandbox": "fresh demo with instrumented mediaDevices and BarcodeDetector; assert opening Scan a part makes no camera call, Use camera makes one call, CP-19 is matched, tracks stop, and no frame or cross-origin request is sent"
+  },
+  {
+    "id": "release-order-boundary",
+    "claim": "Parts Promise suggests reorders and records supplier evidence but does not place supplier orders.",
+    "where": "landing scope section, job reorder result, terms, README, and demo guide",
+    "test": "npm run test:e2e -- --grep @claim:release-order-boundary",
+    "sandbox": "fresh demo and server API; trigger the reorder suggestion, crawl all release actions for an order-placement control, assert no write request leaves the product, and assert the unimplemented supplier-order endpoint is unavailable"
   },
   {
     "id": "clear-local-records",
@@ -168,6 +189,13 @@
     "sandbox": "fresh authenticated context with request logging; open account data controls and assert same-origin requests, then use a signed-out context and assert the sign-in request targets the configured Entra tenant"
   },
   {
+    "id": "sensitive-input-boundary",
+    "claim": "A user does not enter a password or payment-card number in Parts Promise.",
+    "where": "privacy page and account/billing screens",
+    "test": "npm run test:e2e -- --grep @claim:sensitive-input-boundary",
+    "sandbox": "fresh browser contexts across all public, account, and billing routes; assert no password or payment-card input exists and inspect product request bodies for password or card fields"
+  },
+  {
     "id": "audit-log-recording",
     "claim": "Firm onboarding, invitation, and workspace sync actions appear in the firm's exported audit events.",
     "where": "privacy page, data controls, and README",
@@ -190,14 +218,14 @@
   },
   {
     "id": "subscription-checkout",
-    "claim": "Until an operator verifies the recurring Sociobot product, checkout stops before any charge and explains the operator action.",
-    "where": "billing settings",
+    "claim": "Checkout is not available yet. It is requested only after the firm owner presses Check checkout availability. No charge starts.",
+    "where": "landing pricing, billing settings, privacy, terms, and README",
     "test": "npm run test:e2e -- --grep @claim:subscription-checkout",
-    "sandbox": "authenticated test firm; call the pilot billing adapter while acceptance is operator-gated and assert HTTP 424 before any checkout request"
+    "sandbox": "authenticated test firm; log requests on the billing page, assert no checkout request before the explicit button, click it, and assert one POST ends with the plain unavailable and no-charge response"
   },
   {
     "id": "technician-seat-charge",
-    "claim": "Workshop costs $39 per month, each active technician costs $8 per month, and the owner is excluded from the technician seat total.",
+    "claim": "The firm plan costs $39 per month, each active technician costs $8 per month, and the owner is included in the base price without using a technician seat.",
     "where": "team and billing settings",
     "test": "npm run test:e2e -- --grep @claim:technician-seat-charge",
     "sandbox": "fresh landing page plus a clean test firm with one owner and one technician; assert the two stated prices and exactly one technician seat"
@@ -208,6 +236,20 @@
     "where": "billing settings, API error, and terms",
     "test": "npm run test:e2e -- --grep @claim:expired-plan-keeps-export",
     "sandbox": "clean test firm with one stored job and an unpaid recorded entitlement; assert sync returns 402 and export returns the job"
+  },
+  {
+    "id": "durable-runtime-storage",
+    "claim": "The one-replica deployment stores its SQLite database and generated metrics token in the configured data directory and retains firm data across a restart.",
+    "where": "README developer architecture and deployment sections",
+    "test": "npm run test:e2e -- --grep @claim:durable-runtime-storage",
+    "sandbox": "fresh temporary data directory; assert deploy.json specifies /data and one replica, start the compiled server, create a firm, assert the SQLite and token files, restart against the same directory, and read the firm again"
+  },
+  {
+    "id": "visible-build-identity",
+    "claim": "Every app route shows the server build identity in its footer.",
+    "where": "site footer",
+    "test": "npm run test:e2e -- --grep @claim:visible-build-identity",
+    "sandbox": "fresh browser context; read /health, visit every stable public route, and assert each footer shows the same short build value with the full build value available"
   },
   {
     "id": "container-runtime",

@@ -1,4 +1,4 @@
-const CACHE = 'parts-promise-shell-v5';
+const CACHE = 'parts-promise-shell-v6';
 const SHELL = [
   '/',
   '/manifest.webmanifest',

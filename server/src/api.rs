@@ -437,8 +437,8 @@ async fn checkout(State(state): State<ApiState>, headers: HeaderMap) -> Result<R
     if !state.billing_acceptance_enabled {
         return Ok(checkout_unavailable(
             "billing_acceptance_operator_gated",
-            "Checkout is waiting for an operator to verify the Dodo product and enabled factory product record.",
-            "No charge was made. The product operator must complete and verify registration before enabling checkout.",
+            "Checkout is not available yet.",
+            "No charge was made. Try again after Parts Promise announces checkout.",
             checkout_url,
         ));
     }
@@ -453,15 +453,13 @@ async fn checkout(State(state): State<ApiState>, headers: HeaderMap) -> Result<R
     if response.status() == StatusCode::NOT_FOUND {
         return Ok(checkout_unavailable(
             "billing_product_not_registered",
-            "Checkout is not available because the recurring product is not registered in this Sociobot gateway.",
-            "No charge was made. The product operator must complete registration before enabling checkout.",
+            "Checkout is not available yet.",
+            "No charge was made. Try again after Parts Promise announces checkout.",
             checkout_url,
         ));
     }
     if response.status().is_redirection() {
-        return Ok(
-            Json(json!({"checkout_url":checkout_url,"merchant":"Sociobot/Dodo"})).into_response(),
-        );
+        return Ok(Json(json!({"checkout_url":checkout_url})).into_response());
     }
     Err(ApiError::new(
         StatusCode::BAD_GATEWAY,

@@ -1,13 +1,60 @@
 import { spawn } from 'node:child_process';
 import { createHmac } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { createServer } from 'node:net';
-import { resolve } from 'node:path';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 
 import { AxeBuilder } from '@axe-core/playwright';
 import { chromium, expect, test } from '@playwright/test';
 
 const TEST_AUTH_SECRET = 'playwright-test-secret-at-least-32-bytes';
+
+async function reservePort() {
+  return new Promise<number>((resolvePort, reject) => {
+    const probe = createServer();
+    probe.once('error', reject);
+    probe.listen(0, '127.0.0.1', () => {
+      const address = probe.address();
+      if (!address || typeof address === 'string') {
+        probe.close();
+        reject(new Error('Could not reserve a local test port.'));
+        return;
+      }
+      probe.close((error) =>
+        error ? reject(error) : resolvePort(address.port)
+      );
+    });
+  });
+}
+
+async function waitForHealth(baseUrl: string) {
+  for (let attempt = 0; attempt < 80; attempt += 1) {
+    try {
+      const response = await fetch(`${baseUrl}/health`);
+      if (response.ok) return response;
+    } catch {
+      // The process may still be binding its listener.
+    }
+    await new Promise((resolveWait) => setTimeout(resolveWait, 50));
+  }
+  throw new Error(`Server did not become healthy at ${baseUrl}.`);
+}
+
+async function stopProcess(process: ReturnType<typeof spawn>) {
+  if (process.exitCode !== null) return;
+  process.kill('SIGTERM');
+  await new Promise<void>((resolveExit) => {
+    const timeout = setTimeout(() => {
+      process.kill('SIGKILL');
+      resolveExit();
+    }, 2_000);
+    process.once('exit', () => {
+      clearTimeout(timeout);
+      resolveExit();
+    });
+  });
+}
 
 function testToken(oid: string, expiresInSeconds = 600) {
   const now = Math.floor(Date.now() / 1000);
@@ -81,7 +128,7 @@ async function openPumpAllocation(page: import('@playwright/test').Page) {
   await page.getByTestId('allocate-pump').click();
   await page.getByLabel(/Van 2/).check();
   await page.getByLabel('Quantity held').fill('1');
-  await page.getByRole('button', { name: 'Hold this quantity' }).click();
+  await page.getByRole('button', { name: 'Allocate this quantity' }).click();
 }
 
 async function readWorkspace(
@@ -308,7 +355,7 @@ test('@claim:demo-reset-isolated Demo reset restores the fixture and leaving pre
   );
   await page.getByTestId('allocate-pump').click();
   await page.getByLabel(/Van 2/).check();
-  await page.getByRole('button', { name: 'Hold this quantity' }).click();
+  await page.getByRole('button', { name: 'Allocate this quantity' }).click();
   await expect(page.locator('.status-plate').first()).toContainText(
     'Parts in hand'
   );
@@ -382,7 +429,7 @@ test('@claim:workspace-backup-roundtrip A versioned backup restores every worksp
   await page.getByRole('link', { name: 'Review parts' }).click();
   await page.getByTestId('allocate-pump').click();
   await page.getByLabel(/Van 2/).check();
-  await page.getByRole('button', { name: 'Hold this quantity' }).click();
+  await page.getByRole('button', { name: 'Allocate this quantity' }).click();
   await expect(page.locator('.status-plate').first()).toContainText(
     'Parts in hand'
   );
@@ -639,7 +686,7 @@ test('@claim:offline-reload The sample allocation works after an offline reload'
     await page.getByTestId('allocate-pump').click();
     await page.getByLabel(/Van 2/).check();
     await page.getByLabel('Quantity held').fill('1');
-    await page.getByRole('button', { name: 'Hold this quantity' }).click();
+    await page.getByRole('button', { name: 'Allocate this quantity' }).click();
     await expect(page.locator('.status-plate').first()).toContainText(
       'Parts in hand'
     );
@@ -683,7 +730,7 @@ test('@claim:local-workspace-flow A local job can be created, sourced, allocated
   await page.getByRole('button', { name: 'Allocate part' }).click();
   await page.getByLabel(/Service van 4/).check();
   await page.getByLabel('Quantity held').fill('1');
-  await page.getByRole('button', { name: 'Hold this quantity' }).click();
+  await page.getByRole('button', { name: 'Allocate this quantity' }).click();
   await expect(page.locator('.status-plate').first()).toContainText(
     'Parts in hand'
   );
@@ -705,7 +752,7 @@ test('@claim:local-workspace-flow A local job can be created, sourced, allocated
   );
 });
 
-test('@claim:demo-feature-boundaries The demo stays account-free and cannot sync, scan, order, or pay', async ({
+test('@claim:demo-feature-boundaries The demo stays account-free and cannot sync, place an order, or pay', async ({
   page
 }, testInfo) => {
   test.skip(
@@ -714,13 +761,12 @@ test('@claim:demo-feature-boundaries The demo stays account-free and cannot sync
   );
   await page.goto('/');
   await expect(page.locator('.plain-language-section')).toContainText(
-    'does not scan barcodes or place supplier orders'
+    'does not place supplier orders'
   );
   await page.goto('/?demo=1');
   for (const unavailableAction of [
     /^sign in/i,
     /invite (?:a )?technician/i,
-    /scan (?:a )?barcode/i,
     /place (?:a )?supplier order/i,
     /checkout|buy now/i
   ]) {
@@ -778,7 +824,7 @@ test('@claim:indexeddb-local-storage Workspace records are written to the named 
   ).toBe(true);
 });
 
-test('@claim:demo-network-privacy The demo uses same-origin GET requests and never asks for camera access', async ({
+test('@claim:demo-network-privacy The normal demo flow stays same-origin and does not request the camera', async ({
   browser
 }, testInfo) => {
   test.skip(
@@ -831,6 +877,163 @@ test('@claim:demo-network-privacy The demo uses same-origin GET requests and nev
     )
   ).toBe(false);
   await context.close();
+});
+
+test('@claim:manual-barcode-allocation Manual barcode entry finds and allocates a required part', async ({
+  page
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  await page.goto('/?demo=1');
+  await page.getByRole('button', { name: 'Scan a part' }).click();
+  await page.getByRole('button', { name: 'Enter barcode instead' }).click();
+  await page.getByLabel('Barcode', { exact: true }).fill('CP-19');
+  await page.getByRole('button', { name: 'Find required part' }).click();
+  await expect(page.getByRole('status')).toContainText(
+    'Condensate pump matches CP-19'
+  );
+  await page.getByRole('button', { name: 'Allocate matched part' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Allocate Condensate pump' })
+  ).toBeFocused();
+  await page.getByLabel(/Van 2/).check();
+  await page.getByLabel('Quantity held').fill('1');
+  await page.getByRole('button', { name: 'Allocate this quantity' }).click();
+  await expect(page.locator('.status-plate').first()).toContainText(
+    'Parts in hand'
+  );
+});
+
+test('@claim:camera-barcode-privacy Camera starts only on request and frames stay on the device', async ({
+  browser
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const context = await browser.newContext();
+  await context.addInitScript(() => {
+    const state = window as unknown as {
+      cameraCalls: number;
+      cameraStops: number;
+      BarcodeDetector?: new () => {
+        detect: () => Promise<Array<{ rawValue: string }>>;
+      };
+    };
+    state.cameraCalls = 0;
+    state.cameraStops = 0;
+    Object.defineProperty(navigator, 'mediaDevices', {
+      configurable: true,
+      value: {
+        getUserMedia: async () => {
+          state.cameraCalls += 1;
+          const stream = new MediaStream();
+          Object.defineProperty(stream, 'getTracks', {
+            value: () => [
+              {
+                stop: () => {
+                  state.cameraStops += 1;
+                }
+              }
+            ]
+          });
+          return stream;
+        }
+      }
+    });
+    state.BarcodeDetector = class {
+      async detect() {
+        return [{ rawValue: 'CP-19' }];
+      }
+    };
+  });
+  const page = await context.newPage();
+  const requests: Array<{
+    method: string;
+    url: string;
+    body: string | null;
+  }> = [];
+  page.on('request', (request) =>
+    requests.push({
+      method: request.method(),
+      url: request.url(),
+      body: request.postData()
+    })
+  );
+  await page.goto('/?demo=1');
+  await page.getByRole('button', { name: 'Scan a part' }).click();
+  expect(
+    await page.evaluate(
+      () => (window as unknown as { cameraCalls: number }).cameraCalls
+    )
+  ).toBe(0);
+  await page.getByRole('button', { name: 'Use camera' }).click();
+  await expect(page.getByRole('status')).toContainText(
+    'Condensate pump matches CP-19'
+  );
+  expect(
+    await page.evaluate(() => ({
+      calls: (window as unknown as { cameraCalls: number }).cameraCalls,
+      stops: (window as unknown as { cameraStops: number }).cameraStops
+    }))
+  ).toEqual({ calls: 1, stops: 1 });
+  const origin = new URL(page.url()).origin;
+  expect(
+    requests.every(
+      (request) =>
+        new URL(request.url).origin === origin &&
+        ['GET', 'HEAD'].includes(request.method) &&
+        request.body === null
+    )
+  ).toBe(true);
+  const demoData = JSON.stringify(
+    await readWorkspace(page, 'parts-promise-demo-v1')
+  );
+  expect(demoData).not.toMatch(/camera|frame|image\/|data:image/i);
+  await context.close();
+});
+
+test('@claim:release-order-boundary The release never places a supplier order', async ({
+  page,
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const requests: Array<{ method: string; url: string }> = [];
+  page.on('request', (candidate) =>
+    requests.push({ method: candidate.method(), url: candidate.url() })
+  );
+  await openPumpAllocation(page);
+  await expect(page.getByTestId('reorder-suggestion')).toContainText(
+    'No supplier order has been placed.'
+  );
+  await expect(
+    page.getByRole('button', { name: /place (?:a )?supplier order/i })
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole('link', { name: /place (?:a )?supplier order/i })
+  ).toHaveCount(0);
+  for (const route of [
+    '/',
+    '/jobs',
+    '/onboarding',
+    '/settings/team',
+    '/settings/billing',
+    '/settings/data',
+    '/privacy',
+    '/terms',
+    '/not-on-this-drawing'
+  ]) {
+    await page.goto(route);
+    await expect(
+      page.getByRole('button', { name: /place (?:a )?supplier order/i })
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole('link', { name: /place (?:a )?supplier order/i })
+    ).toHaveCount(0);
+  }
+  expect(
+    requests.filter((entry) => !['GET', 'HEAD'].includes(entry.method))
+  ).toEqual([]);
+  const missingEndpoint = await request.post('/api/v1/supplier-orders', {
+    data: { part: 'CP-19' }
+  });
+  expect([404, 405]).toContain(missingEndpoint.status());
 });
 
 test('@claim:clear-local-records Browser site-data removal clears the live workspace', async ({
@@ -1325,6 +1528,61 @@ test('@claim:account-service-boundaries Signed-in data uses this API and sign-in
   await signedOut.close();
 });
 
+test('@claim:sensitive-input-boundary Parts Promise never asks for a password or card number', async ({
+  browser,
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const token = testToken(`sensitive-input-${Date.now()}-${Math.random()}`);
+  await apiOnboard(
+    request,
+    token,
+    'Sensitive Input Firm',
+    undefined,
+    '198.51.100.137'
+  );
+  const context = await browser.newContext();
+  await context.addInitScript((value) => {
+    sessionStorage.setItem('parts-promise-e2e-token', value);
+  }, token);
+  const page = await context.newPage();
+  const requestBodies: string[] = [];
+  page.on('request', (candidate) => {
+    const body = candidate.postData();
+    if (body) requestBodies.push(body);
+  });
+  for (const route of [
+    '/',
+    '/jobs',
+    '/onboarding',
+    '/settings/team',
+    '/settings/billing',
+    '/settings/data',
+    '/privacy',
+    '/terms',
+    '/not-on-this-drawing'
+  ]) {
+    await page.goto(route);
+    await expect(page.locator('main')).toBeVisible();
+    await expect(
+      page.locator(
+        'input[type="password"], input[autocomplete^="cc-"], input[name*="card"]'
+      )
+    ).toHaveCount(0);
+  }
+  await expect(page.locator('body')).not.toContainText(
+    /enter (?:your )?(?:password|card number)/i
+  );
+  expect(requestBodies.join('\n')).not.toMatch(
+    /password|card_number|card-number|cvv|cvc/i
+  );
+  await page.goto('/privacy');
+  await expect(page.locator('.legal-copy')).toContainText(
+    'You do not enter a password or card number in Parts Promise.'
+  );
+  await context.close();
+});
+
 test('@claim:audit-log-recording Firm export includes auditable onboarding, invitation, and sync events', async ({
   request
 }, testInfo) => {
@@ -1474,7 +1732,8 @@ test('@claim:response-policy Export has a five-request bucket and metrics expose
     expect(body).toContain(metric);
 });
 
-test('@claim:subscription-checkout Operator gating stops checkout before any charge', async ({
+test('@claim:subscription-checkout Checkout is explicit and stops before a charge', async ({
+  browser,
   request
 }, testInfo) => {
   test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
@@ -1486,19 +1745,44 @@ test('@claim:subscription-checkout Operator gating stops checkout before any cha
     undefined,
     '198.51.100.71'
   );
-  const response = await request.post('/api/v1/billing/checkout', {
-    headers: {
-      authorization: `Bearer ${token}`,
-      'x-forwarded-for': '198.51.100.72'
-    },
-    data: {}
+  const context = await browser.newContext();
+  await context.addInitScript((value) => {
+    sessionStorage.setItem('parts-promise-e2e-token', value);
+  }, token);
+  const page = await context.newPage();
+  const checkoutRequests: import('@playwright/test').Request[] = [];
+  page.on('request', (candidate) => {
+    if (new URL(candidate.url()).pathname === '/api/v1/billing/checkout')
+      checkoutRequests.push(candidate);
   });
+  await page.goto('/settings/billing');
+  await expect(
+    page.getByRole('heading', { name: 'Plan and technician seats' })
+  ).toBeVisible();
+  expect(checkoutRequests).toHaveLength(0);
+  const responsePromise = page.waitForResponse(
+    (candidate) =>
+      new URL(candidate.url()).pathname === '/api/v1/billing/checkout'
+  );
+  await page
+    .getByRole('button', { name: 'Check checkout availability' })
+    .click();
+  const response = await responsePromise;
+  expect(checkoutRequests).toHaveLength(1);
+  expect(checkoutRequests[0].method()).toBe('POST');
   expect(response.status()).toBe(424);
   expect(await response.json()).toMatchObject({
     code: 'billing_acceptance_operator_gated',
+    message: 'Checkout is not available yet.',
+    action:
+      'No charge was made. Try again after Parts Promise announces checkout.',
     checkout_url:
       'https://pilot-api.sociobot.in/api/v1/products/field-parts-promise/checkout'
   });
+  await expect(page.getByRole('alert')).toContainText(
+    'Checkout is not available yet.'
+  );
+  await context.close();
 });
 
 test('@claim:technician-seat-charge Pricing and the seat total count technicians but exclude the owner', async ({
@@ -1508,7 +1792,7 @@ test('@claim:technician-seat-charge Pricing and the seat total count technicians
   test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
   await page.goto('/');
   await expect(
-    page.getByText('Workshop is $39/month plus $8 per active technician.')
+    page.getByText('The firm plan is $39/month plus $8 per active technician.')
   ).toBeVisible();
   const token = testToken(`seat-count-${Date.now()}-${Math.random()}`);
   const technicianOid = `field-tech-${Date.now()}-${Math.random()}`;
@@ -1587,6 +1871,109 @@ test('@claim:expired-plan-keeps-export An unpaid firm can export while cloud wri
   );
 });
 
+test('@claim:durable-runtime-storage Runtime files and firm state survive a server restart', async ({}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  test.setTimeout(20_000);
+  const binary = resolve(
+    process.cwd(),
+    'server/target/debug/parts-promise-api'
+  );
+  expect(existsSync(binary)).toBe(true);
+  const dataDirectory = mkdtempSync(
+    join(tmpdir(), 'parts-promise-runtime-claim-')
+  );
+  const deploy = JSON.parse(readFileSync('deploy.json', 'utf8'));
+  expect(deploy.deploy).toEqual({ data_dir: '/data', replicas: 1 });
+  const token = testToken(`restart-${Date.now()}-${Math.random()}`);
+  let server: ReturnType<typeof spawn> | undefined;
+  const start = async () => {
+    const port = await reservePort();
+    server = spawn(binary, [], {
+      cwd: process.cwd(),
+      env: {
+        PORT: String(port),
+        STATIC_DIR: 'dist',
+        DATA_DIR: dataDirectory,
+        AUTH_TEST_SECRET: TEST_AUTH_SECRET,
+        SOCIOBOT_BILLING_BASE_URL: 'https://pilot-api.sociobot.in'
+      },
+      stdio: 'pipe'
+    });
+    const base = `http://127.0.0.1:${port}`;
+    await waitForHealth(base);
+    return base;
+  };
+  try {
+    const firstBase = await start();
+    const created = await fetch(`${firstBase}/api/v1/onboarding`, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${token}`,
+        'content-type': 'application/json',
+        'x-forwarded-for': '198.51.100.201'
+      },
+      body: JSON.stringify({
+        organization_name: 'Restart Evidence Firm',
+        locale: 'en-US',
+        time_zone: 'UTC',
+        migrate_local_workspace: false,
+        local_item_count: 0,
+        workspace: null
+      })
+    });
+    expect(created.status, await created.text()).toBe(200);
+    await stopProcess(server!);
+    server = undefined;
+    expect(existsSync(join(dataDirectory, 'parts-promise.sqlite3'))).toBe(true);
+    expect(existsSync(join(dataDirectory, 'metrics.token'))).toBe(true);
+
+    const secondBase = await start();
+    const restored = await fetch(`${secondBase}/api/v1/bootstrap`, {
+      headers: {
+        authorization: `Bearer ${token}`,
+        'x-forwarded-for': '198.51.100.202'
+      }
+    });
+    const restoredBody = await restored.json();
+    expect(restored.status, JSON.stringify(restoredBody)).toBe(200);
+    expect(restoredBody).toMatchObject({
+      onboarding_required: false,
+      organization_name: 'Restart Evidence Firm'
+    });
+  } finally {
+    if (server) await stopProcess(server);
+    rmSync(dataDirectory, { recursive: true, force: true });
+  }
+});
+
+test('@claim:visible-build-identity Every app route shows the server build identity', async ({
+  page,
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const health = await request.get('/health');
+  expect(health.ok(), await health.text()).toBe(true);
+  const buildSha = (await health.json()).build_sha as string;
+  for (const route of [
+    '/',
+    '/demo',
+    '/jobs',
+    '/auth/callback',
+    '/onboarding',
+    '/settings/team',
+    '/settings/billing',
+    '/settings/data',
+    '/privacy',
+    '/terms',
+    '/not-on-this-drawing'
+  ]) {
+    await page.goto(route);
+    const build = page.locator('.site-footer small');
+    await expect(build).toHaveText(`Build ${buildSha.slice(0, 8)}`);
+    await expect(build).toHaveAttribute('title', buildSha);
+  }
+});
+
 test('@claim:container-runtime The production server starts with only PORT and serves its identity and app', async ({}, testInfo) => {
   test.skip(
     testInfo.project.name !== 'chromium',
@@ -1634,7 +2021,7 @@ test('@claim:container-runtime The production server starts with only PORT and s
     expect(health?.status).toBe(200);
     expect(await health?.json()).toMatchObject({
       status: 'ok',
-      build_sha: 'dev',
+      build_sha: process.env.BUILD_SHA ?? 'dev',
       database: 'sqlite'
     });
     expect((await fetch(base)).status).toBe(200);

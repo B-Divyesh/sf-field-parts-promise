@@ -1,6 +1,6 @@
 # Parts Promise venture plan
 
-Status: M2 repair implementation complete; acceptance remains blocked only by recurring billing registration outside this repository.
+Status: M2 repair implementation complete; the M3 barcode path is implemented. Recurring billing registration remains outside this repository.
 
 Product: `field-parts-promise` · artifact: offline-first PWA with a backend
 
@@ -40,7 +40,7 @@ Instrumentation is privacy-respecting. The server may count coarse product event
 
 There is one named subscription with two transparent recurring price components:
 
-- **Workshop base — $39/month per firm.** Includes the owner workspace, job cards, allocation, supplier evidence, offline use, export, and one owner/admin account.
+- **Firm plan — $39/month per firm.** Includes the owner workspace, job cards, allocation, supplier evidence, offline use, export, and one owner/admin account.
 - **Technician seat — $8/month per active technician.** Each invited non-owner who can update field records consumes one seat. Owners who also work in the field do not consume an extra seat.
 
 The public sample-data demo is always free and requires no account. There is no promised free trial in this plan; add one only after pricing research and billing support. Accessible operation, safety warnings, privacy controls, and data export are never gated. Billing goes only through the Sociobot billing API, with Dodo as merchant of record; the repository never embeds Dodo credentials or SDKs. The recurring product and seat price must be registered in Sociobot test mode before M2. If the current Sociobot product endpoint cannot express recurring seat quantity, M2 stops at the adapter boundary and records the operator dependency rather than integrating Dodo directly or charging the wrong amount.
@@ -217,7 +217,7 @@ Every page has one `<h1>`, a real heading outline, header/nav/main/footer landma
 
 | Route | Page title | H1 / purpose |
 | --- | --- | --- |
-| `/` | `Parts Promise — Hold parts for each job` | `Promise dates from parts held for the job` |
+| `/` | `Parts Promise — Allocate parts to each job` | `Promise dates from parts held for the job` |
 | `/?demo=1` | `Demo — Parts Promise` | Opens seeded job card after one action or directly on reload; demo banner persists. |
 | `/jobs` | `Jobs — Parts Promise` | `Jobs and their parts status` |
 | `/jobs/:jobId` | `<Job number> parts — Parts Promise` | Job site/name; only one H1. |
@@ -283,7 +283,7 @@ Scope:
 
 - Add Entra CIAM PKCE, API JWT validation, organization/onboarding/membership roles, SQLite schema, bootstrap/pull/push sync, idempotency, and audit events.
 - Migrate an explicit live-local workspace into a new organization only after showing the item count and receiving confirmation; demo data can never migrate.
-- Wire Sociobot test-mode recurring checkout for **Workshop base** plus the exact active technician-seat quantity, entitlement reconciliation, grace behavior, cancellation/refund handling, and billing settings. Verify the API contract first as described above.
+- Wire Sociobot test-mode recurring checkout for the **Firm plan** plus the exact active technician-seat quantity, entitlement reconciliation, grace behavior, cancellation/refund handling, and billing settings. Verify the API contract first as described above.
 - Apply endpoint validation, CORS/security headers, all rate limits, structured logs, `/health`, protected `/metrics`, daily backups, restore drill, and the non-root Docker image.
 
 Claims to append when M2 starts: `entra-sign-in`, `tenant-data-isolation`, `two-device-sync`, `idempotent-sync`, `subscription-checkout`, `technician-seat-charge`, and `expired-plan-keeps-export`. Identity tests use a test-token issuer/harness plus one staging Entra smoke; billing uses Sociobot test mode and recorded webhook fixtures, never a mocked “paid” UI alone.
@@ -300,7 +300,7 @@ Recurring billing is still the only M2 acceptance blocker. On 2026-08-29 both pi
 
 ### M3 — Field scanning, supplier watch, and conflict resolution
 
-Status: planned. Goal: complete jobs two and three without hiding uncertain or conflicting evidence.
+Status: barcode path implemented; remaining supplier-watch work is planned. Goal: complete jobs two and three without hiding uncertain or conflicting evidence.
 
 Routes/screens added: `/scan`, `/suppliers`, `/supplier-orders/:orderId`, `/conflicts`; job card gains fitted/moved actions and conflict badges.
 
@@ -376,5 +376,5 @@ M5 DoD: the PWA installs and upgrades without losing queued work; a pilot can im
 - No runtime AI. Manual/supplier evidence is the trustworthy product input.
 - The design is original hand-authored vector work; no stock art or runtime font/image CDN.
 - The M1 demo is fully local and isolated. It proves product claims without accounts, network, or paid services.
-- Before M2 acceptance, the operator must register the Sociobot recurring product with the exact Workshop base and Technician seat prices, then provide/confirm the recurring seat and event contract exposed by Sociobot.
+- Before M2 acceptance, the operator must register the Sociobot recurring product with the exact Firm plan and technician-seat prices, then provide or confirm the recurring seat and event contract exposed by Sociobot.
 - Builders must not touch deployment, DNS, or billing infrastructure from this repository.
