@@ -178,16 +178,7 @@ async fn security_headers(request: Request, next: Next) -> Response {
         "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src https://sociobotcustomers.ciamlogin.com; form-action 'self' https://sociobotcustomers.ciamlogin.com; img-src 'self' data: https://*.msauthimages.net; font-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self' https://sociobotcustomers.ciamlogin.com https://pilot-api.sociobot.in https://api.sociobot.in; manifest-src 'self'; worker-src 'self'"
     ));
     if is_success || is_html_not_found {
-        let cache_policy = if path == "/sw.js" {
-            "no-cache, max-age=0, must-revalidate"
-        } else if is_fingerprinted_asset(&path) {
-            "public, max-age=31536000, immutable"
-        } else if path == "/" || path.ends_with(".html") || !path.contains('.') {
-            "no-cache, max-age=0, must-revalidate"
-        } else {
-            "public, max-age=3600"
-        };
-        headers.insert(CACHE_CONTROL, HeaderValue::from_static(cache_policy));
+        headers.insert(CACHE_CONTROL, HeaderValue::from_static(cache_policy(&path)));
     }
     response
 }
@@ -202,10 +193,29 @@ fn is_fingerprinted_asset(path: &str) -> bool {
     let Some((stem, _)) = file_name.rsplit_once('.') else {
         return false;
     };
-    let Some((_, fingerprint)) = stem.rsplit_once('-') else {
-        return false;
-    };
-    fingerprint.len() >= 8 && fingerprint.bytes().all(|byte| byte.is_ascii_alphanumeric())
+    // Vite's default eight-character hash uses URL-safe Base64. The `-` in
+    // that alphabet is valid inside a hash, so inspecting only the text after
+    // the last filename separator mistakes `index-DsS9kk-o.js` for an
+    // unversioned asset. Try every separator and accept an exact Vite hash.
+    stem.match_indices('-').any(|(index, _)| {
+        let fingerprint = &stem[index + 1..];
+        fingerprint.len() == 8
+            && fingerprint
+                .bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
+    })
+}
+
+fn cache_policy(path: &str) -> &'static str {
+    if path == "/sw.js" {
+        "no-cache, max-age=0, must-revalidate"
+    } else if is_fingerprinted_asset(path) {
+        "public, max-age=31536000, immutable"
+    } else if path == "/" || path.ends_with(".html") || !path.contains('.') {
+        "no-cache, max-age=0, must-revalidate"
+    } else {
+        "public, max-age=3600"
+    }
 }
 
 fn is_document_path(path: &str) -> bool {
@@ -302,6 +312,20 @@ mod tests {
         assert_eq!(body["build_sha"], "test-sha");
         assert_eq!(body["database"], "sqlite");
         assert_eq!(body["auth"], "ready");
+    }
+
+    #[test]
+    fn vite_hashes_with_url_safe_hyphens_get_immutable_cache_policy() {
+        assert_eq!(
+            cache_policy("/assets/index-DsS9kk-o.js"),
+            "public, max-age=31536000, immutable"
+        );
+        assert!(is_fingerprinted_asset("/assets/index-DsS9kk-o.js"));
+
+        assert_eq!(
+            cache_policy("/assets/blueprint-hero.svg"),
+            "public, max-age=3600"
+        );
     }
 
     #[tokio::test]
