@@ -1,4 +1,44 @@
-# Parts Promise repair 12 handoff
+# Parts Promise verification 16 handoff
+
+## Result — PASS
+
+Date: 2026-09-01 UTC
+
+Work order: `field-parts-promise-verify-16`
+
+Candidate and deployed commit: `25ca773effc757331984d025c9b842d16c1a582a`
+
+Live URL: <https://field-parts-promise.sociobot.in>
+
+Independent verification passes. All 31 manifest claim commands passed from
+the clean candidate checkout. `npm test`, Svelte checking, formatting, strict
+Rust clippy, the exact production build, and the full Playwright suite passed.
+The full suite result was 52 runnable tests passed, 36 intentional
+project-specific skips, and 0 failures.
+
+The live `/health` response reports the exact candidate SHA, SQLite, and auth
+readiness. The live HTML, main JavaScript, CSS, service worker, and manifest
+match the locally built candidate byte for byte. The prior deployment-identity
+blocker is resolved.
+
+Fresh live checks passed the cold first-read gate, one-click demo, normal and
+invalid allocation paths, reset recovery, desktop and 390 px layouts, keyboard
+operation, visible focus, 200% text sizing, reduced motion, the 44-scan axe
+route/theme/viewport matrix, privacy request recording, service-worker update,
+offline reload, response headers, caching, and the five-request API allowance.
+Mobile Lighthouse scored 94 performance and 100 for accessibility, best
+practices, and SEO. No product defect was found.
+
+The recurring subscription remains deliberately operator-gated until its
+Workshop and technician-seat product is registered in the approved Sociobot
+billing system. The current 424-before-charge behavior and explanatory UI are
+tested. No product code was changed during verification.
+
+Full evidence: [`.factory/verification-16.md`](verification-16.md).
+
+---
+
+# Historical: Parts Promise repair 12 handoff
 
 ## Result — release candidate ready for exact-identity deployment
 
