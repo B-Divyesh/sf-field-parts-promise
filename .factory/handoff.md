@@ -1,85 +1,75 @@
-# Parts Promise perfection-loop round 5 handoff
+# Parts Promise verification 17 handoff
 
 Date: 2026-09-01 UTC
 
-Work order: `field-parts-promise-polish-5`
+Work order: `field-parts-promise-verify-17`
+
+Candidate and live build: `bb90e8c401eb069028f5f2d4bc82bd654206c668`
 
 Live URL: <https://field-parts-promise.sociobot.in>
-Implementation commit: `d08d6f05611a20f306552aa5378fb502b915c7c1`
 
-Deployed source commit: `f3b33148f1b5d5e56da8a245ebb7affc73d154d6`
+## Result — FAIL
 
-Deployment build: ACR run `ch1q5`
+Do not accept this candidate yet. All 37 declared claims, local release gates,
+core product flows, accessibility checks, privacy checks, offline behavior,
+identity checks, and backend allowance checks passed. The primary hashed
+JavaScript asset does not receive the required immutable cache policy.
 
-## Result — PASS
+## Release-blocking finding
 
-The round-5 repair is complete and deployed. Every review-5 finding and every earlier finding ID is mapped in [`.factory/polish-5.md`](polish-5.md). No review finding remains open.
+`FPP-17-01` (low severity):
+`/assets/index-DsS9kk-o.js` returns
+`Cache-Control: public, max-age=3600`. A fingerprinted production asset must
+return `public, max-age=31536000, immutable`.
 
-## What changed
+The source check uses the text after the final hyphen as the fingerprint. That
+reduces `DsS9kk-o` to `o` and sends this asset through the one-hour branch.
+The current CSS and sign-in chunks receive the correct immutable policy.
 
-- Added a real barcode path to each job: **Scan a part**, explicit **Use camera**, manual **Enter barcode instead**, local matching, and continuation into allocation. Camera tracks stop after a match or exit; frames are not stored or sent.
-- Restored one reader-facing storage term, **browser database**. IndexedDB and exact namespace names now appear only in a labelled developer note.
-- Removed unsupported provider, merchant, and refund statements. Checkout copy now states the tested release behavior: it is unavailable and no charge starts.
-- Registered and tested barcode privacy, manual barcode allocation, release-wide supplier-order absence, sensitive-input behavior, durable runtime files/restart, visible build identity, and explicit checkout initiation.
-- Rewrote the long README sentences, replaced “Workshop” with **Firm plan**, clarified owner pricing, and separated product explanation from claim-check instructions.
-- Standardized the home title on **allocate**, completed 404 metadata/legal links, labelled the external footer destination, and exposed the server build on every route and the static 404.
-- Updated the service-worker cache version, self-camera Permissions Policy, catalog description, demo guide, copy audit, and plan status.
+## Verification summary
 
-## Verification
+- 37 of 37 exact claim commands passed.
+- `npm ci` passed with 0 reported vulnerabilities.
+- `npm test` passed: 22 Vitest and 14 Rust tests.
+- `npm run check`, `npm run format:check`, and strict Rust warning checks
+  passed.
+- The production build passed and produced `dist/` and the optimized server.
+- Full Playwright run: 59 passed, 43 intentional skips, 0 failed.
+- Live `/health` reports the exact candidate SHA, SQLite, and ready identity.
+- The production web files match the deployed files byte for byte.
+- The one-click sample completed on desktop and 390 px mobile.
+- Live route/theme matrix: 44 axe analyses, 0 serious or critical findings.
+- Live mobile Lighthouse: 94 performance, 100 accessibility, 100 best
+  practices, 100 SEO; LCP 2.0 s and CLS 0.
+- Live API allowances: read 40/2 s, write 10/2 s, critical 5/60 s. Requests
+  after each allowance returned 429 with a positive `Retry-After`.
+- The service worker updated cleanly and the sample reloaded and allocated
+  offline.
 
-Fresh clone: `/tmp/field-parts-promise-clean.XGvdxQ`, detached at the implementation commit.
+Full evidence and reproduction details are in
+[`.factory/verification-17.md`](verification-17.md).
 
-- All 37 exact commands in `.factory/claims.json`: passed individually; each had one expected duplicate-project skip.
-- `npm test`: 22 Vitest and 14 Rust/API tests passed.
-- `npm run check`: 0 errors and 0 warnings.
-- `npm run format:check`: passed.
-- `cargo clippy --manifest-path server/Cargo.toml --locked --all-targets -- -D warnings`: passed.
-- `BUILD_SHA=d08d6f0 npm run build`: passed and produced `dist/` plus the release server.
-- Bundle: main JS 39.61 KB gzip; deferred sign-in JS 62.19 KB gzip; CSS 4.24 KB gzip.
-- `BUILD_SHA=d08d6f0 npm run test:e2e -- --retries=0`: 59 passed, 43 intentional project skips, 0 failures.
-- The browser suite includes 44 route/theme/viewport Axe scans, keyboard and focus checks, 390×844 geometry, 200% text, reduced motion, privacy request recording, offline reload, service-worker update, and real container behavior.
-- `/opt/fleet/lib/verify-url.sh` against the local production server passed with zero console errors. Evidence: [verify.json](evidence/polish-5/local-verify/verify.json).
-- Mobile Lighthouse: performance 95, accessibility 100, best practices 96, SEO 100; LCP 2.3 s, CLS 0, TBT 150 ms. Evidence: [lighthouse-local.json](evidence/polish-5/lighthouse-local.json).
-- Visual evidence: [mobile home](evidence/polish-5/home-mobile.png), [desktop home](evidence/polish-5/home-desktop.png), [mobile demo](evidence/polish-5/demo-mobile.png), and [mobile barcode sheet](evidence/polish-5/barcode-mobile.png).
-
-## Run locally
+## How to verify
 
 ```sh
 npm ci
 npm test
 npm run check
 npm run format:check
-npm run build
-npm run test:e2e -- --retries=0
+cargo clippy --manifest-path server/Cargo.toml --locked --all-targets -- -D warnings
+BUILD_SHA=bb90e8c401eb069028f5f2d4bc82bd654206c668 npm run build
+BUILD_SHA=bb90e8c401eb069028f5f2d4bc82bd654206c668 npm run test:e2e -- --retries=0
+EXPECTED_BUILD_SHA=bb90e8c401eb069028f5f2d4bc82bd654206c668 npm run verify:live-identity
+curl -I https://field-parts-promise.sociobot.in/assets/index-DsS9kk-o.js
 ```
 
-Open `http://127.0.0.1:4173/?demo=1` for the isolated sample.
+## Next step
 
-## Deployment contract
+Correct the hashed-asset filename check, add a regression test for a Vite hash
+containing a hyphen, deploy, and rerun the cache-header and identity checks.
 
-The container starts with only `PORT`, defaults to 8080, runs as non-root, and reports build identity at `/health`. SQLite and the generated metrics token use `/data`; `deploy.json` pins one replica. No raw model, payment-provider, or application secret is shipped.
-
-The factory deployment reused the existing `sf-field-parts-promise-data` mount at `/data` and changed only the target product. No other product or forbidden shared service was accessed.
-
-## Cold live verification
-
-- `/health`: HTTP 200, build `f3b33148f1b5d5e56da8a245ebb7affc73d154d6`, SQLite, auth ready.
-- Exact identity check: `EXPECTED_BUILD_SHA=f3b33148f1b5d5e56da8a245ebb7affc73d154d6 npm run verify:live-identity` passed.
-- Factory URL verifier: correct title, `lang=en`, one H1, main landmark, image alternatives, labelled buttons, and zero console errors.
-- Cold 390×844 audit: all first-screen copy and facts fit without horizontal overflow. The external destination and deployed build ID are visible.
-- Nine stable routes returned 200 with route-specific titles, one H1, one description, and one canonical. The unknown route returned HTTP 404 with its own title and legal links.
-- One-click demo, manual `CP-19` barcode allocation, reorder-without-order, and reset passed against production.
-- Mocked live camera check confirmed zero camera requests on **Scan a part**, one request on **Use camera**, track shutdown after matching, and no frame or cross-origin request.
-- Offline reload passed after the first live demo visit.
-- Ten live Axe runs across light/dark and home/demo/privacy/terms/404 had zero serious or critical findings.
-- Live burst: 100 requests produced 60 HTTP 429 responses with `Retry-After: 2`.
-- Live headers include CSP, HSTS, `nosniff`, strict referrer policy, and `camera=(self)`. Hashed JavaScript is immutable; the service worker is no-cache.
-- Live mobile Lighthouse: performance 99, accessibility 100, best practices 100, SEO 100; LCP 1.8 s, CLS 0, TBT 30 ms.
-
-Evidence is under [`.factory/evidence/polish-5/live/`](evidence/polish-5/live/).
-
-## Known gaps and operator action
-
-Checkout intentionally remains unavailable because no verified recurring firm-plus-seat contract is active. This is a tested release boundary, not an unresolved review finding. The UI and API stop before a charge, and the product makes no provider or refund promise. Enabling checkout later requires a separate verified billing registration and new claim evidence.
-
-If the production Entra callback is not already registered, the operator must register `https://field-parts-promise.sociobot.in/auth/callback` on the shared SPA application. The local and demo workflows do not depend on that registration.
+Checkout remains intentionally unavailable until the recurring firm and seat
+product is registered in the approved Sociobot billing system. If the callback
+is not already registered, the operator must register
+`https://field-parts-promise.sociobot.in/auth/callback` on the shared SPA
+application.
