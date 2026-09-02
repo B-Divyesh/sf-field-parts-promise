@@ -39,7 +39,7 @@
     "claim": "Demo changes reset to the bundled sample, and every demo exit discards them before reopening the unchanged live local workspace.",
     "where": "M1 demo banner, privacy page, demo guide, and README",
     "test": "npm run test:e2e -- --grep @claim:demo-reset-isolated",
-    "sandbox": "fresh browser context; create a live job, change RD-1042, leave by wordmark and browser Back, assert the demo database is deleted each time, then use the confirmed exit and assert the live job survives unchanged"
+    "sandbox": "fresh browser context; create uniquely named live and demo jobs, assert neither identifier appears in the opposite mode DOM, leave by wordmark and browser Back, assert the demo database is deleted each time, then use the confirmed exit and assert the live job survives unchanged"
   },
   {
     "id": "offline-reload",
@@ -135,9 +135,9 @@
   {
     "id": "entra-sign-in",
     "claim": "Account sign-in uses the shared Sociobot Microsoft Entra tenant, and invalid or expired tokens are rejected.",
-    "where": "header, onboarding, and API authentication",
+    "where": "header, onboarding, API authentication, and README",
     "test": "npm run test:e2e -- --grep @claim:entra-sign-in",
-    "sandbox": "fresh browser context; assert the authorization request tenant, client, and callback, then send an expired test-issuer token and assert 401 plus WWW-Authenticate"
+    "sandbox": "fresh browser context; assert the authorization request tenant, client, and callback, then send expired, wrong-signature, wrong-issuer, wrong-audience, and wrong-tenant test tokens and assert 401 plus WWW-Authenticate for each"
   },
   {
     "id": "tenant-data-isolation",
@@ -211,10 +211,10 @@
   },
   {
     "id": "response-policy",
-    "claim": "Export uses a five-request critical bucket with a positive Retry-After, and protected metrics expose latency, status, conflict, queue-age, and notification signals.",
+    "claim": "Export allows five requests per minute, then returns 429 with a positive Retry-After. Protected metrics expose latency, status, conflict, queue-age, and notification signals.",
     "where": "README operations section and milestone handoff",
     "test": "npm run test:e2e -- --grep @claim:response-policy",
-    "sandbox": "clean test firm; exceed the export burst, assert 429 and Retry-After >= 1, authenticate to metrics, and assert every documented operations series"
+    "sandbox": "clean test firm; assert five export requests succeed and the sixth returns 429 with Retry-After between 1 and 60 seconds, then authenticate to metrics and assert every documented operations series"
   },
   {
     "id": "subscription-checkout",

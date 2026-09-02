@@ -12,6 +12,8 @@ The demo uses a separate browser database. Its normal allocation and reset flow 
 
 M2 account code does not run in demo mode. The demo does not open Microsoft sign-in, call `/api/v1`, check billing, or copy records into a firm.
 
+Switching modes clears notices, open forms, draft values, conflicts, and other workspace-derived interface state before the other workspace renders. In-flight live sync responses cannot replace demo data.
+
 - **Reset demo** writes the bundled fixture back into the demo database.
 - **Start for real** confirms the boundary, deletes the demo database, and opens `/jobs` with live records unchanged.
 - The wordmark and browser Back also delete the demo database before leaving. Re-entry starts from the bundled fixture.

@@ -1,6 +1,6 @@
 # Copy audit
 
-Audited: 2026-09-01 for perfection-loop round 5. Counts split on whitespace. Hyphenated terms, prices, and build values count as one word.
+Audited: 2026-09-02 for perfection-loop round 6. Counts split on whitespace. Hyphenated terms, prices, and build values count as one word.
 
 ## Landing page
 
@@ -15,6 +15,7 @@ Every visible landing-page sentence, heading, label, action, and image alternati
 | Privacy | 1 | Pass: navigation destination |
 | Sign in | 2 | Pass: action |
 | Use dark theme | 3 | Pass: action |
+| Parts Promise — Allocate parts to each job | 7 | Pass: page title and route announcement |
 | Allocate parts to a job | 5 | Pass: task label |
 | Promise dates from parts held for the job | 8 | Pass: job-first H1 |
 | For small trade firms that need a parts check before agreeing a visit date. | 14 | Pass: audience and result |
@@ -41,16 +42,16 @@ Every visible landing-page sentence, heading, label, action, and image alternati
 | Allocate it from a van or warehouse source. | 8 | Pass: instruction |
 | Review the visit date | 4 | Pass: step heading |
 | Read the reason before you agree the visit date. | 9 | Pass: instruction |
-| What this release does not do | 7 | Pass: scope heading |
+| What this release does not do | 6 | Pass: scope heading |
 | It does not place supplier orders. | 6 | Pass: `release-order-boundary` |
 | The sample stays separate from signed-in firm workspaces. | 8 | Pass: `demo-transfer-isolated` |
 | Read how local data works | 5 | Pass: action |
 | Firm plan | 2 | Pass: section label |
-| Pay for the firm plan and active technicians | 8 | Pass: pricing heading |
+| Firm plan pricing | 3 | Pass: pricing heading without an unavailable payment action |
 | The firm plan costs $39 each month. | 7 | Pass: `technician-seat-charge` |
 | Each active technician costs $8 each month. | 7 | Pass: `technician-seat-charge` |
-| The owner is included in the $39 base price and does not use a technician seat. | 15 | Pass: `technician-seat-charge` |
-| Checkout is not available yet. | 6 | Pass: `subscription-checkout` |
+| The owner is included in the $39 base price and does not use a technician seat. | 16 | Pass: `technician-seat-charge` |
+| Checkout is not available yet. | 5 | Pass: `subscription-checkout` |
 | No charge will start. | 4 | Pass: `subscription-checkout` |
 | Set up your firm | 4 | Pass: action |
 | Promise job dates from parts held for the job. | 9 | Pass: footer description |
@@ -60,7 +61,7 @@ Every visible landing-page sentence, heading, label, action, and image alternati
 
 No landing sentence exceeds 22 words. No landing copy contains a banned word.
 
-## Review-5 copy checks
+## Review 5 and 6 copy checks
 
 - Reader-facing storage copy uses **browser database**. Exact IndexedDB names appear only under README’s **Developer architecture note**.
 - **Firm plan** replaces the unexplained Workshop label.
@@ -70,6 +71,9 @@ No landing sentence exceeds 22 words. No landing copy contains a banned word.
 - The privacy page describes the tested behavior: users do not enter passwords or card numbers in Parts Promise.
 - The barcode flow names both explicit actions: **Use camera** and **Enter barcode instead**.
 - The footer exposes the build and labels the Param Factory destination as external.
+- The pricing heading describes the price without suggesting that checkout is available.
+- The README explains the export limit as five requests per minute and names the wait response.
+- The README says the server starts without extra environment settings.
 
 An automated README sentence scan found no sentence above 22 words. A source scan found no banned plain-words term in the README, landing copy, demo guide, or catalog description.
 

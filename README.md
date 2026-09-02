@@ -53,7 +53,7 @@ Local and demo records use a browser database. **Export workspace** downloads a 
 
 The Rust server exposes authenticated routes under `/api/v1`, `/health`, and protected `/metrics`. It validates Entra issuer, audience, tenant, signature, and token time. Requests derive the firm from the signed-in user's stable Entra object ID.
 
-Limited API responses include a positive `Retry-After` header. Export uses the five-request critical bucket.
+Limited API responses include a positive `Retry-After` header. Export allows five requests per minute, then tells the client how long to wait.
 
 ### Developer architecture note
 
@@ -65,7 +65,7 @@ The deployment uses one replica and a durable `/data` directory. The server stor
 
 The multi-stage image runs as a non-root user and listens on `PORT`, which defaults to `8080`. Build identity comes from `BUILD_SHA`.
 
-[`deploy.json`](deploy.json) sets `/data` as the durable data directory and sets one replica. No optional override is required to start.
+[`deploy.json`](deploy.json) sets `/data` as the durable data directory and sets one replica. The server starts without extra environment settings.
 
 The factory deploys this container to <https://field-parts-promise.sociobot.in>.
 

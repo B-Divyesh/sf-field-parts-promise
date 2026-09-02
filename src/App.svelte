@@ -181,6 +181,7 @@
   let scanVideo: HTMLVideoElement | undefined;
   let scanStream: MediaStream | null = null;
   let scanDetectionTimer: number | undefined;
+  let workspaceModeGeneration = 0;
 
   type HistoryPosition = { scrollX: number; scrollY: number };
 
@@ -235,6 +236,7 @@
       void syncRoute(true, historyPosition(event.state));
     const updateOnline = () => {
       online = navigator.onLine;
+      if (demo) return;
       if (online) {
         if (idToken && !cloud)
           void loadCloudBootstrap().catch((error) => {
@@ -282,7 +284,14 @@
   });
 
   function getPage(path: string, inDemo: boolean): Page {
-    if ((path === '/' && inDemo) || path === '/demo') return 'job';
+    if (inDemo) {
+      if (path === '/' || path === '/demo') return 'job';
+      if (path === '/jobs') return 'jobs';
+      if (path.startsWith('/jobs/')) return 'job';
+      if (path === '/privacy') return 'privacy';
+      if (path === '/terms') return 'terms';
+      return 'not-found';
+    }
     if (path === '/') return 'home';
     if (path === '/jobs') return 'jobs';
     if (path.startsWith('/jobs/')) return 'job';
@@ -429,18 +438,26 @@
   }
 
   async function loadCurrentWorkspace() {
+    const requestedMode = mode();
+    const requestedGeneration = workspaceModeGeneration;
     loading = true;
     storageError = '';
     try {
-      workspace = await loadWorkspace(mode());
+      const loadedWorkspace = await loadWorkspace(requestedMode);
+      if (
+        requestedGeneration === workspaceModeGeneration &&
+        requestedMode === mode()
+      )
+        workspace = loadedWorkspace;
     } catch (error) {
+      if (requestedGeneration !== workspaceModeGeneration) return;
       workspace = null;
       storageError =
         error instanceof Error
           ? error.message
           : 'Local storage could not be opened.';
     } finally {
-      loading = false;
+      if (requestedGeneration === workspaceModeGeneration) loading = false;
     }
   }
 
@@ -549,7 +566,9 @@
   }
 
   async function loadCloudBootstrap() {
+    const requestedGeneration = workspaceModeGeneration;
     const next = (await apiRequest('/api/v1/bootstrap')) as CloudBootstrap;
+    if (demo || requestedGeneration !== workspaceModeGeneration) return;
     cloud = next;
     cloudVersion = next.version ?? null;
     if (!next.onboarding_required && next.workspace) {
@@ -565,6 +584,7 @@
 
   async function flushCloudOutbox() {
     if (
+      demo ||
       syncInFlight ||
       !online ||
       !idToken ||
@@ -573,6 +593,7 @@
       syncConflict
     )
       return;
+    const requestedGeneration = workspaceModeGeneration;
     const operation = await readCloudOperation(cloud.organization_id);
     if (!operation) {
       queuedCount = 0;
@@ -590,6 +611,7 @@
           workspace: operation.workspace
         })
       });
+      if (demo || requestedGeneration !== workspaceModeGeneration) return;
       cloudVersion = result.version;
       workspace = result.workspace;
       await saveWorkspace('live', result.workspace);
@@ -738,6 +760,7 @@
 
   async function exportFirmData() {
     dataMessage = '';
+    routeAnnouncement = '';
     try {
       const exported = await apiRequest('/api/v1/export');
       downloadText(
@@ -827,6 +850,65 @@
     );
   }
 
+  function clearWorkspaceTransientUi() {
+    stopCamera();
+    resetDialog?.close();
+    exitDialog?.close();
+    workspace = null;
+    toast = '';
+    storageError = '';
+    formError = '';
+    syncNotice = '';
+    syncConflict = null;
+    teamMessage = '';
+    billingMessage = '';
+    dataMessage = '';
+    showAddJob = false;
+    showEditJob = false;
+    showPartForm = false;
+    showSourceForm = false;
+    showSupplierForm = false;
+    showImportForm = false;
+    showScanForm = false;
+    allocationRequirementId = '';
+    allocationSourceId = '';
+    importPreview = null;
+    importFileName = '';
+    scanMode = 'choice';
+    barcodeValue = '';
+    scanMessage = '';
+    scanMatchedRequirementId = '';
+    jobNumber = '';
+    jobSite = '';
+    jobDate = '';
+    jobPart = '';
+    jobSku = '';
+    jobQuantity = 1;
+    jobUnit = 'each';
+    partDescription = '';
+    partSku = '';
+    partQuantity = 1;
+    partUnit = 'each';
+    sourceName = '';
+    sourceType = 'van';
+    sourcePart = '';
+    sourceQuantity = 1;
+    sourceMinimum = 0;
+    supplierReference = '';
+    supplierDate = '';
+    supplierConfidence = 'Confirmed by supplier';
+    organizationName = '';
+    migrateLocalWorkspace = false;
+    onboardingConfirmed = false;
+    inviteEmail = '';
+    inviteRole = 'technician';
+    deletionConfirmation = '';
+    if (syncRetryTimer !== undefined) window.clearTimeout(syncRetryTimer);
+    syncRetryTimer = undefined;
+    syncRetryAttempt = 0;
+    queuedCount = 0;
+  }
+
   async function syncRoute(
     shouldFocus: boolean,
     restorePosition?: HistoryPosition
@@ -839,10 +921,21 @@
     const nextDemo =
       new URLSearchParams(window.location.search).get('demo') === '1' ||
       nextPath === '/demo';
+    const modeChanged = nextDemo !== demo;
+    if (modeChanged) {
+      workspaceModeGeneration += 1;
+      clearWorkspaceTransientUi();
+      loading = true;
+    }
     if (demo && !nextDemo) await deleteWorkspace('demo');
     currentPath = nextPath;
     demo = nextDemo;
     await loadCurrentWorkspace();
+    if (modeChanged && !demo) {
+      const pending = await readLatestCloudOperation();
+      queuedCount = pending ? 1 : 0;
+      if (online) void flushCloudOutbox();
+    }
     if (shouldFocus) await focusPageHeading(Boolean(restorePosition));
     if (restorePosition)
       window.scrollTo(restorePosition.scrollX, restorePosition.scrollY);
@@ -865,8 +958,9 @@
 
   async function focusPageHeading(preventScroll = false) {
     await tick();
-    document.querySelector<HTMLElement>('main h1')?.focus({ preventScroll });
-    routeAnnouncement = metadata.title;
+    const heading = document.querySelector<HTMLElement>('main h1');
+    heading?.focus({ preventScroll });
+    routeAnnouncement = heading?.textContent?.trim() || document.title;
   }
 
   async function revealSheet(name: SheetName, trigger: HTMLElement) {
@@ -1591,11 +1685,11 @@
 
 {#if !online}
   <aside class="offline-plate" role="status">
-    Offline — changes are kept on this device.{queuedCount > 0
+    Offline — changes are kept on this device.{!demo && queuedCount > 0
       ? ` ${queuedCount} change is queued for reconnect.`
       : ''}
   </aside>
-{:else if syncNotice}
+{:else if !demo && syncNotice}
   <aside class="offline-plate" role="status">{syncNotice}</aside>
 {/if}
 
@@ -1604,7 +1698,7 @@
     {routeAnnouncement || metadata.title}
   </p>
 
-  {#if syncConflict}
+  {#if !demo && syncConflict}
     <section class="conflict-sheet" aria-labelledby="sync-conflict-title">
       <p class="drawing-label">Two revisions need a choice</p>
       <h2 id="sync-conflict-title">Resolve the shared workspace conflict</h2>
@@ -1733,7 +1827,7 @@
     </section>
     <section class="pricing-section" aria-labelledby="pricing-title">
       <p class="drawing-label">Firm plan</p>
-      <h2 id="pricing-title">Pay for the firm plan and active technicians</h2>
+      <h2 id="pricing-title">Firm plan pricing</h2>
       <p>
         The firm plan costs $39 each month. Each active technician costs $8 each
         month. The owner is included in the $39 base price and does not use a

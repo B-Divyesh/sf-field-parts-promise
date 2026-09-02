@@ -175,6 +175,22 @@ describe('public claims contract', () => {
   });
 });
 
+describe('round 6 public wording', () => {
+  it('describes unavailable checkout and runtime settings in plain words', () => {
+    const app = readFileSync('src/App.svelte', 'utf8');
+    const readme = readFileSync('README.md', 'utf8');
+
+    expect(app).toContain('<h2 id="pricing-title">Firm plan pricing</h2>');
+    expect(app).not.toContain('Pay for the firm plan');
+    expect(readme).toContain('Export allows five requests per minute');
+    expect(readme).toContain(
+      'The server starts without extra environment settings.'
+    );
+    expect(readme).not.toContain('critical bucket');
+    expect(readme).not.toContain('optional override');
+  });
+});
+
 describe('service worker update contract', () => {
   it('uses a new cache and checks the network before cached documents', () => {
     const worker = readFileSync('public/sw.js', 'utf8');

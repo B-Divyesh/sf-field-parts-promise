@@ -545,9 +545,11 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn jwt_rejects_wrong_audience_issuer_and_tenant() {
+    async fn jwt_rejects_wrong_signature_audience_issuer_and_tenant() {
         let (app, auth, _) = test_app().await;
+        let wrong_signer = AuthVerifier::test(b"a-different-signing-secret-for-this-test");
         let invalid_tokens = [
+            wrong_signer.issue_test_token("wrong-signature", 600),
             auth.issue_test_token_with(
                 "wrong-audience",
                 600,
@@ -585,6 +587,10 @@ mod tests {
                 .await
                 .unwrap();
             assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+            assert_eq!(
+                response.headers().get("www-authenticate").unwrap(),
+                "Bearer"
+            );
         }
     }
 

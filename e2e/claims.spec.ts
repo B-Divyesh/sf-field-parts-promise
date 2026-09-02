@@ -56,16 +56,27 @@ async function stopProcess(process: ReturnType<typeof spawn>) {
   });
 }
 
-function testToken(oid: string, expiresInSeconds = 600) {
+type TestTokenOverrides = {
+  audience?: string;
+  issuer?: string;
+  tenantId?: string;
+  signingSecret?: string;
+};
+
+function testToken(
+  oid: string,
+  expiresInSeconds = 600,
+  overrides: TestTokenOverrides = {}
+) {
   const now = Math.floor(Date.now() / 1000);
   const header = Buffer.from(
     JSON.stringify({ alg: 'HS256', typ: 'JWT' })
   ).toString('base64url');
   const payload = Buffer.from(
     JSON.stringify({
-      aud: '25c704f4-465a-47af-80ab-2c489466b697',
-      iss: 'https://test.parts-promise.invalid',
-      tid: '35c6fe40-0ec0-46b6-98c6-213ad4de6650',
+      aud: overrides.audience ?? '25c704f4-465a-47af-80ab-2c489466b697',
+      iss: overrides.issuer ?? 'https://test.parts-promise.invalid',
+      tid: overrides.tenantId ?? '35c6fe40-0ec0-46b6-98c6-213ad4de6650',
       oid,
       name: `Test ${oid}`,
       email: `${oid}@example.test`,
@@ -74,7 +85,10 @@ function testToken(oid: string, expiresInSeconds = 600) {
     })
   ).toString('base64url');
   const unsigned = `${header}.${payload}`;
-  const signature = createHmac('sha256', TEST_AUTH_SECRET)
+  const signature = createHmac(
+    'sha256',
+    overrides.signingSecret ?? TEST_AUTH_SECRET
+  )
     .update(unsigned)
     .digest('base64url');
   return `${unsigned}.${signature}`;
@@ -327,16 +341,39 @@ test('@claim:demo-reset-isolated Demo reset restores the fixture and leaving pre
   });
   await page.goto('/jobs');
   await page.getByRole('button', { name: 'Add a job' }).click();
-  await page.getByLabel('Job number').fill('LIVE-1');
-  await page.getByLabel('Site or customer name').fill('Existing Live Customer');
+  const liveToken = `LIVE-ONLY-${Date.now()}`;
+  const demoToken = `DEMO-ONLY-${Date.now()}`;
+  await page.getByLabel('Job number').fill(liveToken);
+  await page
+    .getByLabel('Site or customer name')
+    .fill(`Existing Live Customer ${liveToken}`);
   await page.getByLabel('Visit date').fill('2026-09-20');
   await page.getByLabel('Required part', { exact: true }).fill('Fuse');
   await page.getByLabel('Quantity', { exact: true }).fill('1');
   await page.getByRole('button', { name: 'Save job and part' }).click();
-  await expect(page.locator('h1')).toHaveText('Existing Live Customer parts');
-  await openPumpAllocation(page);
+  await expect(page.locator('h1')).toHaveText(
+    `Existing Live Customer ${liveToken} parts`
+  );
+  await expect(page.locator('.toast')).toContainText(liveToken);
+  await page.getByRole('link', { name: 'Parts Promise' }).click();
+  await page.getByRole('link', { name: 'Try it with sample data' }).click();
+  await expect(page).toHaveURL(/\?demo=1$/);
+  await expect(page.locator('body')).not.toContainText(liveToken);
+  await page
+    .getByLabel('Main navigation')
+    .getByRole('link', { name: 'Jobs' })
+    .click();
+  await page.getByRole('button', { name: 'Add a job' }).click();
+  await page.getByLabel('Job number').fill(demoToken);
+  await page.getByLabel('Site or customer name').fill('Sample Only Customer');
+  await page.getByLabel('Visit date').fill('2026-09-21');
+  await page.getByLabel('Required part', { exact: true }).fill('Sample Fuse');
+  await page.getByLabel('Quantity', { exact: true }).fill('1');
+  await page.getByRole('button', { name: 'Save job and part' }).click();
+  await expect(page.locator('.toast')).toContainText(demoToken);
   await page.getByRole('link', { name: 'Parts Promise' }).click();
   await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator('body')).not.toContainText(demoToken);
   await expect
     .poll(() =>
       page.evaluate(async () =>
@@ -389,8 +426,12 @@ test('@claim:demo-reset-isolated Demo reset restores the fixture and leaving pre
     .click();
   await expect(page).toHaveURL(/\/jobs$/);
   await expect(
-    page.getByRole('heading', { name: 'Existing Live Customer' })
+    page.getByRole('heading', {
+      name: `Existing Live Customer ${liveToken}`
+    })
   ).toBeVisible();
+  await expect(page.locator('body')).not.toContainText(demoToken);
+  await expect(page.locator('body')).toContainText(liveToken);
   await expect(page.locator('.toast')).toContainText(
     'Your local workspace is open. Sample changes were discarded.'
   );
@@ -1071,20 +1112,37 @@ test('@claim:clear-local-records Browser site-data removal clears the live works
   ).toBeVisible();
 });
 
-test('@claim:entra-sign-in Sign-in uses Sociobot CIAM and expired tokens fail', async ({
+test('@claim:entra-sign-in Sign-in uses Sociobot CIAM and rejects every invalid token property', async ({
   page,
   request
 }, testInfo) => {
   test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
-  const expired = testToken(`expired-${Date.now()}`, -120);
-  const rejected = await request.get('/api/v1/bootstrap', {
-    headers: {
-      authorization: `Bearer ${expired}`,
-      'x-forwarded-for': '198.51.100.31'
-    }
-  });
-  expect(rejected.status()).toBe(401);
-  expect(rejected.headers()['www-authenticate']).toBe('Bearer');
+  const suffix = `${Date.now()}-${Math.random()}`;
+  const invalidTokens = [
+    testToken(`expired-${suffix}`, -120),
+    testToken(`wrong-signature-${suffix}`, 600, {
+      signingSecret: 'different-playwright-signing-secret'
+    }),
+    testToken(`wrong-issuer-${suffix}`, 600, {
+      issuer: 'https://wrong-issuer.parts-promise.invalid'
+    }),
+    testToken(`wrong-audience-${suffix}`, 600, {
+      audience: 'wrong-client-id'
+    }),
+    testToken(`wrong-tenant-${suffix}`, 600, {
+      tenantId: '00000000-0000-0000-0000-000000000000'
+    })
+  ];
+  for (const [index, token] of invalidTokens.entries()) {
+    const rejected = await request.get('/api/v1/bootstrap', {
+      headers: {
+        authorization: `Bearer ${token}`,
+        'x-forwarded-for': `198.51.100.${31 + index}`
+      }
+    });
+    expect(rejected.status()).toBe(401);
+    expect(rejected.headers()['www-authenticate']).toBe('Bearer');
+  }
   await page.goto('/onboarding');
   const authorization = page.waitForRequest(
     (candidate) =>
@@ -1687,7 +1745,7 @@ test('@claim:firm-deletion-hold Owners can schedule and cancel a 14-day firm del
   await context.close();
 });
 
-test('@claim:response-policy Export has a five-request bucket and metrics expose operations signals', async ({
+test('@claim:response-policy Export allows five requests per minute and metrics expose operations signals', async ({
   request
 }, testInfo) => {
   test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
@@ -1699,21 +1757,23 @@ test('@claim:response-policy Export has a five-request bucket and metrics expose
     undefined,
     '198.51.100.161'
   );
-  let limited: import('@playwright/test').APIResponse | undefined;
-  for (let attempt = 0; attempt < 8; attempt += 1) {
+  const responses: import('@playwright/test').APIResponse[] = [];
+  for (let attempt = 0; attempt < 6; attempt += 1) {
     const response = await request.get('/api/v1/export', {
       headers: {
         authorization: `Bearer ${token}`,
         'x-forwarded-for': '198.51.100.162'
       }
     });
-    if (response.status() === 429) {
-      limited = response;
-      break;
-    }
+    responses.push(response);
   }
-  expect(limited).toBeDefined();
-  expect(Number(limited!.headers()['retry-after'])).toBeGreaterThanOrEqual(1);
+  expect(responses.slice(0, 5).map((response) => response.status())).toEqual([
+    200, 200, 200, 200, 200
+  ]);
+  expect(responses[5].status()).toBe(429);
+  const retryAfter = Number(responses[5].headers()['retry-after']);
+  expect(retryAfter).toBeGreaterThanOrEqual(1);
+  expect(retryAfter).toBeLessThanOrEqual(60);
   const metrics = await request.get('/metrics', {
     headers: {
       authorization: 'Bearer playwright-metrics-secret',
