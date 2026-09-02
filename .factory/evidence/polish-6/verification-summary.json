@@ -1,0 +1,52 @@
+{
+  "implementationCommit": "54fe70e7d87134f88bb3780b6368c1bd3803cf88",
+  "cleanClone": "/tmp/field-parts-promise-polish6-clean.sUv3wv/clone",
+  "claimCommands": {
+    "total": 37,
+    "passed": 37,
+    "failed": 0,
+    "details": "clean-claims/summary.json"
+  },
+  "fullCleanCloneSuite": {
+    "vitest": { "passed": 23, "failed": 0 },
+    "rust": { "passed": 15, "failed": 0 },
+    "svelteCheck": "pass: 0 errors and 0 warnings",
+    "prettier": "pass",
+    "clippy": "pass with -D warnings",
+    "npmAudit": "pass: 0 vulnerabilities",
+    "build": "pass: dist produced",
+    "playwright": { "passed": 59, "failed": 0, "intentionalProjectSkips": 43 }
+  },
+  "builtAssets": {
+    "initialJavaScriptGzipKb": 39.89,
+    "cssGzipKb": 4.24,
+    "deferredSignInJavaScriptGzipKb": 62.19
+  },
+  "localAudit": {
+    "checksPassed": 72,
+    "checksFailed": 0,
+    "details": "local/audit.json"
+  },
+  "liveAudit": {
+    "url": "https://field-parts-promise.sociobot.in",
+    "checkedAt": "2026-09-02T00:52:09.793Z",
+    "checksPassed": 72,
+    "checksFailed": 0,
+    "factoryVerifierLoadMs": 603,
+    "consoleErrors": 0,
+    "unknownRouteStatus": 404,
+    "malformedTokenStatus": 401,
+    "malformedTokenAuthenticateHeader": "Bearer",
+    "details": "live/audit.json"
+  },
+  "liveLighthouse": {
+    "performance": 99,
+    "accessibility": 100,
+    "bestPractices": 100,
+    "seo": 100,
+    "lcpSeconds": 1.8,
+    "cls": 0,
+    "totalBlockingTimeMs": 50,
+    "details": "live/lighthouse.json"
+  }
+}

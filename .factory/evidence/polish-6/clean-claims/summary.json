@@ -1,0 +1,267 @@
+{
+  "commit": "54fe70e7d87134f88bb3780b6368c1bd3803cf88",
+  "cleanClone": "/tmp/field-parts-promise-polish6-clean.sUv3wv/clone",
+  "passed": 37,
+  "failed": 0,
+  "results": [
+    {
+      "id": "sample-fixture",
+      "command": "npm run test:e2e -- --grep @claim:sample-fixture",
+      "status": "PASS",
+      "seconds": 78.5,
+      "log": "sample-fixture.log"
+    },
+    {
+      "id": "promise-status-from-allocation",
+      "command": "npm run test:e2e -- --grep @claim:promise-status-from-allocation",
+      "status": "PASS",
+      "seconds": 14.7,
+      "log": "promise-status-from-allocation.log"
+    },
+    {
+      "id": "allocation-keeps-source",
+      "command": "npm run test:e2e -- --grep @claim:allocation-keeps-source",
+      "status": "PASS",
+      "seconds": 13.3,
+      "log": "allocation-keeps-source.log"
+    },
+    {
+      "id": "supplier-quantity-conserved",
+      "command": "npm run test:e2e -- --grep @claim:supplier-quantity-conserved",
+      "status": "PASS",
+      "seconds": 13.8,
+      "log": "supplier-quantity-conserved.log"
+    },
+    {
+      "id": "reorder-after-allocation",
+      "command": "npm run test:e2e -- --grep @claim:reorder-after-allocation",
+      "status": "PASS",
+      "seconds": 13.1,
+      "log": "reorder-after-allocation.log"
+    },
+    {
+      "id": "demo-reset-isolated",
+      "command": "npm run test:e2e -- --grep @claim:demo-reset-isolated",
+      "status": "PASS",
+      "seconds": 14.6,
+      "log": "demo-reset-isolated.log"
+    },
+    {
+      "id": "offline-reload",
+      "command": "npm run test:e2e -- --grep @claim:offline-reload",
+      "status": "PASS",
+      "seconds": 13,
+      "log": "offline-reload.log"
+    },
+    {
+      "id": "local-workspace-flow",
+      "command": "npm run test:e2e -- --grep @claim:local-workspace-flow",
+      "status": "PASS",
+      "seconds": 14.5,
+      "log": "local-workspace-flow.log"
+    },
+    {
+      "id": "demo-feature-boundaries",
+      "command": "npm run test:e2e -- --grep @claim:demo-feature-boundaries",
+      "status": "PASS",
+      "seconds": 13.4,
+      "log": "demo-feature-boundaries.log"
+    },
+    {
+      "id": "indexeddb-local-storage",
+      "command": "npm run test:e2e -- --grep @claim:indexeddb-local-storage",
+      "status": "PASS",
+      "seconds": 13.8,
+      "log": "indexeddb-local-storage.log"
+    },
+    {
+      "id": "demo-network-privacy",
+      "command": "npm run test:e2e -- --grep @claim:demo-network-privacy",
+      "status": "PASS",
+      "seconds": 13.5,
+      "log": "demo-network-privacy.log"
+    },
+    {
+      "id": "manual-barcode-allocation",
+      "command": "npm run test:e2e -- --grep @claim:manual-barcode-allocation",
+      "status": "PASS",
+      "seconds": 13.9,
+      "log": "manual-barcode-allocation.log"
+    },
+    {
+      "id": "camera-barcode-privacy",
+      "command": "npm run test:e2e -- --grep @claim:camera-barcode-privacy",
+      "status": "PASS",
+      "seconds": 13.4,
+      "log": "camera-barcode-privacy.log"
+    },
+    {
+      "id": "release-order-boundary",
+      "command": "npm run test:e2e -- --grep @claim:release-order-boundary",
+      "status": "PASS",
+      "seconds": 14.9,
+      "log": "release-order-boundary.log"
+    },
+    {
+      "id": "clear-local-records",
+      "command": "npm run test:e2e -- --grep @claim:clear-local-records",
+      "status": "PASS",
+      "seconds": 13.4,
+      "log": "clear-local-records.log"
+    },
+    {
+      "id": "workspace-backup-roundtrip",
+      "command": "npm run test:e2e -- --grep @claim:workspace-backup-roundtrip",
+      "status": "PASS",
+      "seconds": 13.7,
+      "log": "workspace-backup-roundtrip.log"
+    },
+    {
+      "id": "csv-import-validation",
+      "command": "npm run test:e2e -- --grep @claim:csv-import-validation",
+      "status": "PASS",
+      "seconds": 13.3,
+      "log": "csv-import-validation.log"
+    },
+    {
+      "id": "demo-transfer-isolated",
+      "command": "npm run test:e2e -- --grep @claim:demo-transfer-isolated",
+      "status": "PASS",
+      "seconds": 13.9,
+      "log": "demo-transfer-isolated.log"
+    },
+    {
+      "id": "csv-template-download",
+      "command": "npm run test:e2e -- --grep @claim:csv-template-download",
+      "status": "PASS",
+      "seconds": 13.2,
+      "log": "csv-template-download.log"
+    },
+    {
+      "id": "entra-sign-in",
+      "command": "npm run test:e2e -- --grep @claim:entra-sign-in",
+      "status": "PASS",
+      "seconds": 13.7,
+      "log": "entra-sign-in.log"
+    },
+    {
+      "id": "tenant-data-isolation",
+      "command": "npm run test:e2e -- --grep @claim:tenant-data-isolation",
+      "status": "PASS",
+      "seconds": 12.4,
+      "log": "tenant-data-isolation.log"
+    },
+    {
+      "id": "two-device-sync",
+      "command": "npm run test:e2e -- --grep @claim:two-device-sync",
+      "status": "PASS",
+      "seconds": 13.5,
+      "log": "two-device-sync.log"
+    },
+    {
+      "id": "idempotent-sync",
+      "command": "npm run test:e2e -- --grep @claim:idempotent-sync",
+      "status": "PASS",
+      "seconds": 12.5,
+      "log": "idempotent-sync.log"
+    },
+    {
+      "id": "offline-signed-in-sync",
+      "command": "npm run test:e2e -- --grep @claim:offline-signed-in-sync",
+      "status": "PASS",
+      "seconds": 16,
+      "log": "offline-signed-in-sync.log"
+    },
+    {
+      "id": "sync-conflict-resolution",
+      "command": "npm run test:e2e -- --grep @claim:sync-conflict-resolution",
+      "status": "PASS",
+      "seconds": 14.6,
+      "log": "sync-conflict-resolution.log"
+    },
+    {
+      "id": "invitation-email-activation",
+      "command": "npm run test:e2e -- --grep @claim:invitation-email-activation",
+      "status": "PASS",
+      "seconds": 12.4,
+      "log": "invitation-email-activation.log"
+    },
+    {
+      "id": "account-service-boundaries",
+      "command": "npm run test:e2e -- --grep @claim:account-service-boundaries",
+      "status": "PASS",
+      "seconds": 13.5,
+      "log": "account-service-boundaries.log"
+    },
+    {
+      "id": "sensitive-input-boundary",
+      "command": "npm run test:e2e -- --grep @claim:sensitive-input-boundary",
+      "status": "PASS",
+      "seconds": 14.9,
+      "log": "sensitive-input-boundary.log"
+    },
+    {
+      "id": "audit-log-recording",
+      "command": "npm run test:e2e -- --grep @claim:audit-log-recording",
+      "status": "PASS",
+      "seconds": 12.8,
+      "log": "audit-log-recording.log"
+    },
+    {
+      "id": "firm-deletion-hold",
+      "command": "npm run test:e2e -- --grep @claim:firm-deletion-hold",
+      "status": "PASS",
+      "seconds": 14.6,
+      "log": "firm-deletion-hold.log"
+    },
+    {
+      "id": "response-policy",
+      "command": "npm run test:e2e -- --grep @claim:response-policy",
+      "status": "PASS",
+      "seconds": 13.6,
+      "log": "response-policy.log"
+    },
+    {
+      "id": "subscription-checkout",
+      "command": "npm run test:e2e -- --grep @claim:subscription-checkout",
+      "status": "PASS",
+      "seconds": 13.3,
+      "log": "subscription-checkout.log"
+    },
+    {
+      "id": "technician-seat-charge",
+      "command": "npm run test:e2e -- --grep @claim:technician-seat-charge",
+      "status": "PASS",
+      "seconds": 13.4,
+      "log": "technician-seat-charge.log"
+    },
+    {
+      "id": "expired-plan-keeps-export",
+      "command": "npm run test:e2e -- --grep @claim:expired-plan-keeps-export",
+      "status": "PASS",
+      "seconds": 12.5,
+      "log": "expired-plan-keeps-export.log"
+    },
+    {
+      "id": "durable-runtime-storage",
+      "command": "npm run test:e2e -- --grep @claim:durable-runtime-storage",
+      "status": "PASS",
+      "seconds": 12.6,
+      "log": "durable-runtime-storage.log"
+    },
+    {
+      "id": "visible-build-identity",
+      "command": "npm run test:e2e -- --grep @claim:visible-build-identity",
+      "status": "PASS",
+      "seconds": 14.9,
+      "log": "visible-build-identity.log"
+    },
+    {
+      "id": "container-runtime",
+      "command": "npm run test:e2e -- --grep @claim:container-runtime",
+      "status": "PASS",
+      "seconds": 13.7,
+      "log": "container-runtime.log"
+    }
+  ]
+}

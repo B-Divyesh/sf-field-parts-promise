@@ -1,53 +1,95 @@
-# Parts Promise review 6 handoff — FAIL
+# Parts Promise polish 6 handoff — PASS
 
 Date: 2026-09-02 UTC
 
-Work order: `field-parts-promise-review-6`
+Work order: `field-parts-promise-polish-6`
 
-Repository base: `6784f9d841321e3aba7506b13b5de52b90cd9916`
+Implementation commit: `54fe70e7d87134f88bb3780b6368c1bd3803cf88`
 
 Live URL: <https://field-parts-promise.sociobot.in>
 
 ## Result
 
-The adversarial review is complete in `.factory/review-6.md`. The verdict is
-**FAIL** with one blocking, two high, and two low findings.
+All findings from `.factory/review-6.md` and every earlier review were closed
+or rechecked. The live revision reports the exact tested implementation SHA.
 
-The blocker is a live/demo UI-boundary leak: a live job's confirmation toast
-remains visible after the app switches into Demo. The other findings cover an
-authentication claim whose tagged test proves only part of the stated token
-validation, a pricing heading that implies unavailable payment, and two README
-plain-language issues.
+The mode switch now clears workspace-derived transient UI before rendering,
+guards in-flight live requests, and prevents live sync state from appearing in
+Demo. The claim test proves isolation in both directions with unique record
+names. The Entra claim test now covers expiry, signature, issuer, audience, and
+tenant rejection, including the required authentication header. Pricing and
+README wording are plain and match the unavailable-checkout boundary.
 
-## Verification completed
+`.factory/polish-6.md` maps every finding ID to its change and evidence.
 
-- Cold first read at 390 × 844 and 1440 × 900.
-- One-click live demo, allocation, reset, exit, IndexedDB namespace isolation,
-  offline reload, and full request logging.
-- All 37 exact `.factory/claims.json` commands, run independently from the clean
-  clone `/tmp/field-parts-promise-review6.fGD0eV/clone`: all exited successfully.
-- All earlier review and polish findings checked against the live site and code.
-- All sitemap routes plus an unknown route checked for status, titles, one H1,
-  main landmark, metadata, canonical/OG/Twitter tags, favicons, footer, and
-  console output.
-- Link crawl: all product and external navigational links passed; the unknown
-  route correctly returned 404.
-- Axe on ten live routes: zero serious or critical findings.
-- Mobile and desktop route focus, Back, and scroll restoration: passed.
-- `npm test`: passed, 22 Vitest and 15 Rust tests.
-- `npm run check`: passed with no errors or warnings.
-- `npm run format:check`: passed.
-- `BUILD_SHA=6784f9d841321e3aba7506b13b5de52b90cd9916 npm run build`: passed and
-  produced `dist/`.
-- `BUILD_SHA=6784f9d841321e3aba7506b13b5de52b90cd9916 npm run test:e2e -- --retries=0`:
-  passed, 59 tests passed and 43 project-specific tests skipped.
+## Verification
 
-## Scope and remaining work
+- Clean clone at `54fe70e7d87134f88bb3780b6368c1bd3803cf88`:
+  all 37 commands from `.factory/claims.json` passed independently. See
+  `.factory/evidence/polish-6/clean-claims/summary.json` and its per-claim logs.
+- `npm test`: 23 Vitest and 15 Rust tests passed.
+- `npm run check`, `npm run format:check`, and strict `cargo clippy`: passed.
+- `npm audit --audit-level=high`: zero vulnerabilities.
+- `BUILD_SHA=54fe70e7d87134f88bb3780b6368c1bd3803cf88 npm run build`: passed and
+  produced `dist/`. Initial JavaScript is 39.89 KB gzip and CSS is 4.24 KB gzip;
+  the deferred sign-in chunk is 62.19 KB gzip.
+- Full Playwright suite: 59 passed, 43 intentional project-specific skips.
+- Exact-commit local audit: 72/72 checks passed. Factory URL verification found
+  no console errors, one H1, a main landmark, `lang=en`, no missing alt text,
+  and no unlabeled buttons.
+- Live cold audit: 72/72 checks passed. It covers first-screen copy, one-click
+  demo state, unique-token live/demo isolation both ways, banner/reset behavior,
+  route titles, one H1 and main landmark per route, legal links, real 404,
+  serious/critical Axe findings, console errors, SQLite health, and build SHA.
+- Live factory URL verifier: HTTP 200 in 603 ms, no console errors, and all
+  semantic smoke checks passed.
+- Live malformed bearer token: HTTP 401 with `WWW-Authenticate: Bearer`.
+- Live unknown route: HTTP 404 with the product's designed error page and
+  security headers.
+- Live Lighthouse: performance 99, accessibility 100, best practices 100, SEO
+  100; LCP 1.8 s, CLS 0, total blocking time 50 ms.
 
-No product code, infrastructure, DNS, billing configuration, customer records,
-or persistent deployment data was modified. Only this review and handoff were
-written.
+Evidence is under `.factory/evidence/polish-6/`, including cold mobile,
+demo-isolation, desktop, Lighthouse, factory-verifier, audit JSON, and all
+clean-clone claim logs.
 
-Resolve F-6-1 through F-6-5 in `.factory/review-6.md`, then repeat the full
-claim and live-browser review. Checkout remains explicitly unavailable; no
-payment provider integration was attempted.
+## Run and verify
+
+```bash
+npm ci
+npm test
+npm run check
+npm run format:check
+cargo clippy --manifest-path server/Cargo.toml --all-targets -- -D warnings
+npm audit --audit-level=high
+BUILD_SHA=$(git rev-parse HEAD) npm run build
+BUILD_SHA=$(git rev-parse HEAD) npm run test:e2e -- --retries=0
+BASE_URL=http://127.0.0.1:4173 \
+  EXPECTED_BUILD_SHA=$(git rev-parse HEAD) \
+  EVIDENCE_DIR=.factory/evidence/polish-6/local \
+  node scripts/audit-round6.mjs
+```
+
+The direct sample URL is
+<https://field-parts-promise.sociobot.in/?demo=1>. Reset demo restores the
+seeded Riverside Dental job. Start for real deletes the demo database and opens
+the separate live workspace.
+
+## Deployment
+
+- Artifact class: containerized web application with Rust/Axum backend and
+  built Svelte frontend.
+- Image tag: `sf-field-parts-promise:54fe70e7d871`.
+- Owned app: `sf-field-parts-promise`.
+- Durable mount: fleet-managed `sf-field-parts-promise-data` at `/data`, one
+  replica.
+- Health: `status=ok`, `database=sqlite`, `auth=ready`, build SHA
+  `54fe70e7d87134f88bb3780b6368c1bd3803cf88`.
+
+## Remaining work
+
+No review finding or repository defect is known. Checkout intentionally remains
+unavailable and operator-gated; the UI makes no billing request until the owner
+presses its named action, and the server returns the tested unavailable state.
+Enabling it later requires the product registration supplied by the factory
+operator. No direct payment-provider integration is present.
