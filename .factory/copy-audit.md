@@ -1,6 +1,6 @@
 # Copy audit
 
-Audited: 2026-09-02 for perfection-loop round 7. Counts split on whitespace. Hyphenated terms, prices, and build values count as one word.
+Audited: 2026-09-02 for perfection-loop round 8. Counts split on whitespace. Hyphenated terms, prices, and build values count as one word.
 
 ## Landing page
 
@@ -86,6 +86,17 @@ No landing sentence exceeds 22 words. No landing copy contains a banned word.
 The retired reader-facing phrases **operation ID** and **browser database outbox**
 are absent from the README. Storage implementation names remain limited to the
 Developer architecture note.
+
+## Round 8 copy checks
+
+| Copy | Words | Result |
+| --- | ---: | --- |
+| Jobs, Privacy, and Terms keep sample mode, including in a new tab. | 11 | Pass: plain demo-boundary wording; `demo-reset-isolated` opens the rendered links in new tabs. |
+| Allocate parts to each job before promising a visit date. | 10 | Pass: verb-first catalog description under 120 characters. |
+
+The first-screen wording is unchanged because review 8 found that its job,
+audience, action, outcome, and three facts all pass at 390 px and desktop.
+The new demo sentence names observable behavior without implementation jargon.
 
 An automated README sentence scan found no sentence above 22 words. A source scan found no banned plain-words term in the README, landing copy, demo guide, or catalog description.
 

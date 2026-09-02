@@ -827,8 +827,8 @@
     }
   }
 
-  function href(path: string): string {
-    if (!demo || path.includes('demo=1')) return path;
+  function href(path: string, inDemo: boolean): string {
+    if (!inDemo || path.includes('demo=1')) return path;
     return `${path}${path.includes('?') ? '&' : '?'}demo=1`;
   }
 
@@ -966,11 +966,20 @@
     window.dispatchEvent(new Event('parts-promise:workspace-ready'));
   }
 
-  async function follow(event: MouseEvent, path: string) {
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0)
+  async function follow(event: MouseEvent) {
+    if (
+      event.defaultPrevented ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      event.button !== 0
+    )
       return;
+    const anchor = event.currentTarget;
+    if (!(anchor instanceof HTMLAnchorElement)) return;
     event.preventDefault();
-    await navigate(path);
+    await navigate(`${anchor.pathname}${anchor.search}${anchor.hash}`);
   }
 
   async function focusPageHeading(preventScroll = false) {
@@ -1318,7 +1327,7 @@
     jobSku = '';
     showAddJob = false;
     formError = '';
-    navigate(href(`/jobs/${job.id}`));
+    navigate(href(`/jobs/${job.id}`, demo));
   }
 
   async function updateJob() {
@@ -1598,28 +1607,23 @@
 <a class="skip-link" href="#main">Skip to main content</a>
 
 <header class="site-header">
-  <a class="wordmark" href="/" on:click={(event) => follow(event, '/')}
-    >Parts Promise</a
-  >
+  <a class="wordmark" href="/" on:click={follow}>Parts Promise</a>
   <nav aria-label="Main navigation">
+    <a href={href('/?demo=1', demo)} on:click={follow}>Demo</a>
     <a
-      href={href('/?demo=1')}
-      on:click={(event) => follow(event, href('/?demo=1'))}>Demo</a
-    >
-    <a
-      href={href('/jobs')}
+      href={href('/jobs', demo)}
       aria-current={page === 'jobs' || page === 'job' ? 'page' : undefined}
-      on:click={(event) => follow(event, href('/jobs'))}>Jobs</a
+      on:click={follow}>Jobs</a
     >
     {#if idToken && !demo}<a
         href="/settings/team"
         aria-current={page === 'team' ? 'page' : undefined}
-        on:click={(event) => follow(event, '/settings/team')}>Team</a
+        on:click={follow}>Team</a
       >{/if}
     <a
-      href={href('/privacy')}
+      href={href('/privacy', demo)}
       aria-current={page === 'privacy' ? 'page' : undefined}
-      on:click={(event) => follow(event, href('/privacy'))}>Privacy</a
+      on:click={follow}>Privacy</a
     >
   </nav>
   {#if !demo}
@@ -1774,10 +1778,7 @@
           date.
         </p>
         <div class="hero-actions">
-          <a
-            class="button"
-            href="/?demo=1"
-            on:click={(event) => follow(event, '/?demo=1')}
+          <a class="button" href="/?demo=1" on:click={follow}
             >Try it with sample data</a
           ><span>Opens Riverside Dental with one missing pump.</span>
         </div>
@@ -1800,9 +1801,7 @@
           RD-1042 needs one condensate pump. The job stays at risk until a
           source holds it.
         </p>
-        <a href="/?demo=1" on:click={(event) => follow(event, '/?demo=1')}
-          >Open the sample job</a
-        >
+        <a href="/?demo=1" on:click={follow}>Open the sample job</a>
       </div>
       <article class="job-preview">
         <p>RD-1042 · Riverside Dental</p>
@@ -1838,9 +1837,7 @@
         It does not place supplier orders. The sample stays separate from
         signed-in firm workspaces.
       </p>
-      <a href="/privacy" on:click={(event) => follow(event, '/privacy')}
-        >Read how local data works</a
-      >
+      <a href="/privacy" on:click={follow}>Read how local data works</a>
     </section>
     <section class="pricing-section" aria-labelledby="pricing-title">
       <p class="drawing-label">Firm plan</p>
@@ -1851,9 +1848,7 @@
         technician seat.
       </p>
       <p>Checkout is not available yet. No charge will start.</p>
-      <a href="/onboarding" on:click={(event) => follow(event, '/onboarding')}
-        >Set up your firm</a
-      >
+      <a href="/onboarding" on:click={follow}>Set up your firm</a>
     </section>
   {:else if page === 'auth-callback'}
     <section class="account-sheet" aria-live="polite">
@@ -1878,11 +1873,7 @@
         >
       {:else if cloud && !cloud.onboarding_required}
         <p>{cloud.organization_name} is ready.</p>
-        <a
-          class="button"
-          href="/jobs"
-          on:click={(event) => follow(event, '/jobs')}>Open shared jobs</a
-        >
+        <a class="button" href="/jobs" on:click={follow}>Open shared jobs</a>
       {:else}
         <p>
           Your local workspace has {localItemCount()} record{localItemCount() ===
@@ -1922,10 +1913,8 @@
         >
       {:else if !cloud || cloud.onboarding_required}
         <p>Create a firm workspace before inviting technicians.</p>
-        <a
-          class="button"
-          href="/onboarding"
-          on:click={(event) => follow(event, '/onboarding')}>Set up your firm</a
+        <a class="button" href="/onboarding" on:click={follow}
+          >Set up your firm</a
         >
       {:else}
         <p>
@@ -1972,15 +1961,8 @@
           </form>
         {/if}
         {#if teamMessage}<p role="status">{teamMessage}</p>{/if}
-        <a
-          href="/settings/billing"
-          on:click={(event) => follow(event, '/settings/billing')}
-          >Review plan and seats</a
-        >
-        <a
-          href="/settings/data"
-          on:click={(event) => follow(event, '/settings/data')}
-          >Export or delete firm data</a
+        <a href="/settings/billing" on:click={follow}>Review plan and seats</a>
+        <a href="/settings/data" on:click={follow}>Export or delete firm data</a
         >
       {/if}
     </section>
@@ -1995,10 +1977,8 @@
         >
       {:else if !cloud || cloud.onboarding_required}
         <p>Create a firm workspace before choosing a plan.</p>
-        <a
-          class="button"
-          href="/onboarding"
-          on:click={(event) => follow(event, '/onboarding')}>Set up your firm</a
+        <a class="button" href="/onboarding" on:click={follow}
+          >Set up your firm</a
         >
       {:else}
         <dl class="billing-summary">
@@ -2030,13 +2010,9 @@
           </p>{/if}
         <p>
           Checkout is not available yet. No charge will start. Read the
-          <a href="/terms" on:click={(event) => follow(event, '/terms')}
-            >terms</a
-          >
+          <a href="/terms" on:click={follow}>terms</a>
           and
-          <a href="/privacy" on:click={(event) => follow(event, '/privacy')}
-            >privacy notice</a
-          >.
+          <a href="/privacy" on:click={follow}>privacy notice</a>.
         </p>
       {/if}
     </section>
@@ -2051,10 +2027,8 @@
         >
       {:else if !cloud || cloud.onboarding_required}
         <p>Create a firm workspace before managing firm data.</p>
-        <a
-          class="button"
-          href="/onboarding"
-          on:click={(event) => follow(event, '/onboarding')}>Set up your firm</a
+        <a class="button" href="/onboarding" on:click={follow}
+          >Set up your firm</a
         >
       {:else}
         <h2>Download firm data</h2>
@@ -2167,9 +2141,8 @@
             </div>
             <StatusPlate {status} compact /><a
               class="button secondary"
-              href={href(`/jobs/${job.id}`)}
-              on:click={(event) => follow(event, href(`/jobs/${job.id}`))}
-              >Review parts</a
+              href={href(`/jobs/${job.id}`, demo)}
+              on:click={follow}>Review parts</a
             >
           </article>
         {/each}
@@ -2381,8 +2354,8 @@
       <p>
         Signed-in firms can export server-held data and schedule a 14-day
         deletion hold from <a
-          href="/settings/data"
-          on:click={(event) => follow(event, '/settings/data')}>Data controls</a
+          href={href('/settings/data', demo)}
+          on:click={follow}>Data controls</a
         >.
       </p>
     </section>
@@ -2417,11 +2390,9 @@
         the home page.
       </p>
       <div class="hero-actions">
-        <a
-          class="button"
-          href="/jobs"
-          on:click={(event) => follow(event, '/jobs')}>Open jobs</a
-        ><a href="/" on:click={(event) => follow(event, '/')}>Go to home</a>
+        <a class="button" href={href('/jobs', demo)} on:click={follow}
+          >Open jobs</a
+        ><a href={href('/', demo)} on:click={follow}>Go to home</a>
       </div>
     </section>
   {/if}
@@ -2876,12 +2847,9 @@
 <footer class="site-footer">
   <p>Promise job dates from parts held for the job.</p>
   <div>
-    <a
-      href={href('/privacy')}
-      on:click={(event) => follow(event, href('/privacy'))}>Privacy</a
-    ><a
-      href={href('/terms')}
-      on:click={(event) => follow(event, href('/terms'))}>Terms</a
+    <a href={href('/privacy', demo)} on:click={follow}>Privacy</a><a
+      href={href('/terms', demo)}
+      on:click={follow}>Terms</a
     ><a href="https://sociobot.in" rel="external"
       >Built by Param Factory (external site)</a
     >

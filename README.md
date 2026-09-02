@@ -8,7 +8,7 @@ Open `/?demo=1`, or <http://127.0.0.1:4173/?demo=1> during development. The samp
 
 Allocate the pump from Van 2. The status changes from **Date at risk** to **Parts in hand**. Van 2 then has no spare pumps. The app suggests a reorder but never places one.
 
-The demo uses a separate browser database. It never signs in or contacts the account, sync, or billing API. **Reset demo** restores the sample. **Start for real** deletes demo changes and opens the unchanged local workspace.
+The demo uses a separate browser database. Jobs, Privacy, and Terms keep sample mode, including in a new tab. It never signs in or contacts the account, sync, or billing API. **Reset demo** restores the sample. **Start for real** deletes demo changes and opens the unchanged local workspace.
 
 Use **Scan a part** to match a required part by barcode. Camera access begins only after **Use camera**. **Enter barcode instead** completes the same allocation without camera access. Camera frames stay on the device and are not sent.
 

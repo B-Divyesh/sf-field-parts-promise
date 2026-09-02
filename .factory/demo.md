@@ -8,6 +8,8 @@ Allocate the pump from Van 2 to make the job **Parts in hand**. The calculation 
 
 The demo uses a separate browser database. Its normal allocation and reset flow uses same-origin GET requests and does not ask for camera access.
 
+Jobs, Privacy, and Terms links keep `demo=1` in their rendered URLs. Opening any of them in a new tab keeps the demo banner and does not create the live or cloud browser database.
+
 **Scan a part** opens the barcode sheet. Camera access starts only after **Use camera**. **Enter barcode instead** accepts `CP-19`, finds the condensate pump, and continues to the same allocation sheet. Camera frames are not saved or sent.
 
 M2 account code does not run in demo mode. The demo does not open Microsoft sign-in, call `/api/v1`, check billing, or copy records into a firm.

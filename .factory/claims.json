@@ -36,10 +36,10 @@
   },
   {
     "id": "demo-reset-isolated",
-    "claim": "Demo changes reset to the bundled sample, and every demo exit discards them before reopening the unchanged live local workspace.",
+    "claim": "Jobs, Privacy, and Terms links keep the isolated sample workspace, including in new tabs. Demo changes reset to the bundled sample, and every demo exit discards them before reopening the unchanged live local workspace.",
     "where": "M1 demo banner, privacy page, demo guide, and README",
     "test": "npm run test:e2e -- --grep @claim:demo-reset-isolated",
-    "sandbox": "fresh browser context; create uniquely named live and demo jobs, assert neither identifier appears in the opposite mode DOM, leave by wordmark and browser Back, assert the demo database is deleted each time, then use the confirmed exit and assert the live job survives unchanged"
+    "sandbox": "fresh browser contexts; assert every rendered Jobs, Privacy, and Terms href includes demo=1, open each in a new tab, confirm the banner persists and neither live nor cloud database exists; then create uniquely named live and demo jobs, assert neither identifier appears in the opposite mode DOM, leave by wordmark and browser Back, assert the demo database is deleted each time, and confirm the live job survives unchanged"
   },
   {
     "id": "offline-reload",

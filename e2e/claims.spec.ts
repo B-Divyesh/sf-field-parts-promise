@@ -334,6 +334,103 @@ test('@claim:demo-reset-isolated Demo reset restores the fixture and leaving pre
     testInfo.project.name !== 'chromium',
     'Claim evidence runs once on desktop Chromium.'
   );
+
+  const linkContext = await browser.newContext();
+  const demoPage = await linkContext.newPage();
+  await demoPage.goto('/demo');
+  await expect(demoPage.getByLabel('Demo workspace')).toBeVisible();
+
+  const demoLinks = [
+    {
+      name: 'header Jobs',
+      link: demoPage
+        .getByLabel('Main navigation')
+        .getByRole('link', { name: 'Jobs' }),
+      path: '/jobs?demo=1'
+    },
+    {
+      name: 'header Privacy',
+      link: demoPage
+        .getByLabel('Main navigation')
+        .getByRole('link', { name: 'Privacy' }),
+      path: '/privacy?demo=1'
+    },
+    {
+      name: 'footer Privacy',
+      link: demoPage
+        .locator('.site-footer')
+        .getByRole('link', { name: 'Privacy' }),
+      path: '/privacy?demo=1'
+    },
+    {
+      name: 'footer Terms',
+      link: demoPage
+        .locator('.site-footer')
+        .getByRole('link', { name: 'Terms' }),
+      path: '/terms?demo=1'
+    }
+  ];
+
+  for (const { name, link, path } of demoLinks) {
+    await expect(link, `${name} publishes its demo URL`).toHaveAttribute(
+      'href',
+      path
+    );
+    const openedPage = linkContext.waitForEvent('page');
+    await link.click({ modifiers: ['Control'] });
+    const newTab = await openedPage;
+    await newTab.waitForLoadState('domcontentloaded');
+    await expect(newTab).toHaveURL(new RegExp(`${path.replace('?', '\\?')}$`));
+    await expect(newTab.getByLabel('Demo workspace')).toBeVisible();
+    await expect
+      .poll(() =>
+        newTab.evaluate(async () =>
+          (await indexedDB.databases())
+            .map((database) => database.name)
+            .filter((name): name is string => Boolean(name))
+            .sort()
+        )
+      )
+      .toEqual(['parts-promise-demo-v1']);
+    await newTab.close();
+    await demoPage.bringToFront();
+  }
+
+  for (const path of [
+    '/demo',
+    '/jobs?demo=1',
+    '/privacy?demo=1',
+    '/terms?demo=1'
+  ]) {
+    await demoPage.goto(path);
+    await expect(demoPage.getByLabel('Demo workspace')).toBeVisible();
+    const unsafeInternalLinks = await demoPage
+      .locator('a[href]:not(.wordmark)')
+      .evaluateAll((links) =>
+        links
+          .map((link) => (link as HTMLAnchorElement).href)
+          .filter((target) => {
+            const url = new URL(target);
+            if (url.origin !== window.location.origin) return false;
+            return (
+              url.pathname !== '/demo' && url.searchParams.get('demo') !== '1'
+            );
+          })
+      );
+    expect(unsafeInternalLinks, `${path} demo hrefs`).toEqual([]);
+  }
+
+  expect(
+    await demoPage.evaluate(async () =>
+      (await indexedDB.databases())
+        .map((database) => database.name)
+        .filter((name): name is string => Boolean(name))
+        .sort()
+    )
+  ).toEqual(['parts-promise-demo-v1']);
+
+  await linkContext.close();
+
   const context = await browser.newContext();
   const page = await context.newPage();
   const requests: string[] = [];
