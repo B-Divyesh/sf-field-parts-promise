@@ -191,6 +191,21 @@ describe('round 6 public wording', () => {
   });
 });
 
+describe('round 7 README wording', () => {
+  it('explains sync retries and offline edits without implementation jargon', () => {
+    const readme = readFileSync('README.md', 'utf8');
+
+    expect(readme).toContain(
+      'Retrying the same saved change does not create a duplicate.'
+    );
+    expect(readme).toContain(
+      'Offline signed-in edits stay queued in this browser.'
+    );
+    expect(readme).not.toContain('same operation ID');
+    expect(readme).not.toContain('browser database outbox');
+  });
+});
+
 describe('service worker update contract', () => {
   it('uses a new cache and checks the network before cached documents', () => {
     const worker = readFileSync('public/sw.js', 'utf8');

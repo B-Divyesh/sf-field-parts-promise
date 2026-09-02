@@ -1,6 +1,6 @@
 # Copy audit
 
-Audited: 2026-09-02 for perfection-loop round 6. Counts split on whitespace. Hyphenated terms, prices, and build values count as one word.
+Audited: 2026-09-02 for perfection-loop round 7. Counts split on whitespace. Hyphenated terms, prices, and build values count as one word.
 
 ## Landing page
 
@@ -74,6 +74,18 @@ No landing sentence exceeds 22 words. No landing copy contains a banned word.
 - The pricing heading describes the price without suggesting that checkout is available.
 - The README explains the export limit as five requests per minute and names the wait response.
 - The README says the server starts without extra environment settings.
+
+## Round 7 copy checks
+
+| Copy | Words | Result |
+| --- | ---: | --- |
+| Retrying the same saved change does not create a duplicate. | 10 | Pass: explains safe retries without exposing an implementation identifier. |
+| Offline signed-in edits stay queued in this browser. | 8 | Pass: explains offline behavior without naming a storage mechanism. |
+| Allocate required parts to each job before promising a visit date. | 11 | Pass: verb-first catalog description; covered by the product's allocation and promise-status claims. |
+
+The retired reader-facing phrases **operation ID** and **browser database outbox**
+are absent from the README. Storage implementation names remain limited to the
+Developer architecture note.
 
 An automated README sentence scan found no sentence above 22 words. A source scan found no banned plain-words term in the README, landing copy, demo guide, or catalog description.
 

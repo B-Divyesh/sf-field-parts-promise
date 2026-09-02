@@ -14,9 +14,9 @@ Use **Scan a part** to match a required part by barcode. Camera access begins on
 
 ## Accounts, sync, and billing
 
-Sign-in uses the Sociobot Microsoft Entra tenant. A saved firm workspace appears on another signed-in device. Repeated sync requests with the same operation ID apply once.
+Sign-in uses the Sociobot Microsoft Entra tenant. A saved firm workspace appears on another signed-in device. Retrying the same saved change does not create a duplicate.
 
-Offline signed-in edits stay in a browser database outbox. They survive reload, retry after reconnect, and back off after a temporary failure.
+Offline signed-in edits stay queued in this browser. They survive reload, retry after reconnect, and back off after a temporary failure.
 
 Owners can record invitations by work email. The invitation becomes active when that email signs in. The firm plan costs $39 per month. Each active technician costs $8 per month. The owner is included in the base price without using a technician seat.
 

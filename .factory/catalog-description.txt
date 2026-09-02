@@ -1,1 +1,1 @@
-Allocate parts to each job before promising a visit date.
+Allocate required parts to each job before promising a visit date.
