@@ -149,6 +149,9 @@ async function readWorkspace(
   page: import('@playwright/test').Page,
   name: string
 ) {
+  await page.waitForFunction(
+    () => document.documentElement.dataset.workspaceReady === 'true'
+  );
   return page.evaluate(async (databaseName) => {
     const request = indexedDB.open(databaseName, 1);
     const database = await new Promise<IDBDatabase>((resolve, reject) => {

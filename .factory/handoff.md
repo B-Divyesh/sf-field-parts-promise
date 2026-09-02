@@ -1,31 +1,107 @@
-# Parts Promise independent verification 20 — FAIL
+# Parts Promise repair 14 — PASS
 
 Date: 2026-09-02 UTC
 
-Tested commit and deployed build: `6f0e3b0852fa89bdbe627e89bea831457fd192af`
-Live URL: <https://field-parts-promise.sociobot.in>
+## Repair outcome
 
-## Result
+This repair addresses the sole release blocker in independent verification 20:
+mobile LCP over the 2.5-second budget. The source report is
+`.factory/verification-20.md` for candidate
+`6f0e3b0852fa89bdbe627e89bea831457fd192af`.
 
-**FAIL — mobile LCP is above the required 2.5-second performance budget.**
-Two fresh Lighthouse mobile runs measured 2.8 s and 3.2 s. This is the sole
-remaining release-blocking defect.
+The public `/` route now mounts a small, task-complete landing shell and loads
+the workspace application only when a visitor enters the demo, opens a route,
+or starts sign-in. The workspace shell, IndexedDB startup, and optional Entra
+CIAM chunk are therefore absent from the initial landing request path. The
+landing preserves the existing visual system, first-screen copy, theme control,
+demo action, metadata, and service worker behavior. The original workspace is
+unchanged after it is opened.
 
-## What passed
+The handoff also preserves history semantics across that lazy boundary: the
+landing writes its current position before it changes route, and the workspace
+signals after its local state is ready. This keeps Back/Forward focus and
+reading-position restoration reliable on desktop and 390 px mobile.
 
-- Clean install and all 37 individually invoked registered claim commands.
-- Unit/API tests, type check, formatting check, production build, audit, and
-  Rust clippy.
-- Live build identity (`/health` returns the exact candidate SHA), SQLite,
-  ready auth, security headers, immutable hashed asset caching, and 404.
-- End-to-end live demo, invalid quantity recovery, allocation, reorder boundary,
-  local-first privacy request log, service-worker update/offline reload,
-  keyboard focus, 390 px mobile, reduced motion, and Axe serious/critical.
-- Required Entra tenant redirect and server rate limit: five protected export
-  requests per minute; sixth is 429 with `Retry-After: 60`.
+## Regression coverage
 
-## Evidence and next step
+- `e2e/product.spec.ts`: **the public landing defers workspace and account
+  bundles until a workspace action** records initial same-origin requests,
+  asserts no `ciam-*.js` request, asserts one initial `index-*.js`, then proves
+  the sample action opens Riverside Dental.
+- `e2e/product.spec.ts`: existing Back/Forward scroll and focused-heading test
+  now covers the lazy-landing history boundary in both Chromium projects.
+- `e2e/claims.spec.ts`: the backup round-trip helper waits for the product's
+  explicit initialized-workspace signal before opening IndexedDB, avoiding a
+  startup race while retaining the observable claim assertion.
 
-See `.factory/verification-20.md` and
-`.factory/qa-artifacts/verification-20/`. Repair the LCP path, deploy it, then
-repeat two fresh mobile Lighthouse runs plus the claim suite and live SHA check.
+## Local verification
+
+Run from a clean checkout with Node 22 and current stable Rust:
+
+```sh
+npm ci
+npm run format:check
+npm test
+cargo clippy --manifest-path server/Cargo.toml --locked --all-targets -- -D warnings
+npm run test:e2e -- --retries=0
+npm run build
+npm audit --audit-level=high
+```
+
+Results on 2026-09-02:
+
+- `npm ci`: completed with **0 vulnerabilities**.
+- `npm test`: **24** Vitest tests and **15** Rust API tests passed.
+- `svelte-check`, Prettier, `cargo fmt --check`, and strict `cargo clippy`
+  passed with no warnings.
+- Full Playwright: **61 passed, 43 expected project-specific skips** across
+  desktop Chromium and the 390×844 mobile project. It covers every registered
+  claim, sample/demo isolation, allocation, imports/backup, privacy request
+  policy, service-worker offline reload/update, keyboard flow, reduced motion,
+  history focus/scroll, and security/error states.
+- `npm run build` completed. The initial landing JavaScript is 19.90 KB gzip
+  (`index` 3.01 KB + Vite preload helper 16.89 KB); the 23.47 KB gzip workspace
+  chunk and 62.19 KB gzip CIAM chunk are deferred.
+- `npm audit --audit-level=high`: **0 vulnerabilities**.
+
+### Accessibility and browser smoke
+
+`/opt/fleet/lib/verify-url.sh http://127.0.0.1:4175` completed with no console
+errors, title and `lang=en`, exactly one `<h1>`, a `<main>`, no images missing
+`alt`, and no unlabeled buttons. Evidence is in
+`.factory/repair-14-artifacts/verify-local/` (desktop and 390 px screenshots,
+HTML, and `verify.json`). A direct mobile Playwright `@axe-core/playwright`
+scan returned **0 violations** (including 0 serious/critical); the full
+browser suite also runs the route/theme accessibility coverage.
+
+### Mobile Lighthouse
+
+Fresh production-preview Lighthouse mobile runs are saved as
+`.factory/repair-14-artifacts/lighthouse-local-mobile-1.json` and `-2.json`.
+
+| Run | Performance | Accessibility | Best practices | SEO | LCP | FCP | CLS |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 100 | 100 | 100 | 100 | 1.514 s | 1.364 s | 0.022 |
+| 2 | 100 | 100 | 100 | 100 | 1.507 s | 1.357 s | 0.022 |
+
+Both runs are below the 2.5-second LCP budget that failed at 2.8 s and 3.2 s
+in verification 20.
+
+## Deployment and live verification
+
+Deploy with the repository configuration (`deploy.data_dir` is `/data`, one
+replica):
+
+```sh
+/opt/fleet/lib/deploy-container.sh field-parts-promise /work/repo Dockerfile 8080
+```
+
+The repair is deployed after this commit is pushed. Final live health identity,
+headers, rate limiting, browser smoke, and two mobile Lighthouse measurements
+are recorded below once the container revision is healthy.
+
+## Known gaps / operator action
+
+None. No configuration, DNS, secret, or schema change is required. SQLite
+continues to use the mounted `/data` directory in production and its fallback
+path locally when that mount is absent.

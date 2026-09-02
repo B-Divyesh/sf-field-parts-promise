@@ -69,6 +69,36 @@ test('public routes load without console errors and internal links resolve', asy
   expect(pageErrors).toEqual([]);
 });
 
+test('the public landing defers workspace and account bundles until a workspace action', async ({
+  page
+}) => {
+  const requestedPaths: string[] = [];
+  page.on('request', (request) => {
+    const url = new URL(request.url());
+    if (url.origin === new URL(page.url() || 'http://127.0.0.1:4173').origin)
+      requestedPaths.push(url.pathname);
+  });
+
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  await expect(
+    page.getByRole('heading', {
+      name: 'Promise dates from parts held for the job'
+    })
+  ).toBeVisible();
+  expect(requestedPaths.some((path) => /\/ciam-.*\.js$/.test(path))).toBe(
+    false
+  );
+  expect(
+    requestedPaths.filter((path) => /\/index-.*\.js$/.test(path))
+  ).toHaveLength(1);
+
+  await page.getByRole('link', { name: 'Try it with sample data' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Riverside Dental parts' })
+  ).toBeVisible();
+});
+
 test('the full first-screen promise and action fit at 390 by 844', async ({
   page
 }, testInfo) => {

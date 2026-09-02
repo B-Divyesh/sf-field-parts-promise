@@ -266,7 +266,13 @@
     const storedTheme = localStorage.getItem('parts-promise-theme');
     theme = storedTheme === 'dark' ? 'dark' : 'light';
     saveScrollPosition();
-    void initialize();
+    void initialize().then(() => {
+      if (
+        new URLSearchParams(window.location.search).get('signin') === '1' &&
+        !idToken
+      )
+        void signIn();
+    });
     window.addEventListener('popstate', updateRoute);
     window.addEventListener('scroll', recordScroll, { passive: true });
     window.addEventListener('online', updateOnline);
@@ -430,6 +436,11 @@
 
   async function initialize() {
     await loadCurrentWorkspace();
+    signalWorkspaceReady();
+    // A public landing link starts this deferred workspace runtime on its
+    // destination route. Focus the new route as soon as its local state is
+    // ready, rather than waiting for the optional Entra session check.
+    void focusPageHeading();
     if (!demo) {
       const pending = await readLatestCloudOperation();
       queuedCount = pending ? 1 : 0;
@@ -931,6 +942,7 @@
     currentPath = nextPath;
     demo = nextDemo;
     await loadCurrentWorkspace();
+    signalWorkspaceReady();
     if (modeChanged && !demo) {
       const pending = await readLatestCloudOperation();
       queuedCount = pending ? 1 : 0;
@@ -947,6 +959,11 @@
     await syncRoute(true);
     window.scrollTo(0, 0);
     saveScrollPosition();
+  }
+
+  function signalWorkspaceReady() {
+    document.documentElement.dataset.workspaceReady = 'true';
+    window.dispatchEvent(new Event('parts-promise:workspace-ready'));
   }
 
   async function follow(event: MouseEvent, path: string) {
