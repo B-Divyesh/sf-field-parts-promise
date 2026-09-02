@@ -1,0 +1,101 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/bootstrap",
+    "status": 401,
+    "limit": "40",
+    "remaining": "39",
+    "retryReset": "2",
+    "wwwAuthenticate": "Bearer"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/members",
+    "status": 401,
+    "limit": "40",
+    "remaining": "39",
+    "retryReset": "2",
+    "wwwAuthenticate": "Bearer"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/billing",
+    "status": 401,
+    "limit": "40",
+    "remaining": "39",
+    "retryReset": "2",
+    "wwwAuthenticate": "Bearer"
+  },
+  {
+    "method": "GET",
+    "path": "/metrics",
+    "status": 401,
+    "limit": "40",
+    "remaining": "39",
+    "retryReset": "2",
+    "wwwAuthenticate": "Bearer"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sync",
+    "status": 422,
+    "limit": "10",
+    "remaining": "9",
+    "retryReset": "2",
+    "wwwAuthenticate": null
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/onboarding",
+    "status": 422,
+    "limit": "5",
+    "remaining": "4",
+    "retryReset": "60",
+    "wwwAuthenticate": null
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/members",
+    "status": 422,
+    "limit": "5",
+    "remaining": "4",
+    "retryReset": "60",
+    "wwwAuthenticate": null
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/billing/checkout",
+    "status": 401,
+    "limit": "5",
+    "remaining": "4",
+    "retryReset": "60",
+    "wwwAuthenticate": "Bearer"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/export",
+    "status": 401,
+    "limit": "5",
+    "remaining": "4",
+    "retryReset": "60",
+    "wwwAuthenticate": "Bearer"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/account/deletion",
+    "status": 422,
+    "limit": "5",
+    "remaining": "4",
+    "retryReset": "60",
+    "wwwAuthenticate": null
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/account/deletion",
+    "status": 401,
+    "limit": "5",
+    "remaining": "4",
+    "retryReset": "60",
+    "wwwAuthenticate": "Bearer"
+  }
+]

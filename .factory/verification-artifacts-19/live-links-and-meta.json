@@ -1,0 +1,154 @@
+{
+  "routeMeta": [
+    {
+      "route": "/",
+      "canonical": "https://field-parts-promise.sociobot.in/",
+      "description": "Promise job dates from parts held for the job.",
+      "ogImage": "https://field-parts-promise.sociobot.in/assets/og-card.png",
+      "inputs": []
+    },
+    {
+      "route": "/?demo=1",
+      "canonical": "https://field-parts-promise.sociobot.in/demo",
+      "description": "Sample job card for Parts Promise.",
+      "ogImage": "https://field-parts-promise.sociobot.in/assets/og-card.png",
+      "inputs": []
+    },
+    {
+      "route": "/jobs",
+      "canonical": "https://field-parts-promise.sociobot.in/jobs",
+      "description": "Jobs and their parts status.",
+      "ogImage": "https://field-parts-promise.sociobot.in/assets/og-card.png",
+      "inputs": []
+    },
+    {
+      "route": "/onboarding",
+      "canonical": "https://field-parts-promise.sociobot.in/onboarding",
+      "description": "Set up a firm workspace and choose whether to copy local jobs.",
+      "ogImage": "https://field-parts-promise.sociobot.in/assets/og-card.png",
+      "inputs": []
+    },
+    {
+      "route": "/settings/team",
+      "canonical": "https://field-parts-promise.sociobot.in/settings/team",
+      "description": "People who can update this firm’s jobs.",
+      "ogImage": "https://field-parts-promise.sociobot.in/assets/og-card.png",
+      "inputs": []
+    },
+    {
+      "route": "/settings/billing",
+      "canonical": "https://field-parts-promise.sociobot.in/settings/billing",
+      "description": "Firm plan and technician seat details.",
+      "ogImage": "https://field-parts-promise.sociobot.in/assets/og-card.png",
+      "inputs": []
+    },
+    {
+      "route": "/settings/data",
+      "canonical": "https://field-parts-promise.sociobot.in/settings/data",
+      "description": "Export or schedule deletion of firm data.",
+      "ogImage": "https://field-parts-promise.sociobot.in/assets/og-card.png",
+      "inputs": []
+    },
+    {
+      "route": "/privacy",
+      "canonical": "https://field-parts-promise.sociobot.in/privacy",
+      "description": "How Parts Promise handles local data.",
+      "ogImage": "https://field-parts-promise.sociobot.in/assets/og-card.png",
+      "inputs": []
+    },
+    {
+      "route": "/terms",
+      "canonical": "https://field-parts-promise.sociobot.in/terms",
+      "description": "Terms for using Parts Promise.",
+      "ogImage": "https://field-parts-promise.sociobot.in/assets/og-card.png",
+      "inputs": []
+    }
+  ],
+  "links": [
+    {
+      "href": "https://field-parts-promise.sociobot.in/#main",
+      "status": 200,
+      "internal": true
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/",
+      "status": 200,
+      "internal": true
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/?demo=1",
+      "status": 200,
+      "internal": true
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/jobs",
+      "status": 200,
+      "internal": true
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/privacy",
+      "status": 200,
+      "internal": true
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/onboarding",
+      "status": 200,
+      "internal": true
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/terms",
+      "status": 200,
+      "internal": true
+    },
+    {
+      "href": "https://sociobot.in/",
+      "status": 200,
+      "internal": false
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/?demo=1#main",
+      "status": 200,
+      "internal": true
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/jobs#main",
+      "status": 200,
+      "internal": true
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/onboarding#main",
+      "status": 200,
+      "internal": true
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/settings/team#main",
+      "status": 200,
+      "internal": true
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/settings/billing#main",
+      "status": 200,
+      "internal": true
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/settings/data#main",
+      "status": 200,
+      "internal": true
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/privacy#main",
+      "status": 200,
+      "internal": true
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/settings/data",
+      "status": 200,
+      "internal": true
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/terms#main",
+      "status": 200,
+      "internal": true
+    }
+  ]
+}

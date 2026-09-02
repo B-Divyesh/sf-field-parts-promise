@@ -1,0 +1,122 @@
+[
+  {
+    "path": "/index.html",
+    "status": 200,
+    "bytes": 2500,
+    "match": true,
+    "sha256": "fd6a1c1b1674cde444a946b1c745c183544153cd9a290eac88fcc48625412dae",
+    "cacheControl": "no-cache, max-age=0, must-revalidate"
+  },
+  {
+    "path": "/assets/favicon.svg",
+    "status": 200,
+    "bytes": 323,
+    "match": true,
+    "sha256": "3d6b51ddcfeb89a6bf272e91976a9b36b3e5c402f3786a6838e801f19aa5e1b7",
+    "cacheControl": "public, max-age=3600"
+  },
+  {
+    "path": "/assets/apple-touch-icon.png",
+    "status": 200,
+    "bytes": 1909,
+    "match": true,
+    "sha256": "e14987c588730c5f9e4ff9cb79155000c2329854eaf9fefa0b81b920051b0785",
+    "cacheControl": "public, max-age=3600"
+  },
+  {
+    "path": "/manifest.webmanifest",
+    "status": 200,
+    "bytes": 514,
+    "match": true,
+    "sha256": "9d4228b4cf8adb6d02d5086195159d3b288663a8dccdc44b39b9343ac352da1f",
+    "cacheControl": "public, max-age=3600"
+  },
+  {
+    "path": "/fonts/barlow-condensed-latin.woff2",
+    "status": 200,
+    "bytes": 22444,
+    "match": true,
+    "sha256": "3787a5a419171630e6890cfa47c4da067474d005cd0ff8dc11ec090fdc3ee2b8",
+    "cacheControl": "public, max-age=3600"
+  },
+  {
+    "path": "/fonts/atkinson-hyperlegible-next-latin.woff2",
+    "status": 200,
+    "bytes": 33996,
+    "match": true,
+    "sha256": "18b2a1a39a2fa298b0ba5390aca68462669826c90925656f1c1f6796e0e1bbaf",
+    "cacheControl": "public, max-age=3600"
+  },
+  {
+    "path": "/assets/index-tyvpRygc.js",
+    "status": 200,
+    "bytes": 123510,
+    "match": true,
+    "sha256": "97fe9b6311a25bb4e86ff08fca0c7d39dff647a4d6f6b3e17cdb93e87336b6a9",
+    "cacheControl": "public, max-age=31536000, immutable"
+  },
+  {
+    "path": "/assets/index-3bHnSEED.css",
+    "status": 200,
+    "bytes": 18871,
+    "match": true,
+    "sha256": "44fbc961bbbf2e58c1cad649079fac55e252d898a63752217bc17856a0e64d43",
+    "cacheControl": "public, max-age=31536000, immutable"
+  },
+  {
+    "path": "/sw.js",
+    "status": 200,
+    "bytes": 2760,
+    "match": true,
+    "sha256": "4a1bcc0840784c9cfba40668f5449aef8d68a5fa42f78aec857a92e877824dca",
+    "cacheControl": "no-cache, max-age=0, must-revalidate"
+  },
+  {
+    "path": "/assets/blueprint-hero.svg",
+    "status": 200,
+    "bytes": 2321,
+    "match": true,
+    "sha256": "46be0f29302458b72cc343a61cbe6d1f9f294e0c59650733142ae47094617deb",
+    "cacheControl": "public, max-age=3600"
+  },
+  {
+    "path": "/assets/og-card.png",
+    "status": 200,
+    "bytes": 42813,
+    "match": true,
+    "sha256": "3496d2a0ebb747c1219e7290f6e4a517bce341059ebc1a3fa3b89c6f1d3ac1f8",
+    "cacheControl": "public, max-age=3600"
+  },
+  {
+    "path": "/404.html",
+    "status": 200,
+    "bytes": 2641,
+    "match": true,
+    "sha256": "37cf2076100433d171a323477515692c075c5c297b51e37c6818ec0f9f413346",
+    "cacheControl": "no-cache, max-age=0, must-revalidate"
+  },
+  {
+    "path": "/site-fallback.css",
+    "status": 200,
+    "bytes": 1674,
+    "match": true,
+    "sha256": "09b4b882cab089fa3f4edb5b07120b23cb8c82ed994309666919d65d886bbbb0",
+    "cacheControl": "public, max-age=3600"
+  },
+  {
+    "path": "/robots.txt",
+    "status": 200,
+    "bytes": 85,
+    "match": true,
+    "sha256": "c774b0cd7c33360d6386e24da9031837affe844813864e7cae419bc8de88f999",
+    "cacheControl": "public, max-age=3600"
+  },
+  {
+    "path": "/sitemap.xml",
+    "status": 200,
+    "bytes": 767,
+    "match": true,
+    "sha256": "d601f8f95b8b3d402324d655713acf5ce8ab8ed609e000a73d173ea5e4332466",
+    "cacheControl": "public, max-age=3600"
+  }
+]

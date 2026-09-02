@@ -1,0 +1,266 @@
+{
+  "total": 37,
+  "passed": 37,
+  "failed": 0,
+  "claims": [
+    {
+      "id": "sample-fixture",
+      "claim": "The demo opens Riverside Dental job RD-1042 with one missing condensate pump.",
+      "test": "npm run test:e2e -- --grep @claim:sample-fixture",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/sample-fixture.log"
+    },
+    {
+      "id": "promise-status-from-allocation",
+      "claim": "The promise status changes from Date at risk to Parts in hand only after every required quantity has an allocation.",
+      "test": "npm run test:e2e -- --grep @claim:promise-status-from-allocation",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/promise-status-from-allocation.log"
+    },
+    {
+      "id": "allocation-keeps-source",
+      "claim": "Each allocation keeps its job, source, quantity, unit, updater, and checked time after reload.",
+      "test": "npm run test:e2e -- --grep @claim:allocation-keeps-source",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/allocation-keeps-source.log"
+    },
+    {
+      "id": "supplier-quantity-conserved",
+      "claim": "One supplier-order unit can be held for only one job.",
+      "test": "npm run test:e2e -- --grep @claim:supplier-quantity-conserved",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/supplier-quantity-conserved.log"
+    },
+    {
+      "id": "reorder-after-allocation",
+      "claim": "Using the last spare in Van 2 suggests a reorder but never places one.",
+      "test": "npm run test:e2e -- --grep @claim:reorder-after-allocation",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/reorder-after-allocation.log"
+    },
+    {
+      "id": "demo-reset-isolated",
+      "claim": "Demo changes reset to the bundled sample, and every demo exit discards them before reopening the unchanged live local workspace.",
+      "test": "npm run test:e2e -- --grep @claim:demo-reset-isolated",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/demo-reset-isolated.log"
+    },
+    {
+      "id": "offline-reload",
+      "claim": "The sample job and allocation flow work offline after the first visit.",
+      "test": "npm run test:e2e -- --grep @claim:offline-reload",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/offline-reload.log"
+    },
+    {
+      "id": "local-workspace-flow",
+      "claim": "One person can create a local job and required part, then record a van or warehouse source. They can allocate and undo a quantity, attach supplier-date evidence, and review the promise status.",
+      "test": "npm run test:e2e -- --grep @claim:local-workspace-flow",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/local-workspace-flow.log"
+    },
+    {
+      "id": "demo-feature-boundaries",
+      "claim": "The demo stays account-free and cannot sync, place a supplier order, or start payment.",
+      "test": "npm run test:e2e -- --grep @claim:demo-feature-boundaries",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/demo-feature-boundaries.log"
+    },
+    {
+      "id": "indexeddb-local-storage",
+      "claim": "Jobs, required parts, sources, and allocations are stored in the named browser IndexedDB workspaces.",
+      "test": "npm run test:e2e -- --grep @claim:indexeddb-local-storage",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/indexeddb-local-storage.log"
+    },
+    {
+      "id": "demo-network-privacy",
+      "claim": "The normal demo allocation and reset flow makes only same-origin GET requests and does not ask for camera access.",
+      "test": "npm run test:e2e -- --grep @claim:demo-network-privacy",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/demo-network-privacy.log"
+    },
+    {
+      "id": "manual-barcode-allocation",
+      "claim": "Entering a barcode can find a required part and continue to its allocation.",
+      "test": "npm run test:e2e -- --grep @claim:manual-barcode-allocation",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/manual-barcode-allocation.log"
+    },
+    {
+      "id": "camera-barcode-privacy",
+      "claim": "Camera access starts only after Use camera, and barcode camera frames are not saved or sent.",
+      "test": "npm run test:e2e -- --grep @claim:camera-barcode-privacy",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/camera-barcode-privacy.log"
+    },
+    {
+      "id": "release-order-boundary",
+      "claim": "Parts Promise suggests reorders and records supplier evidence but does not place supplier orders.",
+      "test": "npm run test:e2e -- --grep @claim:release-order-boundary",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/release-order-boundary.log"
+    },
+    {
+      "id": "clear-local-records",
+      "claim": "Browser site-data controls remove local workspace records.",
+      "test": "npm run test:e2e -- --grep @claim:clear-local-records",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/clear-local-records.log"
+    },
+    {
+      "id": "workspace-backup-roundtrip",
+      "claim": "Export workspace downloads a versioned JSON backup that restores every job, required part, source, allocation, and timestamp.",
+      "test": "npm run test:e2e -- --grep @claim:workspace-backup-roundtrip",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/workspace-backup-roundtrip.log"
+    },
+    {
+      "id": "csv-import-validation",
+      "claim": "Import workspace previews CSV jobs, required parts, and sources with row-level validation before saving.",
+      "test": "npm run test:e2e -- --grep @claim:csv-import-validation",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/csv-import-validation.log"
+    },
+    {
+      "id": "demo-transfer-isolated",
+      "claim": "Importing or exporting the sample uses only the demo workspace and never changes the live workspace.",
+      "test": "npm run test:e2e -- --grep @claim:demo-transfer-isolated",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/demo-transfer-isolated.log"
+    },
+    {
+      "id": "csv-template-download",
+      "claim": "Download CSV template provides a CSV file with a valid job, required part, and source example.",
+      "test": "npm run test:e2e -- --grep @claim:csv-template-download",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/csv-template-download.log"
+    },
+    {
+      "id": "entra-sign-in",
+      "claim": "Account sign-in uses the shared Sociobot Microsoft Entra tenant, and invalid or expired tokens are rejected.",
+      "test": "npm run test:e2e -- --grep @claim:entra-sign-in",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/entra-sign-in.log"
+    },
+    {
+      "id": "tenant-data-isolation",
+      "claim": "A signed-in firm cannot read another firm's shared workspace.",
+      "test": "npm run test:e2e -- --grep @claim:tenant-data-isolation",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/tenant-data-isolation.log"
+    },
+    {
+      "id": "two-device-sync",
+      "claim": "A saved firm workspace appears on a second signed-in device.",
+      "test": "npm run test:e2e -- --grep @claim:two-device-sync",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/two-device-sync.log"
+    },
+    {
+      "id": "idempotent-sync",
+      "claim": "Retrying the same sync operation applies it only once.",
+      "test": "npm run test:e2e -- --grep @claim:idempotent-sync",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/idempotent-sync.log"
+    },
+    {
+      "id": "offline-signed-in-sync",
+      "claim": "A signed-in change made offline stays in a durable device outbox, survives reload, retries on reconnect, and backs off after a temporary sync failure.",
+      "test": "npm run test:e2e -- --grep @claim:offline-signed-in-sync",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/offline-signed-in-sync.log"
+    },
+    {
+      "id": "sync-conflict-resolution",
+      "claim": "A stale signed-in quantity revision opens an explicit conflict and cannot overwrite the shared quantity evidence.",
+      "test": "npm run test:e2e -- --grep @claim:sync-conflict-resolution",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/sync-conflict-resolution.log"
+    },
+    {
+      "id": "invitation-email-activation",
+      "claim": "A recorded team invitation activates only when its matching verified Entra email signs in.",
+      "test": "npm run test:e2e -- --grep @claim:invitation-email-activation",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/invitation-email-activation.log"
+    },
+    {
+      "id": "account-service-boundaries",
+      "claim": "Signed-in workspace data uses this product API, and sign-in redirects to the shared Sociobot Microsoft Entra tenant.",
+      "test": "npm run test:e2e -- --grep @claim:account-service-boundaries",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/account-service-boundaries.log"
+    },
+    {
+      "id": "sensitive-input-boundary",
+      "claim": "A user does not enter a password or payment-card number in Parts Promise.",
+      "test": "npm run test:e2e -- --grep @claim:sensitive-input-boundary",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/sensitive-input-boundary.log"
+    },
+    {
+      "id": "audit-log-recording",
+      "claim": "Firm onboarding, invitation, and workspace sync actions appear in the firm's exported audit events.",
+      "test": "npm run test:e2e -- --grep @claim:audit-log-recording",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/audit-log-recording.log"
+    },
+    {
+      "id": "firm-deletion-hold",
+      "claim": "A firm owner can schedule deletion with a 14-day hold and cancel it before deletion.",
+      "test": "npm run test:e2e -- --grep @claim:firm-deletion-hold",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/firm-deletion-hold.log"
+    },
+    {
+      "id": "response-policy",
+      "claim": "Export allows five requests per minute, then returns 429 with a positive Retry-After. Protected metrics expose latency, status, conflict, queue-age, and notification signals.",
+      "test": "npm run test:e2e -- --grep @claim:response-policy",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/response-policy.log"
+    },
+    {
+      "id": "subscription-checkout",
+      "claim": "Checkout is not available yet. It is requested only after the firm owner presses Check checkout availability. No charge starts.",
+      "test": "npm run test:e2e -- --grep @claim:subscription-checkout",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/subscription-checkout.log"
+    },
+    {
+      "id": "technician-seat-charge",
+      "claim": "The firm plan costs $39 per month, each active technician costs $8 per month, and the owner is included in the base price without using a technician seat.",
+      "test": "npm run test:e2e -- --grep @claim:technician-seat-charge",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/technician-seat-charge.log"
+    },
+    {
+      "id": "expired-plan-keeps-export",
+      "claim": "An unpaid firm keeps existing records and can export them while new cloud writes are blocked.",
+      "test": "npm run test:e2e -- --grep @claim:expired-plan-keeps-export",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/expired-plan-keeps-export.log"
+    },
+    {
+      "id": "durable-runtime-storage",
+      "claim": "The one-replica deployment stores its SQLite database and generated metrics token in the configured data directory and retains firm data across a restart.",
+      "test": "npm run test:e2e -- --grep @claim:durable-runtime-storage",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/durable-runtime-storage.log"
+    },
+    {
+      "id": "visible-build-identity",
+      "claim": "Every app route shows the server build identity in its footer.",
+      "test": "npm run test:e2e -- --grep @claim:visible-build-identity",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/visible-build-identity.log"
+    },
+    {
+      "id": "container-runtime",
+      "claim": "The production server starts with only PORT, serves its build identity and compiled app, rate-limits API traffic, and returns HTTP 404 for unknown paths.",
+      "test": "npm run test:e2e -- --grep @claim:container-runtime",
+      "status": "PASS",
+      "evidence": ".factory/verification-artifacts-19/claims/container-runtime.log"
+    }
+  ]
+}

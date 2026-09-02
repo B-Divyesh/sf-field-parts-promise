@@ -1,0 +1,4 @@
+{
+  "beforeVisit": "◷ Expected before visit QA-BEFORE is confirmed by supplier for 2026-09-01.",
+  "afterVisit": "⌁ Date at risk Supplier order QA-AFTER is not expected before the visit buffer."
+}

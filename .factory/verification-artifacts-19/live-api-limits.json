@@ -1,0 +1,100 @@
+{
+  "checkedAt": "2026-09-02T01:47:33.407Z",
+  "exportSequential": [
+    {
+      "status": 401,
+      "retryAfter": null,
+      "limit": "5",
+      "remaining": "4",
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "limit": "5",
+      "remaining": "3",
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "limit": "5",
+      "remaining": "2",
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "limit": "5",
+      "remaining": "1",
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "limit": "5",
+      "remaining": "0",
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 429,
+      "retryAfter": "60",
+      "limit": "5",
+      "remaining": null,
+      "wwwAuthenticate": null
+    }
+  ],
+  "bursts": [
+    {
+      "name": "read bootstrap",
+      "count": 50,
+      "statuses": {
+        "401": 40,
+        "429": 10
+      },
+      "retryAfter": [
+        "2"
+      ],
+      "limits": [
+        "40"
+      ]
+    },
+    {
+      "name": "write sync",
+      "count": 20,
+      "statuses": {
+        "422": 10,
+        "429": 10
+      },
+      "retryAfter": [
+        "2"
+      ],
+      "limits": [
+        "10"
+      ]
+    },
+    {
+      "name": "protected metrics",
+      "count": 50,
+      "statuses": {
+        "401": 40,
+        "429": 10
+      },
+      "retryAfter": [
+        "2"
+      ],
+      "limits": [
+        "40"
+      ]
+    },
+    {
+      "name": "unknown API fallback",
+      "count": 50,
+      "statuses": {
+        "404": 50
+      },
+      "retryAfter": [],
+      "limits": []
+    }
+  ]
+}

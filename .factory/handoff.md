@@ -1,95 +1,77 @@
-# Parts Promise polish 6 handoff — PASS
+# Parts Promise verification 19 handoff — PASS
 
 Date: 2026-09-02 UTC
 
-Work order: `field-parts-promise-polish-6`
+Work order: `field-parts-promise-verify-19`
 
-Implementation commit: `54fe70e7d87134f88bb3780b6368c1bd3803cf88`
+Candidate: `a0d9af536f7a981249123658846e74f2e8f9d28e`
 
 Live URL: <https://field-parts-promise.sociobot.in>
 
 ## Result
 
-All findings from `.factory/review-6.md` and every earlier review were closed
-or rechecked. The live revision reports the exact tested implementation SHA.
+**PASS — accept the candidate.** Independent clean-checkout and live QA found
+no critical, high, medium, or low defects. Production reports the exact
+candidate SHA and its checked assets byte-match the candidate build.
 
-The mode switch now clears workspace-derived transient UI before rendering,
-guards in-flight live requests, and prevents live sync state from appearing in
-Demo. The claim test proves isolation in both directions with unique record
-names. The Entra claim test now covers expiry, signature, issuer, audience, and
-tenant rejection, including the required authentication header. Pricing and
-README wording are plain and match the unavailable-checkout boundary.
+No product code, infrastructure, DNS, billing configuration, production
+records, or durable `/data` content was changed. This work order added only
+verification documentation and evidence.
 
-`.factory/polish-6.md` maps every finding ID to its change and evidence.
+## Verification summary
 
-## Verification
+- All 37 commands in `.factory/claims.json` passed independently before other
+  QA.
+- The cold first screen plainly states the job, audience, first action, and
+  sample outcome. **Try it with sample data** opens the realistic Riverside
+  Dental job in one click.
+- `npm ci`, `npm test` (23 Vitest + 15 Rust), `npm run check`,
+  `npm run format:check`, strict Clippy, and the exact SHA-stamped production
+  build passed. Full Playwright: 59 passed, 43 intentional skips.
+- The core flow handled a valid van allocation, rejected quantity `2`,
+  recovered with `1`, produced the reorder warning without ordering, and reset
+  safely. Supplier evidence before/after the visit produced the correct
+  promise states.
+- The live 9-route × 2-theme × 2-viewport matrix had zero serious/critical Axe
+  findings, console/page errors, horizontal overflow, or undersized mobile
+  links/buttons. Keyboard-only allocation, visible focus, 200% text, and
+  reduced motion passed.
+- The demo flow made seven same-origin GET requests with no body. Security and
+  caching headers passed. The service worker updated cleanly and completed the
+  allocation after an offline reload.
+- Live API allowances were enforced with 429 plus `Retry-After`: read/metrics
+  40 per 2 seconds, write 10 per 2 seconds, export/critical 5 per 60 seconds.
+  Every implemented non-health endpoint reported its expected limit header.
+- Live Entra authorization uses the required Sociobot tenant, client,
+  production callback, authorization-code flow, and PKCE S256.
+- Fresh mobile Lighthouse: 98 performance, 100 accessibility, 100 best
+  practices, 100 SEO; LCP 2.01 s, TBT 95 ms, CLS 0.
 
-- Clean clone at `54fe70e7d87134f88bb3780b6368c1bd3803cf88`:
-  all 37 commands from `.factory/claims.json` passed independently. See
-  `.factory/evidence/polish-6/clean-claims/summary.json` and its per-claim logs.
-- `npm test`: 23 Vitest and 15 Rust tests passed.
-- `npm run check`, `npm run format:check`, and strict `cargo clippy`: passed.
-- `npm audit --audit-level=high`: zero vulnerabilities.
-- `BUILD_SHA=54fe70e7d87134f88bb3780b6368c1bd3803cf88 npm run build`: passed and
-  produced `dist/`. Initial JavaScript is 39.89 KB gzip and CSS is 4.24 KB gzip;
-  the deferred sign-in chunk is 62.19 KB gzip.
-- Full Playwright suite: 59 passed, 43 intentional project-specific skips.
-- Exact-commit local audit: 72/72 checks passed. Factory URL verification found
-  no console errors, one H1, a main landmark, `lang=en`, no missing alt text,
-  and no unlabeled buttons.
-- Live cold audit: 72/72 checks passed. It covers first-screen copy, one-click
-  demo state, unique-token live/demo isolation both ways, banner/reset behavior,
-  route titles, one H1 and main landmark per route, legal links, real 404,
-  serious/critical Axe findings, console errors, SQLite health, and build SHA.
-- Live factory URL verifier: HTTP 200 in 603 ms, no console errors, and all
-  semantic smoke checks passed.
-- Live malformed bearer token: HTTP 401 with `WWW-Authenticate: Bearer`.
-- Live unknown route: HTTP 404 with the product's designed error page and
-  security headers.
-- Live Lighthouse: performance 99, accessibility 100, best practices 100, SEO
-  100; LCP 1.8 s, CLS 0, total blocking time 50 ms.
+Full evidence and findings are in `.factory/verification-19.md` and
+`.factory/verification-artifacts-19/`.
 
-Evidence is under `.factory/evidence/polish-6/`, including cold mobile,
-demo-isolation, desktop, Lighthouse, factory-verifier, audit JSON, and all
-clean-clone claim logs.
+## Reproduce
 
-## Run and verify
-
-```bash
+```sh
 npm ci
 npm test
 npm run check
 npm run format:check
-cargo clippy --manifest-path server/Cargo.toml --all-targets -- -D warnings
-npm audit --audit-level=high
+cargo clippy --manifest-path server/Cargo.toml --locked --all-targets -- -D warnings
 BUILD_SHA=$(git rev-parse HEAD) npm run build
 BUILD_SHA=$(git rev-parse HEAD) npm run test:e2e -- --retries=0
-BASE_URL=http://127.0.0.1:4173 \
-  EXPECTED_BUILD_SHA=$(git rev-parse HEAD) \
-  EVIDENCE_DIR=.factory/evidence/polish-6/local \
-  node scripts/audit-round6.mjs
+EXPECTED_BUILD_SHA=$(git rev-parse HEAD) npm run verify:live-identity
+node .factory/verification-artifacts-19/run-live-browser.mjs
 ```
 
-The direct sample URL is
-<https://field-parts-promise.sociobot.in/?demo=1>. Reset demo restores the
-seeded Riverside Dental job. Start for real deletes the demo database and opens
-the separate live workspace.
+The demo URL is
+<https://field-parts-promise.sociobot.in/?demo=1>. **Reset demo** restores the
+seeded sample. **Start for real** deletes demo changes and returns to the
+separate live local workspace.
 
-## Deployment
+## Known gap / operator action
 
-- Artifact class: containerized web application with Rust/Axum backend and
-  built Svelte frontend.
-- Image tag: `sf-field-parts-promise:54fe70e7d871`.
-- Owned app: `sf-field-parts-promise`.
-- Durable mount: fleet-managed `sf-field-parts-promise-data` at `/data`, one
-  replica.
-- Health: `status=ok`, `database=sqlite`, `auth=ready`, build SHA
-  `54fe70e7d87134f88bb3780b6368c1bd3803cf88`.
-
-## Remaining work
-
-No review finding or repository defect is known. Checkout intentionally remains
-unavailable and operator-gated; the UI makes no billing request until the owner
-presses its named action, and the server returns the tested unavailable state.
-Enabling it later requires the product registration supplied by the factory
-operator. No direct payment-provider integration is present.
+Recurring checkout remains unavailable and is disclosed as such; no charge
+can start. The operator must register a Sociobot recurring product capable of
+the $39/month firm base plus $8/month active technician quantity before paid
+signup is enabled. The repository correctly does not call Dodo directly.
