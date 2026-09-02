@@ -1,74 +1,53 @@
-# Parts Promise verification 18 handoff — PASS
+# Parts Promise review 6 handoff — FAIL
 
-Date: 2026-09-01 UTC
+Date: 2026-09-02 UTC
 
-Work order: `field-parts-promise-verify-18`
+Work order: `field-parts-promise-review-6`
 
-Candidate: `1dc52f562f69857388821b940a0e78e1b3a8ff3a`
+Repository base: `6784f9d841321e3aba7506b13b5de52b90cd9916`
 
 Live URL: <https://field-parts-promise.sociobot.in>
 
 ## Result
 
-**PASS — accept this candidate.** No critical, high, medium, or low defects
-were found. The live deployment reports the exact candidate build, uses
-SQLite, matches the local production web build byte-for-byte, and gives all
-hashed JS/CSS assets a one-year immutable cache policy.
+The adversarial review is complete in `.factory/review-6.md`. The verdict is
+**FAIL** with one blocking, two high, and two low findings.
 
-The full evidence is in `.factory/verification-18.md`. Machine-readable
-reports and screenshots are in `.factory/verification-artifacts-18/`.
+The blocker is a live/demo UI-boundary leak: a live job's confirmation toast
+remains visible after the app switches into Demo. The other findings cover an
+authentication claim whose tagged test proves only part of the stated token
+validation, a pricing heading that implies unavailable payment, and two README
+plain-language issues.
 
-## Verification summary
+## Verification completed
 
-- All 37 commands declared in `.factory/claims.json`: passed separately from
-  the clean checkout.
-- Cold first read: passed on desktop and 390 px mobile. The page says what it
-  does, who it is for, what to click, and what opens next. The sample is one
-  click away.
-- `npm ci`: passed with 0 reported vulnerabilities.
+- Cold first read at 390 × 844 and 1440 × 900.
+- One-click live demo, allocation, reset, exit, IndexedDB namespace isolation,
+  offline reload, and full request logging.
+- All 37 exact `.factory/claims.json` commands, run independently from the clean
+  clone `/tmp/field-parts-promise-review6.fGD0eV/clone`: all exited successfully.
+- All earlier review and polish findings checked against the live site and code.
+- All sitemap routes plus an unknown route checked for status, titles, one H1,
+  main landmark, metadata, canonical/OG/Twitter tags, favicons, footer, and
+  console output.
+- Link crawl: all product and external navigational links passed; the unknown
+  route correctly returned 404.
+- Axe on ten live routes: zero serious or critical findings.
+- Mobile and desktop route focus, Back, and scroll restoration: passed.
 - `npm test`: passed, 22 Vitest and 15 Rust tests.
-- Type checks, formatting, strict Rust lint, and candidate-stamped production
-  build: passed.
-- Full Playwright suite: 59 passed, 43 intentional skips, 0 failed.
-- Live Axe matrix: 44 analyses, 0 serious/critical findings.
-- Invalid quantity recovery, keyboard-only allocation, designed focus, 200%
-  text, 390 px layout, reduced motion, camera boundary, service-worker update,
-  and offline allocation: passed.
-- Demo privacy: same-origin GETs only, with no body or cookie.
-- API limits: read 40/2 s, write 10/2 s, critical 5/60 s. Excess requests
-  returned 429 with `Retry-After`.
-- Entra redirect: correct Sociobot CIAM tenant, client, callback, and PKCE S256.
-- Lighthouse mobile: 99 performance and 100 for accessibility, best practices,
-  and SEO; LCP 2.0 s, TBT 60 ms, CLS 0.
-- Cache repair: main JS, lazy sign-in JS, and CSS return
-  `public, max-age=31536000, immutable`.
+- `npm run check`: passed with no errors or warnings.
+- `npm run format:check`: passed.
+- `BUILD_SHA=6784f9d841321e3aba7506b13b5de52b90cd9916 npm run build`: passed and
+  produced `dist/`.
+- `BUILD_SHA=6784f9d841321e3aba7506b13b5de52b90cd9916 npm run test:e2e -- --retries=0`:
+  passed, 59 tests passed and 43 project-specific tests skipped.
 
-## How to re-run
-
-```sh
-npm ci
-npm test
-npm run check
-npm run format:check
-cargo clippy --manifest-path server/Cargo.toml --locked --all-targets -- -D warnings
-BUILD_SHA=1dc52f562f69857388821b940a0e78e1b3a8ff3a npm run build
-BUILD_SHA=1dc52f562f69857388821b940a0e78e1b3a8ff3a npm run test:e2e -- --retries=0
-EXPECTED_BUILD_SHA=1dc52f562f69857388821b940a0e78e1b3a8ff3a npm run verify:live-identity
-```
-
-## Known gap and operator action
-
-Recurring checkout is still unavailable because the Sociobot billing gateway
-does not have a supported recurring base-plus-seat registration for this
-product. The UI states this plainly and never starts a charge. Register the
-approved `$39/month + $8/active technician/month` product before accepting the
-recurring-billing milestone; do not integrate Dodo directly.
-
-Planned later supplier-watch and notification work remains in
-`.factory/plan.md` and is not claimed as shipped.
-
-## Scope and mutations
+## Scope and remaining work
 
 No product code, infrastructure, DNS, billing configuration, customer records,
-or persistent `/data` files were changed. Only the verification report,
-handoff, and evidence artifacts were added or updated.
+or persistent deployment data was modified. Only this review and handoff were
+written.
+
+Resolve F-6-1 through F-6-5 in `.factory/review-6.md`, then repeat the full
+claim and live-browser review. Checkout remains explicitly unavailable; no
+payment provider integration was attempted.
