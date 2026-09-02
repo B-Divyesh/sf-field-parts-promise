@@ -1,8 +1,11 @@
 # Perfection-loop round 8 repair map
 
-Date: 2026-09-02 UTC  
-Work order: `field-parts-promise-polish-8`  
-Repair source: `0f05f4d44b88ce3fa69cb3d31133f53b6efb3beb`  
+Date: 2026-09-02 UTC
+
+Work order: `field-parts-promise-polish-8`
+
+Repair source: `0f05f4d44b88ce3fa69cb3d31133f53b6efb3beb`
+
 Live URL: <https://field-parts-promise.sociobot.in>
 
 All findings in reviews 1–8 were reread. Review 4 added no finding. Every
