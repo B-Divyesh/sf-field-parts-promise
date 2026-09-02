@@ -1,142 +1,84 @@
-# Parts Promise repair 14 — PASS
+# Parts Promise independent verification 21 — PASS
 
 Date: 2026-09-02 UTC
 
-## Repair outcome
+Candidate: `690fcb860a1eabc7e4c2485141059f0013c08b4c`
 
-This repair addresses the sole release blocker in independent verification 20:
-mobile LCP over the 2.5-second budget. The source report is
-`.factory/verification-20.md` for candidate
-`6f0e3b0852fa89bdbe627e89bea831457fd192af`.
+Live URL: <https://field-parts-promise.sociobot.in>
 
-The public `/` route now mounts a small, task-complete landing shell and loads
-the workspace application only when a visitor enters the demo, opens a route,
-or starts sign-in. The workspace shell, IndexedDB startup, and optional Entra
-CIAM chunk are therefore absent from the initial landing request path. The
-landing preserves the existing visual system, first-screen copy, theme control,
-demo action, metadata, and service worker behavior. The original workspace is
-unchanged after it is opened.
+## Verdict
 
-The handoff also preserves history semantics across that lazy boundary: the
-landing writes its current position before it changes route, and the workspace
-signals after its local state is ready. This keeps Back/Forward focus and
-reading-position restoration reliable on desktop and 390 px mobile.
+**PASS.** Fresh independent verification found no product defect at any
+severity. The live server reports the exact candidate SHA. The previous mobile
+LCP blocker is resolved: two new live mobile Lighthouse runs measured 1.352 s
+and 1.350 s LCP.
 
-## Regression coverage
+The complete evidence and command results are in
+`.factory/verification-21.md` and `.factory/evidence/verification-21/`.
 
-- `e2e/product.spec.ts`: **the public landing defers workspace and account
-  bundles until a workspace action** records initial same-origin requests,
-  asserts no `ciam-*.js` request, asserts one initial `index-*.js`, then proves
-  the sample action opens Riverside Dental.
-- `e2e/product.spec.ts`: existing Back/Forward scroll and focused-heading test
-  now covers the lazy-landing history boundary in both Chromium projects.
-- `e2e/claims.spec.ts`: the backup round-trip helper waits for the product's
-  explicit initialized-workspace signal before opening IndexedDB, avoiding a
-  startup race while retaining the observable claim assertion.
+## What was verified
 
-## Local verification
+- All 37 `.factory/claims.json` commands passed individually before other
+  repository inspection.
+- `npm ci`, `npm test`, `npm run check`, `npm run format:check`, strict Cargo
+  clippy, `npm run build`, and `npm audit --audit-level=high` passed.
+- A clean full Playwright rerun passed: 61 passed, 43 expected skips.
+- Cold first read and one-click sample passed on desktop and 390×844 mobile.
+- Live local, demo, supplier-evidence, invalid-input, reset, keyboard, and
+  offline flows passed.
+- Forty-four live Axe route/theme/viewport analyses found 0 serious/critical
+  issues. There were no normal-route console or page errors.
+- The demo request log contained only same-origin GET/HEAD requests.
+- The service worker was current and supported a full offline reload/allocation.
+- Live headers, immutable asset caching, no-cache HTML/service-worker behavior,
+  bundle budgets, 200% text sizing, metadata, 404, links, and PWA files passed.
+- CIAM used the required Sociobot tenant/client/callback and PKCE.
+- 100 concurrent health requests all returned 200.
+- Live export throttling allowed five requests per minute, then returned 429
+  with `Retry-After: 60`.
 
-Run from a clean checkout with Node 22 and current stable Rust:
+## Key measurements
+
+| Check | Result |
+| --- | --- |
+| Live build SHA | `690fcb860a1eabc7e4c2485141059f0013c08b4c` |
+| Unit/API tests | 24 + 15 passed |
+| Full browser suite | 61 passed, 43 expected skips |
+| Live Axe | 44 analyses, 0 serious/critical |
+| Lighthouse run 1 | 100 performance, 1.352 s LCP, 0.022 CLS |
+| Lighthouse run 2 | 95 performance, 1.350 s LCP, 0.022 CLS |
+| Initial JS | 19.90 KB gzip |
+| CSS | 6.61 KB gzip total |
+| Fonts | 56,440 bytes |
+| API critical allowance | 5 requests/minute; sixth 429, `Retry-After: 60` |
+
+## Runner note
+
+One first full-suite attempt ended when Playwright Chromium itself segfaulted
+before creating a new context. The affected claim had already passed alone. A
+fresh complete run passed all 61 executed tests without retry. This was a
+transient runner-process failure, not a product assertion failure.
+
+## Defects and operator action
+
+- Critical: none.
+- High: none.
+- Medium: none.
+- Low: none.
+- Operator action required for this candidate: none.
+
+Checkout remains honestly labelled unavailable and cannot start a charge. The
+recurring-billing registration remains the documented future operator boundary.
+
+## Reproduce
 
 ```sh
 npm ci
-npm run format:check
 npm test
+npm run check
+npm run format:check
 cargo clippy --manifest-path server/Cargo.toml --locked --all-targets -- -D warnings
-npm run test:e2e -- --retries=0
 npm run build
-npm audit --audit-level=high
+npm run test:e2e -- --retries=0
+EXPECTED_BUILD_SHA=690fcb860a1eabc7e4c2485141059f0013c08b4c npm run verify:live-identity
 ```
-
-Results on 2026-09-02:
-
-- `npm ci`: completed with **0 vulnerabilities**.
-- `npm test`: **24** Vitest tests and **15** Rust API tests passed.
-- `svelte-check`, Prettier, `cargo fmt --check`, and strict `cargo clippy`
-  passed with no warnings.
-- Full Playwright: **61 passed, 43 expected project-specific skips** across
-  desktop Chromium and the 390×844 mobile project. It covers every registered
-  claim, sample/demo isolation, allocation, imports/backup, privacy request
-  policy, service-worker offline reload/update, keyboard flow, reduced motion,
-  history focus/scroll, and security/error states.
-- `npm run build` completed. The initial landing JavaScript is 19.90 KB gzip
-  (`index` 3.01 KB + Vite preload helper 16.89 KB); the 23.47 KB gzip workspace
-  chunk and 62.19 KB gzip CIAM chunk are deferred.
-- `npm audit --audit-level=high`: **0 vulnerabilities**.
-
-### Accessibility and browser smoke
-
-`/opt/fleet/lib/verify-url.sh http://127.0.0.1:4175` completed with no console
-errors, title and `lang=en`, exactly one `<h1>`, a `<main>`, no images missing
-`alt`, and no unlabeled buttons. Evidence is in
-`.factory/repair-14-artifacts/verify-local/` (desktop and 390 px screenshots,
-HTML, and `verify.json`). A direct mobile Playwright `@axe-core/playwright`
-scan returned **0 violations** (including 0 serious/critical); the full
-browser suite also runs the route/theme accessibility coverage.
-
-### Mobile Lighthouse
-
-Fresh production-preview Lighthouse mobile runs are saved as
-`.factory/repair-14-artifacts/lighthouse-local-mobile-1.json` and `-2.json`.
-
-| Run | Performance | Accessibility | Best practices | SEO | LCP | FCP | CLS |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 | 100 | 100 | 100 | 100 | 1.514 s | 1.364 s | 0.022 |
-| 2 | 100 | 100 | 100 | 100 | 1.507 s | 1.357 s | 0.022 |
-
-Both runs are below the 2.5-second LCP budget that failed at 2.8 s and 3.2 s
-in verification 20.
-
-## Deployment and live verification
-
-Deployed 2026-09-02 with:
-
-```sh
-/opt/fleet/lib/deploy-container.sh field-parts-promise /work/repo Dockerfile 8080
-```
-
-The ACR build run `ch1wm` succeeded in 4m55s. The single-replica container
-continues to mount the fleet-owned `sf-field-parts-promise-data` share at
-`/data`; no other resources were read or changed.
-
-The deployed repair source revision is
-`6a850191dd78d4d63aa090efe133ddb7da773769`. `npm run
-verify:live-identity` returned:
-
-```json
-{"status":"ok","build_sha":"6a850191dd78d4d63aa090efe133ddb7da773769","database":"sqlite","auth":"ready"}
-```
-
-Live evidence is in `.factory/repair-14-artifacts/verify-live/`:
-
-- `/` returned 200 with the required CSP, HSTS, `Permissions-Policy`,
-  `X-Content-Type-Options`, and strict referrer policy. The root is
-  `no-cache`; a hashed JavaScript asset returned
-  `Cache-Control: public, max-age=31536000, immutable`.
-- `/opt/fleet/lib/verify-url.sh https://field-parts-promise.sociobot.in`
-  completed in 606 ms with no console errors, `lang=en`, one `<h1>`, `<main>`,
-  and no missing image alt text or unlabeled buttons. A 390 px live Axe scan
-  had **0 violations** and **0 serious/critical** findings.
-- Live desktop and 390 px keyboard browser smoke: skip link focused, moved to
-  `<main>`, keyboard activation opened the Riverside Dental demo with its new
-  heading focused, no console errors, and no initial CIAM chunk request. The
-  screenshots and `demo-keyboard.json` record both viewports.
-- A distinct forwarded test address received five 401 protected-export
-  responses, then a sixth **429** with `Retry-After: 60` and
-  `X-RateLimit-Limit: 5`.
-
-Fresh live mobile Lighthouse runs are saved as
-`.factory/repair-14-artifacts/lighthouse-live-mobile-1.json` and `-2.json`:
-
-| Run | Performance | Accessibility | Best practices | SEO | LCP | FCP | CLS | TBT |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 | 100 | 100 | 100 | 100 | 1.351 s | 1.351 s | 0.022 | 65 ms |
-| 2 | 100 | 100 | 100 | 100 | 1.351 s | 1.351 s | 0.022 | 87 ms |
-
-Both live runs pass the 2.5-second LCP budget.
-
-## Known gaps / operator action
-
-None. No configuration, DNS, secret, or schema change is required. SQLite
-continues to use the mounted `/data` directory in production and its fallback
-path locally when that mount is absent.
