@@ -1,0 +1,18 @@
+[
+  {
+    "name": "desktop",
+    "skipFocused": true,
+    "mainFocused": true,
+    "headingFocused": true,
+    "initialCiamRequest": false,
+    "errors": []
+  },
+  {
+    "name": "mobile",
+    "skipFocused": true,
+    "mainFocused": true,
+    "headingFocused": true,
+    "initialCiamRequest": false,
+    "errors": []
+  }
+]

@@ -89,16 +89,51 @@ in verification 20.
 
 ## Deployment and live verification
 
-Deploy with the repository configuration (`deploy.data_dir` is `/data`, one
-replica):
+Deployed 2026-09-02 with:
 
 ```sh
 /opt/fleet/lib/deploy-container.sh field-parts-promise /work/repo Dockerfile 8080
 ```
 
-The repair is deployed after this commit is pushed. Final live health identity,
-headers, rate limiting, browser smoke, and two mobile Lighthouse measurements
-are recorded below once the container revision is healthy.
+The ACR build run `ch1wm` succeeded in 4m55s. The single-replica container
+continues to mount the fleet-owned `sf-field-parts-promise-data` share at
+`/data`; no other resources were read or changed.
+
+The deployed repair source revision is
+`6a850191dd78d4d63aa090efe133ddb7da773769`. `npm run
+verify:live-identity` returned:
+
+```json
+{"status":"ok","build_sha":"6a850191dd78d4d63aa090efe133ddb7da773769","database":"sqlite","auth":"ready"}
+```
+
+Live evidence is in `.factory/repair-14-artifacts/verify-live/`:
+
+- `/` returned 200 with the required CSP, HSTS, `Permissions-Policy`,
+  `X-Content-Type-Options`, and strict referrer policy. The root is
+  `no-cache`; a hashed JavaScript asset returned
+  `Cache-Control: public, max-age=31536000, immutable`.
+- `/opt/fleet/lib/verify-url.sh https://field-parts-promise.sociobot.in`
+  completed in 606 ms with no console errors, `lang=en`, one `<h1>`, `<main>`,
+  and no missing image alt text or unlabeled buttons. A 390 px live Axe scan
+  had **0 violations** and **0 serious/critical** findings.
+- Live desktop and 390 px keyboard browser smoke: skip link focused, moved to
+  `<main>`, keyboard activation opened the Riverside Dental demo with its new
+  heading focused, no console errors, and no initial CIAM chunk request. The
+  screenshots and `demo-keyboard.json` record both viewports.
+- A distinct forwarded test address received five 401 protected-export
+  responses, then a sixth **429** with `Retry-After: 60` and
+  `X-RateLimit-Limit: 5`.
+
+Fresh live mobile Lighthouse runs are saved as
+`.factory/repair-14-artifacts/lighthouse-live-mobile-1.json` and `-2.json`:
+
+| Run | Performance | Accessibility | Best practices | SEO | LCP | FCP | CLS | TBT |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 100 | 100 | 100 | 100 | 1.351 s | 1.351 s | 0.022 | 65 ms |
+| 2 | 100 | 100 | 100 | 100 | 1.351 s | 1.351 s | 0.022 | 87 ms |
+
+Both live runs pass the 2.5-second LCP budget.
 
 ## Known gaps / operator action
 
