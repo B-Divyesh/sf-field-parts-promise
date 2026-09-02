@@ -69,8 +69,8 @@ under `evidence/polish-7/live/`; the cold 390 px screenshot is
 | F-6-3 | Pricing heading is “Firm plan pricing.” | `@claim:subscription-checkout`; live `/`. |
 | F-6-4 | Export-limit wording states the limit and wait plainly. | `@claim:response-policy`; README audit. |
 | F-6-5 | README says the server starts without extra environment settings. | `@claim:container-runtime`; README regression test. |
-| F-7-1 | Replaced “Repeated sync requests with the same operation ID apply once.” with “Retrying the same saved change does not create a duplicate.” | `round 7 README wording`; `@claim:idempotent-sync`; live README URL check. |
-| F-7-2 | Replaced “Offline signed-in edits stay in a browser database outbox.” with “Offline signed-in edits stay queued in this browser.” | `round 7 README wording`; `@claim:offline-signed-in-sync`; live README URL check. |
+| F-7-1 | Replaced “Repeated sync requests with the same operation ID apply once.” with “Retrying the same saved change does not create a duplicate.” | `round 7 README wording`; `@claim:idempotent-sync`; pushed README at `3805dc1`, plus cold live `/` check. |
+| F-7-2 | Replaced “Offline signed-in edits stay in a browser database outbox.” with “Offline signed-in edits stay queued in this browser.” | `round 7 README wording`; `@claim:offline-signed-in-sync`; pushed README at `3805dc1`, plus cold live `/?demo=1` check. |
 
 ## Round-seven evidence
 

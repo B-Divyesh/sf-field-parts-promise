@@ -1,0 +1,372 @@
+{
+  "checkedAt": "2026-09-02T03:17:36.286Z",
+  "baseUrl": "https://field-parts-promise.sociobot.in",
+  "health": {
+    "status": "ok",
+    "build_sha": "3805dc1daf4cabd5a782a83aa541e2ebc432f023",
+    "database": "sqlite",
+    "auth": "ready"
+  },
+  "checks": [
+    {
+      "name": "home title",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "first-screen headline",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "plain pricing heading",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "unavailable checkout wording",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "no unavailable payment action heading",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "live identifier absent from demo DOM",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "demo banner",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "demo sample is ready",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "demo identifier absent from live DOM",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "live workspace preserved",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/ status",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/ title",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/ one H1",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/ one main",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/ legal links",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/ axe serious/critical",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/demo status",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/demo title",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/demo one H1",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/demo one main",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/demo legal links",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/demo axe serious/critical",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/jobs status",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/jobs title",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/jobs one H1",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/jobs one main",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/jobs legal links",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/jobs axe serious/critical",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/onboarding status",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/onboarding title",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/onboarding one H1",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/onboarding one main",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/onboarding legal links",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/onboarding axe serious/critical",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/team status",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/team title",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/team one H1",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/team one main",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/team legal links",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/team axe serious/critical",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/billing status",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/billing title",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/billing one H1",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/billing one main",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/billing legal links",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/billing axe serious/critical",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/data status",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/data title",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/data one H1",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/data one main",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/data legal links",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/settings/data axe serious/critical",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/privacy status",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/privacy title",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/privacy one H1",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/privacy one main",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/privacy legal links",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/privacy axe serious/critical",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/terms status",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/terms title",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/terms one H1",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/terms one main",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/terms legal links",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "/terms axe serious/critical",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "normal route console errors",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "normal route page errors",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "unknown route HTTP 404",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "404 title",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "404 recovery",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "health status",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "health database",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "name": "health build identity",
+      "status": "pass",
+      "detail": ""
+    }
+  ]
+}

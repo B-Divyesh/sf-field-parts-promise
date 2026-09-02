@@ -1,47 +1,62 @@
-# Parts Promise review 7 handoff — FAIL
+# Parts Promise round 7 handoff — PASS
 
 Date: 2026-09-02 UTC
 
-Work order: `field-parts-promise-review-7`
+Repair commit: `3805dc1daf4cabd5a782a83aa541e2ebc432f023`
 
-Repository base: `b90b8e992ce2d25fb60a8bb35e252bee998a5205`
+Deployed build: `3805dc1daf4cabd5a782a83aa541e2ebc432f023`
 
 Live URL: <https://field-parts-promise.sociobot.in>
 
 ## Result
 
-**FAIL — two minor README copy findings remain.** The product has no blocking,
-high, or medium finding. The complete report is in `.factory/review-7.md`.
+**PASS — zero unresolved findings.** Review 7 found only two reader-facing
+README terms. Both are fixed with the exact required language:
 
-- F-7-1: replace the unexplained “operation ID” sentence with “Retrying the
-  same saved change does not create a duplicate.”
-- F-7-2: replace “browser database outbox” with “Offline signed-in edits stay
-  queued in this browser.”
+- “Retrying the same saved change does not create a duplicate.”
+- “Offline signed-in edits stay queued in this browser.”
 
-No product code, infrastructure, DNS, billing configuration, production data,
-or durable storage was changed. This work order changed only review and
-handoff documentation.
+`src/release-contract.test.ts` keeps both phrases under regression coverage and
+rejects the retired reader-facing wording. The catalog description is now the
+verb-first line: “Allocate required parts to each job before promising a visit
+date.” `.factory/polish-7.md` maps every finding from reviews 1–7 to its
+retained repair and evidence.
 
-## Verification completed
+## Verification
 
-- Fresh 390 × 844 and 1440 × 900 cold reads passed the first-screen gate.
-- The live one-click demo opened populated sample data, allocated the missing
-  pump, reset to the original shortage, worked after an offline reload, and
-  left the live browser workspace byte-equivalent.
-- All 37 exact `.factory/claims.json` commands passed independently from a clean
-  clone at the required base.
-- `npm test`: 23 Vitest and 15 Rust/API tests passed.
-- `npm run check` and `npm run format:check` passed.
-- `BUILD_SHA=$(git rev-parse HEAD) npm run build` passed and produced `dist/`.
-- Full Playwright passed: 59 tests, 43 intentional project skips.
-- The live route audit passed 72 checks. Axe found zero serious or critical
-  issues across nine routes in both themes. The factory URL verifier reported
-  one H1, `lang=en`, a main landmark, complete image alternatives, labelled
-  buttons, and no console errors on home and demo.
-- All discovered links returned 200. The designed unknown route returned 404.
-  Route focus, Back navigation, and scroll restoration passed.
-- Every earlier numbered finding remains fixed in both the live product and
-  current source/tests.
+- Clean GitHub clone at `3805dc1daf4cabd5a782a83aa541e2ebc432f023`:
+  `npm ci`, then all 37 exact `.factory/claims.json` commands run separately.
+  Result: 37 logs, 37 commands with a pass result, and 0 failures.
+- `npm test`: 24 Vitest tests and 15 Rust/API tests passed.
+- `npm run check`: 0 errors and 0 warnings.
+- `npm run format:check`: passed.
+- `npm audit --audit-level=high`: 0 vulnerabilities.
+- `cargo clippy --manifest-path server/Cargo.toml --locked --all-targets -- -D warnings`:
+  passed.
+- `BUILD_SHA=3805dc1daf4cabd5a782a83aa541e2ebc432f023 npm run build`:
+  passed and produced `dist/`. Initial gzip sizes: main JS 39.88 KB, deferred
+  CIAM JS 62.19 KB, CSS 4.24 KB.
+- Full Playwright suite: passed with no failed tests. It includes both-theme
+  Axe scans, mobile first-screen checks, keyboard/history/focus tests, offline
+  reload, demo isolation, API, privacy, and every claim flow.
+- Local production-server verification: `/health` returned the exact build SHA,
+  SQLite, and ready auth. The factory URL verifier found the correct title,
+  `lang=en`, one H1, main landmark, complete image alternatives, labelled
+  buttons, and zero console errors. Evidence:
+  `evidence/polish-7/local/verify/verify.json`.
+- Deployed through `/opt/fleet/lib/deploy-container.sh` using the owned
+  `sf-field-parts-promise` container app and its existing one-replica `/data`
+  mount. No unrelated resource or secret was accessed.
+- Cold live verification: `/health` returned the exact deployed SHA. The
+  factory verifier passed with no console errors; the live audit passed 72
+  route, metadata, demo, 404, focus, and Axe serious/critical checks. Evidence:
+  `evidence/polish-7/live/verify/verify.json` and
+  `evidence/polish-7/live/audit.json`.
+- Final visual cold checks confirmed the mobile first screen, one-click sample
+  path, persistent demo banner, Reset demo, Start for real, at-risk sample
+  state, and no horizontal overflow. Screenshots:
+  `evidence/polish-7/live/cold-mobile.png` and
+  `evidence/polish-7/live/demo-isolation-mobile.png`.
 
 ## Reproduce
 
@@ -55,10 +70,10 @@ BUILD_SHA=$(git rev-parse HEAD) npm run test:e2e -- --retries=0
 ```
 
 Run every `test` command in `.factory/claims.json` separately from a clean
-clone. The demo URL is
+clone. The isolated sample URL is
 <https://field-parts-promise.sociobot.in/?demo=1>.
 
-## Next step
+## Known gaps and next steps
 
-Make only the two README rewrites listed above, rerun the copy/claim checks,
-and repeat the full first-read review. No functional repair is indicated.
+None. Checkout remains explicitly unavailable by the existing, tested release
+boundary; no charge starts. The product is deployed and the repair is pushed.
