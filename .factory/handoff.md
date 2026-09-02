@@ -1,54 +1,47 @@
-# Parts Promise verification 19 handoff — PASS
+# Parts Promise review 7 handoff — FAIL
 
 Date: 2026-09-02 UTC
 
-Work order: `field-parts-promise-verify-19`
+Work order: `field-parts-promise-review-7`
 
-Candidate: `a0d9af536f7a981249123658846e74f2e8f9d28e`
+Repository base: `b90b8e992ce2d25fb60a8bb35e252bee998a5205`
 
 Live URL: <https://field-parts-promise.sociobot.in>
 
 ## Result
 
-**PASS — accept the candidate.** Independent clean-checkout and live QA found
-no critical, high, medium, or low defects. Production reports the exact
-candidate SHA and its checked assets byte-match the candidate build.
+**FAIL — two minor README copy findings remain.** The product has no blocking,
+high, or medium finding. The complete report is in `.factory/review-7.md`.
 
-No product code, infrastructure, DNS, billing configuration, production
-records, or durable `/data` content was changed. This work order added only
-verification documentation and evidence.
+- F-7-1: replace the unexplained “operation ID” sentence with “Retrying the
+  same saved change does not create a duplicate.”
+- F-7-2: replace “browser database outbox” with “Offline signed-in edits stay
+  queued in this browser.”
 
-## Verification summary
+No product code, infrastructure, DNS, billing configuration, production data,
+or durable storage was changed. This work order changed only review and
+handoff documentation.
 
-- All 37 commands in `.factory/claims.json` passed independently before other
-  QA.
-- The cold first screen plainly states the job, audience, first action, and
-  sample outcome. **Try it with sample data** opens the realistic Riverside
-  Dental job in one click.
-- `npm ci`, `npm test` (23 Vitest + 15 Rust), `npm run check`,
-  `npm run format:check`, strict Clippy, and the exact SHA-stamped production
-  build passed. Full Playwright: 59 passed, 43 intentional skips.
-- The core flow handled a valid van allocation, rejected quantity `2`,
-  recovered with `1`, produced the reorder warning without ordering, and reset
-  safely. Supplier evidence before/after the visit produced the correct
-  promise states.
-- The live 9-route × 2-theme × 2-viewport matrix had zero serious/critical Axe
-  findings, console/page errors, horizontal overflow, or undersized mobile
-  links/buttons. Keyboard-only allocation, visible focus, 200% text, and
-  reduced motion passed.
-- The demo flow made seven same-origin GET requests with no body. Security and
-  caching headers passed. The service worker updated cleanly and completed the
-  allocation after an offline reload.
-- Live API allowances were enforced with 429 plus `Retry-After`: read/metrics
-  40 per 2 seconds, write 10 per 2 seconds, export/critical 5 per 60 seconds.
-  Every implemented non-health endpoint reported its expected limit header.
-- Live Entra authorization uses the required Sociobot tenant, client,
-  production callback, authorization-code flow, and PKCE S256.
-- Fresh mobile Lighthouse: 98 performance, 100 accessibility, 100 best
-  practices, 100 SEO; LCP 2.01 s, TBT 95 ms, CLS 0.
+## Verification completed
 
-Full evidence and findings are in `.factory/verification-19.md` and
-`.factory/verification-artifacts-19/`.
+- Fresh 390 × 844 and 1440 × 900 cold reads passed the first-screen gate.
+- The live one-click demo opened populated sample data, allocated the missing
+  pump, reset to the original shortage, worked after an offline reload, and
+  left the live browser workspace byte-equivalent.
+- All 37 exact `.factory/claims.json` commands passed independently from a clean
+  clone at the required base.
+- `npm test`: 23 Vitest and 15 Rust/API tests passed.
+- `npm run check` and `npm run format:check` passed.
+- `BUILD_SHA=$(git rev-parse HEAD) npm run build` passed and produced `dist/`.
+- Full Playwright passed: 59 tests, 43 intentional project skips.
+- The live route audit passed 72 checks. Axe found zero serious or critical
+  issues across nine routes in both themes. The factory URL verifier reported
+  one H1, `lang=en`, a main landmark, complete image alternatives, labelled
+  buttons, and no console errors on home and demo.
+- All discovered links returned 200. The designed unknown route returned 404.
+  Route focus, Back navigation, and scroll restoration passed.
+- Every earlier numbered finding remains fixed in both the live product and
+  current source/tests.
 
 ## Reproduce
 
@@ -57,21 +50,15 @@ npm ci
 npm test
 npm run check
 npm run format:check
-cargo clippy --manifest-path server/Cargo.toml --locked --all-targets -- -D warnings
 BUILD_SHA=$(git rev-parse HEAD) npm run build
 BUILD_SHA=$(git rev-parse HEAD) npm run test:e2e -- --retries=0
-EXPECTED_BUILD_SHA=$(git rev-parse HEAD) npm run verify:live-identity
-node .factory/verification-artifacts-19/run-live-browser.mjs
 ```
 
-The demo URL is
-<https://field-parts-promise.sociobot.in/?demo=1>. **Reset demo** restores the
-seeded sample. **Start for real** deletes demo changes and returns to the
-separate live local workspace.
+Run every `test` command in `.factory/claims.json` separately from a clean
+clone. The demo URL is
+<https://field-parts-promise.sociobot.in/?demo=1>.
 
-## Known gap / operator action
+## Next step
 
-Recurring checkout remains unavailable and is disclosed as such; no charge
-can start. The operator must register a Sociobot recurring product capable of
-the $39/month firm base plus $8/month active technician quantity before paid
-signup is enabled. The repository correctly does not call Dodo directly.
+Make only the two README rewrites listed above, rerun the copy/claim checks,
+and repeat the full first-read review. No functional repair is indicated.
