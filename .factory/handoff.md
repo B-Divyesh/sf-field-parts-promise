@@ -1,3 +1,36 @@
+# Parts Promise review 10 handoff
+
+Independent review 10 verdict: **PASS — 0 findings at every severity and 0
+untested public claims.** No product code or deployment changed.
+
+Implementation reviewed: `b6a9c49dd239911807b4f7bcd22f63106244d3f3`.
+Documentation checkout: `8e6b78248fe9698fae52cb82ede265d836336502`. Live
+`/health` reports the documentation-only image `40766071…`; all intervening
+changes are handoffs, reports, and evidence, not product code.
+
+Fresh desktop and phone sessions stated the job, audience, and sample action
+before scrolling. The isolated Riverside Dental demo kept its banner and
+demo-only browser database, matched barcode `CP-19`, allocated from Van 2 to
+reach **Parts in hand**, warned conservatively about the late supplier date,
+and reset to the shortage. Keyboard, reduced motion, 200% text, offline
+reload, legal routes, designed HTTP 404, route Axe, request privacy, and live
+rate limits passed.
+
+From a clean checkout, all 44 exact declared claim commands passed. `npm test`,
+check, formatting, Clippy, high-severity audit, release build, and the complete
+browser suite passed; the browser suite reported 68 passes and 50 expected
+skips. Fresh mobile Lighthouse scored 97 performance and 100 for accessibility,
+best practices, and SEO.
+
+Current milestone: **M3 reviewed and accepted.** External dependencies remain
+separate: recurring Sociobot billing registration for the $39/month firm plan
+plus $8/month active technician is unavailable, so checkout starts no charge;
+supplier integration does not place orders or guarantee availability; messaging
+and operations work remain unshipped. Full evidence and dispositions are in
+`.factory/review-10.md`.
+
+## Previous handoff
+
 # Parts Promise verification 23 handoff
 
 Independent M3 verification verdict: **PASS — 0 findings at every severity
