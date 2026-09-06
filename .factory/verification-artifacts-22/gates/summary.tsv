@@ -1,0 +1,7 @@
+npm test	PASS
+npm run check	PASS
+npm run format:check	PASS
+cargo clippy	PASS
+npm audit --audit-level=high	PASS
+BUILD_SHA=<clean checkout> npm run build	PASS
+BUILD_SHA=<clean checkout> npm run test:e2e -- --retries=0	PASS

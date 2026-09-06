@@ -1,0 +1,245 @@
+{
+  "invalidToken": {
+    "status": 401,
+    "wwwAuthenticate": "Bearer"
+  },
+  "read": [
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    }
+  ],
+  "critical": [
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 401,
+      "retryAfter": null,
+      "wwwAuthenticate": "Bearer"
+    },
+    {
+      "status": 429,
+      "retryAfter": "60",
+      "wwwAuthenticate": null
+    }
+  ]
+}

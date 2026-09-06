@@ -1,5 +1,48 @@
 # Parts Promise round 8 handoff
 
+## Independent verification 22 — 2026-09-06 UTC
+
+Verdict: **PASS** for the currently shipped product. The implementation
+reviewed is `0f05f4d44b88ce3fa69cb3d31133f53b6efb3beb`; the checkout used
+`fc126c3617005146d0f57d4557f9df57f0df4880`, which differs only in
+documentation/evidence. Live `/health` reports the implementation SHA.
+
+Fresh desktop and phone checks established the job (allocate job-specific
+parts before promising a visit date), audience (small trade firms), and first
+action (Try it with sample data). The sample opens Riverside Dental with a
+missing pump, retains the demo banner, preserves `demo=1` in new-tab internal
+links, allocates to Parts in hand, resets, and reloads offline without creating
+real workspace storage.
+
+Verification from a fresh clone:
+
+- 37/37 exact registered claim commands passed; no untested public claim.
+- `npm test`, Svelte check, formatting, Clippy, high-severity npm audit,
+  release build, and full E2E passed. The full run reports 61 passed and 43
+  expected project-specific skips; `dist/` was produced.
+- Live `verify-url.sh`, six-route Axe sweep, links/routes/legal/404/PWA checks,
+  privacy/header checks, and live rate-limit checks passed.
+- Lighthouse mobile: 95 performance, 100 accessibility, 100 best practices,
+  and 100 SEO.
+
+No product repair is needed for the reported deployment-wrapper failure: the
+live service serves `0f05f4d…` and `/health` is healthy. Detailed evidence is
+in `.factory/verification-22.md` and
+`.factory/verification-artifacts-22/`.
+
+Current milestone: M2. External dependency: recurring billing needs operator
+registration of a Sociobot product supporting the $39/month firm plan plus
+$8/month active-technician quantity and its event contract. The current public
+copy accurately says checkout is unavailable and no charge starts. M3 and
+later planned work are not presented as shipped capabilities.
+
+How to verify: run `npm ci`, then every command in `.factory/claims.json`,
+`npm test`, `npm run check`, `npm run format:check`,
+`cargo clippy --manifest-path server/Cargo.toml --locked --all-targets -- -D warnings`,
+`npm audit --audit-level=high`, `npm run build`, and
+`npm run test:e2e -- --retries=0`. For the deployed page, run
+`/opt/fleet/lib/verify-url.sh https://field-parts-promise.sociobot.in <output-dir>`.
+
 - Date: 2026-09-02 UTC
 - Work order: `field-parts-promise-polish-8`
 - Base review: `ca4e368d72ecbe1a5c22e792aeffda54264b1dea`

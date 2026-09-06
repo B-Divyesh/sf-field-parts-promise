@@ -1,0 +1,458 @@
+{
+  "base": "https://field-parts-promise.sociobot.in",
+  "desktop": {
+    "firstRead": {
+      "title": "Parts Promise — Allocate parts to each job",
+      "h1": "Promise dates from parts held for the job",
+      "audience": true,
+      "action": true,
+      "actionOutcome": true
+    },
+    "demo": {
+      "url": "https://field-parts-promise.sociobot.in/?demo=1",
+      "h1": "Promise dates from parts held for the job",
+      "banner": "Demo — sample data; nothing is saved to your local workspace.",
+      "initialStatus": "⌁\nDate at risk\nCondensate pump needs 1 each.",
+      "demoDatabases": [
+        "parts-promise-demo-v1"
+      ]
+    },
+    "demoLinks": [
+      {
+        "text": "Jobs",
+        "href": "/jobs?demo=1"
+      },
+      {
+        "text": "Privacy",
+        "href": "/privacy?demo=1"
+      },
+      {
+        "text": "Privacy",
+        "href": "/privacy?demo=1"
+      },
+      {
+        "text": "Terms",
+        "href": "/terms?demo=1"
+      }
+    ],
+    "newTabDemo": {
+      "h1": "Jobs and their parts status",
+      "banner": true,
+      "demoDatabases": [
+        "parts-promise-demo-v1"
+      ]
+    },
+    "allocation": {
+      "status": "◎\nParts in hand\nEvery required quantity is held from a van or warehouse.",
+      "allocation": "Held for RD-1042 from Van 2 · 1 each · Field demo · checked Aug 28, 2026, 8:05 AM\nRemove allocation"
+    },
+    "reset": {
+      "status": "⌁\nDate at risk\nCondensate pump needs 1 each.",
+      "databases": [
+        "parts-promise-demo-v1"
+      ]
+    },
+    "offline": {
+      "h1": "Riverside Dental parts",
+      "banner": true,
+      "status": "⌁\nDate at risk\nCondensate pump needs 1 each."
+    },
+    "keyboard": {
+      "firstFocusText": "Edit job",
+      "focusVisible": true
+    }
+  },
+  "mobile": {
+    "firstRead": {
+      "visibility": {
+        "Promise dates from parts held for the job": true,
+        "For small trade firms that need a parts check before agreeing a visit date.": true,
+        "Try it with sample data": true,
+        "Opens Riverside Dental with one missing pump.": true,
+        "The sample job and allocation work offline after your first visit.": true,
+        "Sample changes stay in this browser.": true,
+        "The firm plan is $39/month plus $8 per active technician.": true
+      },
+      "noHorizontalOverflow": true,
+      "reducedMotion": true
+    },
+    "demo": {
+      "h1": "Promise dates from parts held for the job",
+      "status": "⌁\nDate at risk\nCondensate pump needs 1 each.",
+      "banner": true
+    }
+  },
+  "routes": [
+    {
+      "path": "/",
+      "title": "Parts Promise — Allocate parts to each job",
+      "h1Count": 1,
+      "mainCount": 1,
+      "lang": "en"
+    },
+    {
+      "path": "/demo",
+      "title": "Demo — Parts Promise",
+      "h1Count": 1,
+      "mainCount": 1,
+      "lang": "en"
+    },
+    {
+      "path": "/jobs?demo=1",
+      "title": "Jobs — Parts Promise",
+      "h1Count": 1,
+      "mainCount": 1,
+      "lang": "en"
+    },
+    {
+      "path": "/privacy?demo=1",
+      "title": "Privacy — Parts Promise",
+      "h1Count": 1,
+      "mainCount": 1,
+      "lang": "en"
+    },
+    {
+      "path": "/terms?demo=1",
+      "title": "Terms — Parts Promise",
+      "h1Count": 1,
+      "mainCount": 1,
+      "lang": "en"
+    },
+    {
+      "path": "/not-on-this-drawing",
+      "title": "Page not found — Parts Promise",
+      "h1Count": 1,
+      "mainCount": 1,
+      "lang": "en"
+    }
+  ],
+  "axe": [
+    {
+      "path": "/",
+      "serious": []
+    },
+    {
+      "path": "/demo",
+      "serious": []
+    },
+    {
+      "path": "/jobs?demo=1",
+      "serious": []
+    },
+    {
+      "path": "/privacy?demo=1",
+      "serious": []
+    },
+    {
+      "path": "/terms?demo=1",
+      "serious": []
+    },
+    {
+      "path": "/not-on-this-drawing",
+      "serious": []
+    }
+  ],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 ()"
+  ],
+  "pageErrors": [],
+  "requests": [
+    {
+      "path": "/",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-Coxu2OQO.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/preload-helper-ByeV3kMa.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-P6DRn-yz.css",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/blueprint-hero.svg",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/barlow-condensed-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/atkinson-hyperlegible-next-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/app-entry-Cu337C8e.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/app-entry-3bHnSEED.css",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/atkinson-hyperlegible-next-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/barlow-condensed-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/blueprint-hero.svg",
+      "method": "GET"
+    },
+    {
+      "path": "/?demo=1",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-Coxu2OQO.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/preload-helper-ByeV3kMa.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-P6DRn-yz.css",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/barlow-condensed-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/atkinson-hyperlegible-next-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/app-entry-Cu337C8e.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/app-entry-3bHnSEED.css",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/blueprint-hero.svg",
+      "method": "GET"
+    },
+    {
+      "path": "/",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-Coxu2OQO.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/preload-helper-ByeV3kMa.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-P6DRn-yz.css",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/blueprint-hero.svg",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/barlow-condensed-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/atkinson-hyperlegible-next-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/demo",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-Coxu2OQO.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/preload-helper-ByeV3kMa.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-P6DRn-yz.css",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/app-entry-Cu337C8e.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/app-entry-3bHnSEED.css",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/barlow-condensed-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/atkinson-hyperlegible-next-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/blueprint-hero.svg",
+      "method": "GET"
+    },
+    {
+      "path": "/jobs?demo=1",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-Coxu2OQO.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/preload-helper-ByeV3kMa.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-P6DRn-yz.css",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/app-entry-Cu337C8e.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/app-entry-3bHnSEED.css",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/barlow-condensed-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/atkinson-hyperlegible-next-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/blueprint-hero.svg",
+      "method": "GET"
+    },
+    {
+      "path": "/privacy?demo=1",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-Coxu2OQO.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/preload-helper-ByeV3kMa.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-P6DRn-yz.css",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/app-entry-Cu337C8e.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/app-entry-3bHnSEED.css",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/barlow-condensed-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/atkinson-hyperlegible-next-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/blueprint-hero.svg",
+      "method": "GET"
+    },
+    {
+      "path": "/terms?demo=1",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-Coxu2OQO.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/preload-helper-ByeV3kMa.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-P6DRn-yz.css",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/app-entry-Cu337C8e.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/app-entry-3bHnSEED.css",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/barlow-condensed-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/atkinson-hyperlegible-next-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/blueprint-hero.svg",
+      "method": "GET"
+    },
+    {
+      "path": "/not-on-this-drawing",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-Coxu2OQO.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/preload-helper-ByeV3kMa.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/index-P6DRn-yz.css",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/barlow-condensed-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/fonts/atkinson-hyperlegible-next-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/app-entry-Cu337C8e.js",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/app-entry-3bHnSEED.css",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/blueprint-hero.svg",
+      "method": "GET"
+    },
+    {
+      "path": "/assets/ciam-CsuEn5ou.js",
+      "method": "GET"
+    }
+  ],
+  "passed": false
+}

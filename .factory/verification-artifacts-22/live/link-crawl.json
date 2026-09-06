@@ -1,0 +1,34 @@
+[
+  {
+    "href": "https://field-parts-promise.sociobot.in/#main",
+    "status": 200
+  },
+  {
+    "href": "https://field-parts-promise.sociobot.in/",
+    "status": 200
+  },
+  {
+    "href": "https://field-parts-promise.sociobot.in/?demo=1",
+    "status": 200
+  },
+  {
+    "href": "https://field-parts-promise.sociobot.in/jobs",
+    "status": 200
+  },
+  {
+    "href": "https://field-parts-promise.sociobot.in/privacy",
+    "status": 200
+  },
+  {
+    "href": "https://field-parts-promise.sociobot.in/?signin=1",
+    "status": 200
+  },
+  {
+    "href": "https://field-parts-promise.sociobot.in/onboarding",
+    "status": 200
+  },
+  {
+    "href": "https://field-parts-promise.sociobot.in/terms",
+    "status": 200
+  }
+]
