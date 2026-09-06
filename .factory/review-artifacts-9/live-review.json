@@ -1,0 +1,790 @@
+{
+  "checkedAt": "2026-09-06T01:10:13.520Z",
+  "base": "https://field-parts-promise.sociobot.in",
+  "health": {
+    "status": "ok",
+    "build_sha": "0f05f4d44b88ce3fa69cb3d31133f53b6efb3beb",
+    "database": "sqlite",
+    "auth": "ready"
+  },
+  "firstRead": {
+    "desktop": {
+      "job": {
+        "text": "Promise dates from parts held for the job",
+        "bottom": 368
+      },
+      "audience": {
+        "text": "For small trade firms that need a parts check before agreeing a visit date.",
+        "bottom": 446
+      },
+      "action": {
+        "text": "Try it with sample data",
+        "bottom": 514
+      },
+      "outcome": {
+        "text": "Opens Riverside Dental with one missing pump.",
+        "bottom": 513
+      },
+      "offline": {
+        "text": "The sample job and allocation work offline after your first visit.",
+        "bottom": 580
+      },
+      "privacy": {
+        "text": "Sample changes stay in this browser.",
+        "bottom": 610
+      },
+      "price": {
+        "text": "The firm plan is $39/month plus $8 per active technician.",
+        "bottom": 660
+      }
+    },
+    "mobile": {
+      "job": {
+        "text": "Promise dates from parts held for the job",
+        "bottom": 355
+      },
+      "audience": {
+        "text": "For small trade firms that need a parts check before agreeing a visit date.",
+        "bottom": 433
+      },
+      "action": {
+        "text": "Try it with sample data",
+        "bottom": 501
+      },
+      "outcome": {
+        "text": "Opens Riverside Dental with one missing pump.",
+        "bottom": 555
+      },
+      "offline": {
+        "text": "The sample job and allocation work offline after your first visit.",
+        "bottom": 621
+      },
+      "privacy": {
+        "text": "Sample changes stay in this browser.",
+        "bottom": 651
+      },
+      "price": {
+        "text": "The firm plan is $39/month plus $8 per active technician.",
+        "bottom": 701
+      }
+    }
+  },
+  "demo": {
+    "initialStatus": "⌁\nDate at risk\nCondensate pump needs 1 each.",
+    "allocatedStatus": "◎\nParts in hand\nEvery required quantity is held from a van or warehouse.",
+    "allocation": "Held for RD-1042 from Van 2 · 1 each · Field demo · checked Aug 28, 2026, 8:05 AM\nRemove allocation",
+    "resetStatus": "⌁\nDate at risk\nCondensate pump needs 1 each.",
+    "demoLinks": [
+      {
+        "text": "Jobs",
+        "href": "/jobs?demo=1"
+      },
+      {
+        "text": "Privacy",
+        "href": "/privacy?demo=1"
+      },
+      {
+        "text": "Privacy",
+        "href": "/privacy?demo=1"
+      },
+      {
+        "text": "Terms",
+        "href": "/terms?demo=1"
+      }
+    ],
+    "databases": [
+      "parts-promise-demo-v1"
+    ]
+  },
+  "routes": [
+    {
+      "path": "/",
+      "title": "Parts Promise — Allocate parts to each job",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/demo",
+      "title": "Demo — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/jobs",
+      "title": "Jobs — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/auth/callback",
+      "title": "Sign-in return — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/onboarding",
+      "title": "Set up your firm — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/settings/team",
+      "title": "Team — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/settings/billing",
+      "title": "Billing — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/settings/data",
+      "title": "Data controls — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/privacy",
+      "title": "Privacy — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/terms",
+      "title": "Terms — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/not-on-this-drawing",
+      "title": "Page not found — Parts Promise",
+      "status": 404,
+      "axeSeriousCritical": 0
+    }
+  ],
+  "links": [
+    {
+      "href": "https://field-parts-promise.sociobot.in/#main",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/?demo=1",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/jobs",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/privacy",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/?signin=1",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/onboarding",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/terms",
+      "status": 200
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-Coxu2OQO.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/preload-helper-ByeV3kMa.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-P6DRn-yz.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-Cu337C8e.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-3bHnSEED.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/jobs?demo=1"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-Coxu2OQO.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/preload-helper-ByeV3kMa.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-P6DRn-yz.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-Cu337C8e.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-3bHnSEED.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-Coxu2OQO.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/preload-helper-ByeV3kMa.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-P6DRn-yz.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-Cu337C8e.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-3bHnSEED.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-Coxu2OQO.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/preload-helper-ByeV3kMa.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-P6DRn-yz.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/demo"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-Coxu2OQO.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/preload-helper-ByeV3kMa.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-P6DRn-yz.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-Cu337C8e.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-3bHnSEED.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/jobs"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-Coxu2OQO.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/preload-helper-ByeV3kMa.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-P6DRn-yz.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-Cu337C8e.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-3bHnSEED.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/ciam-CsuEn5ou.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/auth/callback"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-Coxu2OQO.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/preload-helper-ByeV3kMa.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-P6DRn-yz.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-Cu337C8e.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-3bHnSEED.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/ciam-CsuEn5ou.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/onboarding"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-Coxu2OQO.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/preload-helper-ByeV3kMa.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-P6DRn-yz.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-Cu337C8e.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-3bHnSEED.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/ciam-CsuEn5ou.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/settings/team"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-Coxu2OQO.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/preload-helper-ByeV3kMa.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-P6DRn-yz.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-Cu337C8e.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-3bHnSEED.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/ciam-CsuEn5ou.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/settings/billing"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-Coxu2OQO.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/preload-helper-ByeV3kMa.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-P6DRn-yz.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-Cu337C8e.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-3bHnSEED.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/ciam-CsuEn5ou.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/settings/data"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-Coxu2OQO.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/preload-helper-ByeV3kMa.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-P6DRn-yz.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-Cu337C8e.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-3bHnSEED.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/ciam-CsuEn5ou.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/privacy"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-Coxu2OQO.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/preload-helper-ByeV3kMa.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-P6DRn-yz.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-Cu337C8e.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-3bHnSEED.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/ciam-CsuEn5ou.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/terms"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-Coxu2OQO.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/preload-helper-ByeV3kMa.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-P6DRn-yz.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-Cu337C8e.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-3bHnSEED.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/ciam-CsuEn5ou.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/not-on-this-drawing"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-Coxu2OQO.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/preload-helper-ByeV3kMa.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-P6DRn-yz.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-Cu337C8e.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/app-entry-3bHnSEED.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/ciam-CsuEn5ou.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-Coxu2OQO.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/preload-helper-ByeV3kMa.js"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/index-P6DRn-yz.css"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/assets/blueprint-hero.svg"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/barlow-condensed-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "url": "https://field-parts-promise.sociobot.in/fonts/atkinson-hyperlegible-next-latin.woff2"
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "passed": true
+}

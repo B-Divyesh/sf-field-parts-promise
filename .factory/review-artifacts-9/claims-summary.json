@@ -1,0 +1,261 @@
+[
+  {
+    "id": "sample-fixture",
+    "command": "npm run test:e2e -- --grep @claim:sample-fixture",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 77899
+  },
+  {
+    "id": "promise-status-from-allocation",
+    "command": "npm run test:e2e -- --grep @claim:promise-status-from-allocation",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13254
+  },
+  {
+    "id": "allocation-keeps-source",
+    "command": "npm run test:e2e -- --grep @claim:allocation-keeps-source",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13512
+  },
+  {
+    "id": "supplier-quantity-conserved",
+    "command": "npm run test:e2e -- --grep @claim:supplier-quantity-conserved",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13824
+  },
+  {
+    "id": "reorder-after-allocation",
+    "command": "npm run test:e2e -- --grep @claim:reorder-after-allocation",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13286
+  },
+  {
+    "id": "demo-reset-isolated",
+    "command": "npm run test:e2e -- --grep @claim:demo-reset-isolated",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 17216
+  },
+  {
+    "id": "offline-reload",
+    "command": "npm run test:e2e -- --grep @claim:offline-reload",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13393
+  },
+  {
+    "id": "local-workspace-flow",
+    "command": "npm run test:e2e -- --grep @claim:local-workspace-flow",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 14635
+  },
+  {
+    "id": "demo-feature-boundaries",
+    "command": "npm run test:e2e -- --grep @claim:demo-feature-boundaries",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13405
+  },
+  {
+    "id": "indexeddb-local-storage",
+    "command": "npm run test:e2e -- --grep @claim:indexeddb-local-storage",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 14002
+  },
+  {
+    "id": "demo-network-privacy",
+    "command": "npm run test:e2e -- --grep @claim:demo-network-privacy",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13609
+  },
+  {
+    "id": "manual-barcode-allocation",
+    "command": "npm run test:e2e -- --grep @claim:manual-barcode-allocation",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 14046
+  },
+  {
+    "id": "camera-barcode-privacy",
+    "command": "npm run test:e2e -- --grep @claim:camera-barcode-privacy",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13559
+  },
+  {
+    "id": "release-order-boundary",
+    "command": "npm run test:e2e -- --grep @claim:release-order-boundary",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 15150
+  },
+  {
+    "id": "clear-local-records",
+    "command": "npm run test:e2e -- --grep @claim:clear-local-records",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13828
+  },
+  {
+    "id": "workspace-backup-roundtrip",
+    "command": "npm run test:e2e -- --grep @claim:workspace-backup-roundtrip",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13994
+  },
+  {
+    "id": "csv-import-validation",
+    "command": "npm run test:e2e -- --grep @claim:csv-import-validation",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13563
+  },
+  {
+    "id": "demo-transfer-isolated",
+    "command": "npm run test:e2e -- --grep @claim:demo-transfer-isolated",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 14921
+  },
+  {
+    "id": "csv-template-download",
+    "command": "npm run test:e2e -- --grep @claim:csv-template-download",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13518
+  },
+  {
+    "id": "entra-sign-in",
+    "command": "npm run test:e2e -- --grep @claim:entra-sign-in",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13681
+  },
+  {
+    "id": "tenant-data-isolation",
+    "command": "npm run test:e2e -- --grep @claim:tenant-data-isolation",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 12603
+  },
+  {
+    "id": "two-device-sync",
+    "command": "npm run test:e2e -- --grep @claim:two-device-sync",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13670
+  },
+  {
+    "id": "idempotent-sync",
+    "command": "npm run test:e2e -- --grep @claim:idempotent-sync",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 12576
+  },
+  {
+    "id": "offline-signed-in-sync",
+    "command": "npm run test:e2e -- --grep @claim:offline-signed-in-sync",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 16438
+  },
+  {
+    "id": "sync-conflict-resolution",
+    "command": "npm run test:e2e -- --grep @claim:sync-conflict-resolution",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 14721
+  },
+  {
+    "id": "invitation-email-activation",
+    "command": "npm run test:e2e -- --grep @claim:invitation-email-activation",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 12471
+  },
+  {
+    "id": "account-service-boundaries",
+    "command": "npm run test:e2e -- --grep @claim:account-service-boundaries",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13673
+  },
+  {
+    "id": "sensitive-input-boundary",
+    "command": "npm run test:e2e -- --grep @claim:sensitive-input-boundary",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 15266
+  },
+  {
+    "id": "audit-log-recording",
+    "command": "npm run test:e2e -- --grep @claim:audit-log-recording",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 12527
+  },
+  {
+    "id": "firm-deletion-hold",
+    "command": "npm run test:e2e -- --grep @claim:firm-deletion-hold",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 14491
+  },
+  {
+    "id": "response-policy",
+    "command": "npm run test:e2e -- --grep @claim:response-policy",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 12624
+  },
+  {
+    "id": "subscription-checkout",
+    "command": "npm run test:e2e -- --grep @claim:subscription-checkout",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13379
+  },
+  {
+    "id": "technician-seat-charge",
+    "command": "npm run test:e2e -- --grep @claim:technician-seat-charge",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13241
+  },
+  {
+    "id": "expired-plan-keeps-export",
+    "command": "npm run test:e2e -- --grep @claim:expired-plan-keeps-export",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 12528
+  },
+  {
+    "id": "durable-runtime-storage",
+    "command": "npm run test:e2e -- --grep @claim:durable-runtime-storage",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 12765
+  },
+  {
+    "id": "visible-build-identity",
+    "command": "npm run test:e2e -- --grep @claim:visible-build-identity",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 15378
+  },
+  {
+    "id": "container-runtime",
+    "command": "npm run test:e2e -- --grep @claim:container-runtime",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 13621
+  }
+]

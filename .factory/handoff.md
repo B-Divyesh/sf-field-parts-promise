@@ -1,4 +1,46 @@
-# Parts Promise round 8 handoff
+# Parts Promise review 9 handoff
+
+## Strict review 9 — 2026-09-06 UTC
+
+Verdict: **PASS — 0 findings and 0 untested public claims.** No product code or
+deployment changed. The live service reports implementation
+`0f05f4d44b88ce3fa69cb3d31133f53b6efb3beb`; the reviewed documentation
+checkout is `05ed65a61535cb508ef19d8da9b603b6de1bf2b4`. Their difference is
+report and evidence material only.
+
+Fresh 1440×900 desktop and 390×844 phone contexts showed the parts-allocation
+job, small-trade-firm audience, one-click sample action, outcome, and all three
+facts before scrolling. The Riverside Dental sample moved from Date at risk to
+Parts in hand after a one-unit Van 2 allocation, retained its full evidence,
+reset to the shortage, and kept only the demo browser database. Rendered legal
+and Jobs links retained `demo=1` in a fresh tab.
+
+Verification from a fresh clone at `05ed65a…`:
+
+- 37/37 exact claim commands passed separately with no retries.
+- `npm test`, Svelte check, format check, Clippy with warnings denied, npm
+  audit, release build, and full Playwright passed. Results were 24 Vitest, 15
+  Rust, and 61 Playwright passes with 43 expected cross-project skips.
+- Eleven live routes passed title, landmark, canonical, legal-link, HTTP status,
+  and serious/critical Axe checks. The unknown route correctly returned 404.
+- Factory verification passed `/` and `/demo`; normal routes had no console or
+  page error and browser requests stayed same-origin GET/HEAD.
+- Fresh Lighthouse mobile scored 98 performance and 100 in accessibility, best
+  practices, and SEO; LCP was 1.4 s, CLS 0.022, and TBT 150 ms.
+- Live read and export bursts returned 429 with positive Retry-After after their
+  documented allowances. Clean claims passed tenant isolation, restart
+  persistence, PORT-only startup, and SQLite `/data` behavior.
+
+Detailed results and evidence are in `.factory/review-9.md` and
+`.factory/review-artifacts-9/`.
+
+Current controller milestone: **M2**. The separate operator dependency remains
+recurring Sociobot billing registration for the $39/month firm plan plus $8 per
+active technician and its entitlement event contract. Public checkout honestly
+says it is unavailable and no charge starts. Planned supplier-watch and later
+milestone capabilities were not treated as shipped promises.
+
+## Earlier round 8 handoff
 
 ## Independent verification 22 — 2026-09-06 UTC
 
