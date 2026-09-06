@@ -1,0 +1,8 @@
+
+> field-parts-promise@0.0.0 check
+> svelte-check --tsconfig ./tsconfig.json
+
+Loading svelte-check in workspace: /tmp/field-parts-promise-verify22.UHKyX1/repo
+Getting Svelte diagnostics...
+
+svelte-check found 0 errors and 0 warnings
