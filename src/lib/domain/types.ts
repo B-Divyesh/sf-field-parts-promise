@@ -2,6 +2,9 @@ export type SourceType = 'van' | 'warehouse' | 'supplier_order';
 export type AllocationKind = 'on_hand' | 'supplier_order';
 export type SupplierConfidence =
   'Confirmed by supplier' | 'Estimated' | 'Needs a check';
+export type AllocationState = 'held' | 'fitted';
+export type SupplierOrderStatus = 'open' | 'draft';
+export type ConflictReason = 'version_changed' | 'quantity_spent' | 'deleted';
 
 export interface Job {
   id: string;
@@ -20,6 +23,7 @@ export interface PartRequirement {
   sku?: string;
   unit: string;
   quantity: number;
+  fittedQuantity?: number;
 }
 
 export interface StockSource {
@@ -33,6 +37,9 @@ export interface StockSource {
   lastCheckedAt: string;
   lastCheckedBy: string;
   supplierOrder?: {
+    orderId?: string;
+    lineId?: string;
+    supplierName?: string;
     reference: string;
     expectedDate: string;
     confidence: SupplierConfidence;
@@ -51,6 +58,46 @@ export interface Allocation {
   updater: string;
   checkedAt: string;
   createdAt: string;
+  state?: AllocationState;
+}
+
+export interface SupplierOrderLine {
+  id: string;
+  partDescription: string;
+  unit: string;
+  quantity: number;
+  allocatedQuantity: number;
+  expectedDate?: string;
+  confidence?: SupplierConfidence;
+  checkedAt?: string;
+  checkedBy?: string;
+}
+
+export interface SupplierOrder {
+  id: string;
+  supplierName: string;
+  reference: string;
+  status: SupplierOrderStatus;
+  createdAt: string;
+  lines: SupplierOrderLine[];
+}
+
+export interface ReorderDecision {
+  id: string;
+  sourceId: string;
+  action: 'dismissed' | 'drafted';
+  reason?: string;
+  createdAt: string;
+}
+
+export interface WorkspaceConflict {
+  id: string;
+  reason: ConflictReason;
+  jobId?: string;
+  sourceId?: string;
+  message: string;
+  createdAt: string;
+  resolvedAt?: string;
 }
 
 export interface Workspace {
@@ -59,6 +106,9 @@ export interface Workspace {
   requirements: PartRequirement[];
   sources: StockSource[];
   allocations: Allocation[];
+  supplierOrders?: SupplierOrder[];
+  reorderDecisions?: ReorderDecision[];
+  conflicts?: WorkspaceConflict[];
   lastActionAllocationId?: string;
 }
 

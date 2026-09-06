@@ -3,7 +3,9 @@ import { availableQuantity, copyWorkspace } from './rules';
 import type {
   Allocation,
   PartRequirement,
+  ReorderDecision,
   StockSource,
+  SupplierOrder,
   Workspace
 } from './types';
 
@@ -70,6 +72,76 @@ export function removeAllocation(
   return next;
 }
 
+export function markAllocationFitted(
+  workspace: Workspace,
+  allocationId: string
+): { workspace: Workspace; error?: string } {
+  const allocation = workspace.allocations.find(
+    (item) => item.id === allocationId
+  );
+  if (!allocation)
+    return { workspace, error: 'That allocation no longer exists.' };
+  if (allocation.state === 'fitted')
+    return { workspace, error: 'This quantity is already marked fitted.' };
+  const next = copyWorkspace(workspace);
+  const nextAllocation = next.allocations.find(
+    (item) => item.id === allocationId
+  );
+  const requirement = next.requirements.find(
+    (item) => item.id === allocation.requirementId
+  );
+  if (!nextAllocation || !requirement)
+    return { workspace, error: 'The allocation needs a current job part.' };
+  nextAllocation.state = 'fitted';
+  requirement.fittedQuantity =
+    (requirement.fittedQuantity ?? 0) + allocation.quantity;
+  return { workspace: next };
+}
+
+export function moveAllocation(
+  workspace: Workspace,
+  allocationId: string,
+  targetSourceId: string,
+  movedAt: string
+): { workspace: Workspace; error?: string } {
+  const allocation = workspace.allocations.find(
+    (item) => item.id === allocationId
+  );
+  if (!allocation)
+    return { workspace, error: 'That allocation no longer exists.' };
+  if (allocation.state === 'fitted')
+    return { workspace, error: 'A fitted quantity cannot be moved.' };
+  const target = workspace.sources.find((item) => item.id === targetSourceId);
+  if (!target)
+    return { workspace, error: 'Choose the source receiving this quantity.' };
+  const requirement = workspace.requirements.find(
+    (item) => item.id === allocation.requirementId
+  );
+  if (!requirement)
+    return { workspace, error: 'The allocation needs a current job part.' };
+  if (
+    target.partDescription !== requirement.description ||
+    target.unit !== requirement.unit
+  )
+    return {
+      workspace,
+      error: 'Move this quantity only to a source for the same job part.'
+    };
+  if (target.id === allocation.sourceId)
+    return { workspace, error: 'Choose a different source for this move.' };
+  const withoutOriginal = removeAllocation(workspace, allocationId);
+  return addAllocation(withoutOriginal, {
+    ...allocation,
+    id: crypto.randomUUID(),
+    sourceId: target.id,
+    sourceName: target.name,
+    kind: target.type === 'supplier_order' ? 'supplier_order' : 'on_hand',
+    checkedAt: target.lastCheckedAt,
+    createdAt: movedAt,
+    state: 'held'
+  });
+}
+
 export function addRequirement(
   workspace: Workspace,
   requirement: PartRequirement
@@ -85,6 +157,29 @@ export function addSource(
 ): Workspace {
   const next = copyWorkspace(workspace);
   next.sources.push(source);
+  return next;
+}
+
+export function addSupplierOrder(
+  workspace: Workspace,
+  order: SupplierOrder
+): Workspace {
+  const next = copyWorkspace(workspace);
+  next.supplierOrders = [...(next.supplierOrders ?? []), order];
+  return next;
+}
+
+export function recordReorderDecision(
+  workspace: Workspace,
+  decision: ReorderDecision
+): Workspace {
+  const next = copyWorkspace(workspace);
+  next.reorderDecisions = [
+    ...(next.reorderDecisions ?? []).filter(
+      (item) => item.sourceId !== decision.sourceId
+    ),
+    decision
+  ];
   return next;
 }
 

@@ -118,6 +118,18 @@ pub struct SyncInput {
     pub idempotency_key: String,
     pub expected_version: i64,
     pub workspace: Value,
+    #[serde(default)]
+    pub client_cursor: Option<String>,
+    #[serde(default)]
+    pub operations: Vec<QueuedOperation>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct QueuedOperation {
+    pub id: String,
+    pub sequence: u64,
+    #[serde(rename = "createdAt", alias = "created_at")]
+    pub created_at: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -125,6 +137,8 @@ pub struct SyncResult {
     pub version: i64,
     pub workspace: Value,
     pub replayed: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cursor: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -526,6 +540,15 @@ impl Database {
         input: &SyncInput,
     ) -> Result<SyncResult, DbError> {
         Uuid::parse_str(&input.idempotency_key).map_err(|_| DbError::InvalidWorkspace)?;
+        if input.operations.len() > 50
+            || input.operations.iter().any(|operation| {
+                Uuid::parse_str(&operation.id).is_err()
+                    || operation.sequence == 0
+                    || chrono::DateTime::parse_from_rfc3339(&operation.created_at).is_err()
+            })
+        {
+            return Err(DbError::InvalidWorkspace);
+        }
         validate_workspace(&input.workspace)?;
         let workspace_text =
             serde_json::to_string(&input.workspace).map_err(|_| DbError::InvalidWorkspace)?;
@@ -593,6 +616,11 @@ impl Database {
             version: next_version,
             workspace: input.workspace.clone(),
             replayed: false,
+            cursor: input
+                .operations
+                .last()
+                .map(|operation| operation.sequence.to_string())
+                .or_else(|| input.client_cursor.clone()),
         };
         let response_text =
             serde_json::to_string(&result).map_err(|_| DbError::InvalidWorkspace)?;
@@ -979,6 +1007,43 @@ fn validate_workspace(workspace: &Value) -> Result<(), DbError> {
     }
     for key in ["jobs", "requirements", "sources", "allocations"] {
         if !object.get(key).is_some_and(Value::is_array) {
+            return Err(DbError::InvalidWorkspace);
+        }
+    }
+    let source_values = object
+        .get("sources")
+        .and_then(Value::as_array)
+        .ok_or(DbError::InvalidWorkspace)?;
+    let allocation_values = object
+        .get("allocations")
+        .and_then(Value::as_array)
+        .ok_or(DbError::InvalidWorkspace)?;
+    let mut sources = std::collections::HashMap::new();
+    for source in source_values {
+        let Some(id) = source.get("id").and_then(Value::as_str) else {
+            return Err(DbError::InvalidWorkspace);
+        };
+        let Some(on_hand) = source.get("onHand").and_then(Value::as_f64) else {
+            return Err(DbError::InvalidWorkspace);
+        };
+        if !on_hand.is_finite() || on_hand < 0.0 || sources.insert(id, on_hand).is_some() {
+            return Err(DbError::InvalidWorkspace);
+        }
+    }
+    let mut allocated = std::collections::HashMap::<&str, f64>::new();
+    for allocation in allocation_values {
+        let Some(source_id) = allocation.get("sourceId").and_then(Value::as_str) else {
+            return Err(DbError::InvalidWorkspace);
+        };
+        let Some(quantity) = allocation.get("quantity").and_then(Value::as_f64) else {
+            return Err(DbError::InvalidWorkspace);
+        };
+        if !quantity.is_finite() || quantity <= 0.0 || !sources.contains_key(source_id) {
+            return Err(DbError::InvalidWorkspace);
+        }
+        let used = allocated.entry(source_id).or_default();
+        *used += quantity;
+        if *used > sources[source_id] + f64::EPSILON {
             return Err(DbError::InvalidWorkspace);
         }
     }

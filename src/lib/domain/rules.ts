@@ -5,6 +5,7 @@ import type {
   PromiseStatus,
   ReorderSuggestion,
   StockSource,
+  SupplierOrder,
   Workspace
 } from './types';
 
@@ -59,6 +60,16 @@ export function promiseStatus(
   bufferDays = 0,
   staleHours = 72
 ): PromiseStatus {
+  const unresolvedConflict = workspace.conflicts?.find(
+    (conflict) => conflict.jobId === job.id && !conflict.resolvedAt
+  );
+  if (unresolvedConflict) {
+    return {
+      code: 'at-risk',
+      label: 'Date at risk',
+      reason: unresolvedConflict.message
+    };
+  }
   const requirements = workspace.requirements.filter(
     (requirement) => requirement.jobId === job.id
   );
@@ -144,6 +155,48 @@ export function reorderSuggestions(workspace: Workspace): ReorderSuggestion[] {
       unit: source.unit
     }))
     .filter((suggestion) => suggestion.remaining < suggestion.minimum);
+}
+
+export function supplierOrders(workspace: Workspace): SupplierOrder[] {
+  return workspace.supplierOrders ?? [];
+}
+
+export function supplierSourceOrder(
+  workspace: Workspace,
+  source: StockSource
+): SupplierOrder | undefined {
+  const orderId = source.supplierOrder?.orderId;
+  return orderId
+    ? supplierOrders(workspace).find((order) => order.id === orderId)
+    : undefined;
+}
+
+export function supplierRiskJobs(
+  workspace: Workspace,
+  now = new Date(),
+  bufferDays = 0,
+  staleHours = 72
+): Array<{ job: Job; status: PromiseStatus }> {
+  return workspace.jobs
+    .map((job) => ({
+      job,
+      status: promiseStatus(workspace, job, now, bufferDays, staleHours)
+    }))
+    .filter(
+      ({ status }) => status.code === 'at-risk' || status.code === 'check'
+    );
+}
+
+export function isStaleEvidence(
+  checkedAt: string,
+  now = new Date(),
+  staleHours = 72
+): boolean {
+  const checked = new Date(checkedAt).getTime();
+  return (
+    !Number.isFinite(checked) ||
+    now.getTime() - checked > staleHours * 60 * 60 * 1000
+  );
 }
 
 export function formatQuantity(quantity: number, unit: string): string {

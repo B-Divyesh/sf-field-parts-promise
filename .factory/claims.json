@@ -77,18 +77,67 @@
     "sandbox": "fresh browser context with a camera-call sentinel and full request log; allocate and reset the sample, then assert every request is a same-origin GET or HEAD and camera was never requested"
   },
   {
-    "id": "manual-barcode-allocation",
-    "claim": "Entering a barcode can find a required part and continue to its allocation.",
+    "id": "manual-barcode-fallback",
+    "claim": "Entering a barcode can find a required part and continue to its allocation when camera access is unavailable.",
     "where": "job barcode sheet, terms, and README",
-    "test": "npm run test:e2e -- --grep @claim:manual-barcode-allocation",
+    "test": "npm run test:e2e -- --grep @claim:manual-barcode-fallback",
     "sandbox": "fresh demo at /?demo=1; open Scan a part, choose Enter barcode instead, enter CP-19, assert the condensate pump match, allocate it from Van 2, and assert Parts in hand"
   },
   {
-    "id": "camera-barcode-privacy",
+    "id": "camera-frames-not-sent",
     "claim": "Camera access starts only after Use camera, and barcode camera frames are not saved or sent.",
     "where": "job barcode sheet, privacy page, README, and demo guide",
-    "test": "npm run test:e2e -- --grep @claim:camera-barcode-privacy",
+    "test": "npm run test:e2e -- --grep @claim:camera-frames-not-sent",
     "sandbox": "fresh demo with instrumented mediaDevices and BarcodeDetector; assert opening Scan a part makes no camera call, Use camera makes one call, CP-19 is matched, tracks stop, and no frame or cross-origin request is sent"
+  },
+  {
+    "id": "scan-finds-local-part",
+    "claim": "A barcode finds the matching required part stored in the selected job on this device.",
+    "where": "Scan route, job barcode sheet, README, and demo guide",
+    "test": "npm run test:e2e -- --grep @claim:scan-finds-local-part",
+    "sandbox": "fresh demo at /scan?demo=1; select Riverside Dental, enter CP-19, assert Condensate pump matches, then enter a different code and assert it has no match"
+  },
+  {
+    "id": "supplier-eta-warns-date",
+    "claim": "A supplier expected date after the visit buffer marks the job Date at risk.",
+    "where": "supplier evidence sheet, supplier dates route, README, and demo guide",
+    "test": "npm run test:e2e -- --grep @claim:supplier-eta-warns-date",
+    "sandbox": "fresh demo; attach one pump supplier record expected after the job visit date, then assert Date at risk and the supplier date route names the job"
+  },
+  {
+    "id": "stale-evidence-needs-check",
+    "claim": "Supplier evidence older than 72 hours needs a check before the visit date is promised.",
+    "where": "supplier dates route, job status, README, and demo guide",
+    "test": "npm run test:e2e -- --grep @claim:stale-evidence-needs-check",
+    "sandbox": "fresh demo; attach supplier evidence, age its recorded check time by more than 72 hours in the isolated demo database, reload, and assert Needs a check"
+  },
+  {
+    "id": "offline-write-syncs-once",
+    "claim": "Offline signed-in changes batch on this device and apply once after reconnect.",
+    "where": "jobs sync notice and README",
+    "test": "npm run test:e2e -- --grep @claim:offline-write-syncs-once",
+    "sandbox": "authenticated fresh browser context; make two local changes while offline, reconnect, assert one sync request carries two ordered operations, then assert the server workspace includes both jobs once"
+  },
+  {
+    "id": "double-allocation-opens-conflict",
+    "claim": "When two devices allocate the last quantity, the later device opens a safe conflict and does not overwrite the shared quantity.",
+    "where": "conflict route, conflict sheet, README, and demo guide",
+    "test": "npm run test:e2e -- --grep @claim:double-allocation-opens-conflict",
+    "sandbox": "two signed-in browser contexts for one firm; both allocate the final source quantity while one is offline, reconnect the later device, assert Date at risk and a quantity conflict, choose the shared revision, and assert no negative source remains"
+  },
+  {
+    "id": "field-quantity-actions",
+    "claim": "A held quantity can move to another matching source, then be marked fitted on its job.",
+    "where": "job allocation row and README",
+    "test": "npm run test:e2e -- --grep @claim:field-quantity-actions",
+    "sandbox": "fresh demo; add a matching source, allocate the pump, move the held quantity to the new source, mark it fitted, and assert both the source and fitted state"
+  },
+  {
+    "id": "reorder-draft-boundary",
+    "claim": "A reorder suggestion can be dismissed with a reason or saved as a draft without contacting a supplier.",
+    "where": "reorder suggestion and README",
+    "test": "npm run test:e2e -- --grep @claim:reorder-draft-boundary",
+    "sandbox": "fresh demo; allocate the final pump, save a draft order line with a reason, assert the recorded draft and that every request stays same-origin GET or HEAD"
   },
   {
     "id": "release-order-boundary",

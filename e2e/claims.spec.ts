@@ -1020,7 +1020,7 @@ test('@claim:demo-network-privacy The normal demo flow stays same-origin and doe
   await context.close();
 });
 
-test('@claim:manual-barcode-allocation Manual barcode entry finds and allocates a required part', async ({
+test('@claim:manual-barcode-fallback Manual barcode entry finds and allocates a required part', async ({
   page
 }, testInfo) => {
   test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
@@ -1044,7 +1044,7 @@ test('@claim:manual-barcode-allocation Manual barcode entry finds and allocates 
   );
 });
 
-test('@claim:camera-barcode-privacy Camera starts only on request and frames stay on the device', async ({
+test('@claim:camera-frames-not-sent Camera starts only on request and frames stay on the device', async ({
   browser
 }, testInfo) => {
   test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
@@ -1128,6 +1128,345 @@ test('@claim:camera-barcode-privacy Camera starts only on request and frames sta
   );
   expect(demoData).not.toMatch(/camera|frame|image\/|data:image/i);
   await context.close();
+});
+
+test('@claim:scan-finds-local-part A barcode finds the matching required part in the selected local job', async ({
+  page
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  await page.goto('/scan?demo=1');
+  await page.getByRole('button', { name: 'Scan or enter a barcode' }).click();
+  await page.getByRole('button', { name: 'Enter barcode instead' }).click();
+  await page.getByLabel('Barcode', { exact: true }).fill('CP-19');
+  await page.getByRole('button', { name: 'Find required part' }).click();
+  await expect(page.getByRole('status')).toContainText(
+    'Condensate pump matches CP-19'
+  );
+  await page.getByLabel('Barcode', { exact: true }).fill('NOT-IN-JOB');
+  await page.getByRole('button', { name: 'Find required part' }).click();
+  await expect(page.getByRole('alert')).toContainText(
+    'No required part on RD-1042 uses barcode NOT-IN-JOB'
+  );
+});
+
+test('@claim:supplier-eta-warns-date A late supplier date keeps the visit date at risk', async ({
+  page
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  await page.goto('/?demo=1');
+  await page
+    .getByTestId('part-req-pump')
+    .getByRole('button', { name: 'Check supplier date' })
+    .click();
+  await page.getByLabel('Supplier order reference').fill('PO-LATE-1');
+  await page.getByLabel('Expected date').fill('2026-09-03');
+  await page.getByLabel('Confidence').selectOption('Estimated');
+  await page.getByRole('button', { name: 'Attach supplier evidence' }).click();
+  await expect(page.locator('.status-plate').first()).toContainText(
+    'Date at risk'
+  );
+  await page.getByRole('link', { name: 'Suppliers' }).click();
+  await expect(page.locator('h1')).toHaveText('Supplier dates to check');
+  await expect(page.locator('main')).toContainText(
+    'RD-1042 · Riverside Dental'
+  );
+  await expect(page.locator('main')).toContainText('Date at risk');
+});
+
+test('@claim:stale-evidence-needs-check Old supplier evidence needs a check before the date is promised', async ({
+  page
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  await page.goto('/?demo=1');
+  await page
+    .getByTestId('part-req-pump')
+    .getByRole('button', { name: 'Check supplier date' })
+    .click();
+  await page.getByLabel('Supplier order reference').fill('PO-STALE-1');
+  await page.getByLabel('Expected date').fill('2026-09-01');
+  await page.getByLabel('Confidence').selectOption('Confirmed by supplier');
+  await page.getByRole('button', { name: 'Attach supplier evidence' }).click();
+  await page.evaluate(async () => {
+    const request = indexedDB.open('parts-promise-demo-v1', 1);
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const workspace = await new Promise<Record<string, unknown>>(
+      (resolve, reject) => {
+        const transaction = database.transaction('workspace', 'readonly');
+        const read = transaction.objectStore('workspace').get('current');
+        read.onsuccess = () => resolve(read.result as Record<string, unknown>);
+        read.onerror = () => reject(read.error);
+      }
+    );
+    const sources = workspace.sources as Array<Record<string, string>>;
+    const supplier = sources.find(
+      (source) => source.id !== 'source-van-pump' && source.supplierOrder
+    );
+    if (!supplier) throw new Error('Expected a supplier source.');
+    supplier.lastCheckedAt = new Date(
+      Date.now() - 73 * 60 * 60 * 1000
+    ).toISOString();
+    await new Promise<void>((resolve, reject) => {
+      const transaction = database.transaction('workspace', 'readwrite');
+      transaction.objectStore('workspace').put(workspace, 'current');
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+    database.close();
+  });
+  await page.reload();
+  await expect(page.locator('.status-plate').first()).toContainText(
+    'Needs a check'
+  );
+  await page.getByRole('link', { name: 'Suppliers' }).click();
+  await expect(page.locator('main')).toContainText('Needs a check');
+});
+
+test('@claim:field-quantity-actions A held quantity moves to a matching source and can be marked fitted', async ({
+  page
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  await page.goto('/?demo=1');
+  await page.getByRole('button', { name: 'Add a source' }).click();
+  await page.getByLabel('Source name').fill('Warehouse backup');
+  await page.getByLabel('Part description').fill('Condensate pump');
+  await page.getByLabel('Available quantity').fill('1');
+  await page.getByLabel('Minimum quantity').fill('0');
+  await page.getByRole('button', { name: 'Save source' }).click();
+  await openPumpAllocation(page);
+  await page
+    .getByTestId('part-req-pump')
+    .getByRole('button', { name: 'Move quantity' })
+    .click();
+  await page.getByLabel(/Warehouse backup/).check();
+  await page.getByRole('button', { name: 'Move this quantity' }).click();
+  await expect(page.getByTestId('part-req-pump')).toContainText(
+    'Warehouse backup'
+  );
+  await page
+    .getByTestId('part-req-pump')
+    .getByRole('button', { name: 'Mark fitted' })
+    .click();
+  await expect(page.getByTestId('part-req-pump')).toContainText('Fitted');
+});
+
+test('@claim:reorder-draft-boundary A reorder draft stays in the isolated browser workspace', async ({
+  page
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const requests: Array<{ method: string; url: string }> = [];
+  page.on('request', (request) =>
+    requests.push({ method: request.method(), url: request.url() })
+  );
+  await openPumpAllocation(page);
+  await page.getByRole('button', { name: 'Create draft order line' }).click();
+  await page.getByLabel('Reason').fill('Confirm lead time before ordering.');
+  await page.getByRole('button', { name: 'Save draft order line' }).click();
+  await expect(page.getByTestId('reorder-suggestion')).toContainText(
+    'Draft order line recorded: Confirm lead time before ordering.'
+  );
+  const origin = new URL(page.url()).origin;
+  expect(
+    requests.every(
+      (request) =>
+        new URL(request.url).origin === origin &&
+        ['GET', 'HEAD'].includes(request.method)
+    )
+  ).toBe(true);
+});
+
+test('@claim:offline-write-syncs-once Offline changes batch and apply once after reconnect', async ({
+  browser,
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const token = testToken(`batch-${Date.now()}-${Math.random()}`);
+  await apiOnboard(
+    request,
+    token,
+    'Batch Sync Firm',
+    undefined,
+    '198.51.100.171'
+  );
+  await setTestBilling(request, token, 'active', '198.51.100.172');
+  const context = await browser.newContext();
+  await context.addInitScript((value) => {
+    sessionStorage.setItem('parts-promise-e2e-token', value);
+  }, token);
+  const page = await context.newPage();
+  const syncBodies: unknown[] = [];
+  page.on('request', (candidate) => {
+    if (candidate.url().includes('/api/v1/sync'))
+      syncBodies.push(JSON.parse(candidate.postData() ?? '{}'));
+  });
+  await page.goto('/jobs');
+  await expect(page.getByText('Shared firm jobs')).toBeVisible();
+  await context.setOffline(true);
+  for (const [number, site] of [
+    ['BATCH-1', 'First batch job'],
+    ['BATCH-2', 'Second batch job']
+  ]) {
+    await page.getByRole('button', { name: 'Add a job' }).click();
+    await page.getByLabel('Job number').fill(number);
+    await page.getByLabel('Site or customer name').fill(site);
+    await page.getByLabel('Visit date').fill('2026-10-01');
+    await page
+      .getByRole('textbox', { name: 'Required part', exact: true })
+      .fill('Relay');
+    await page
+      .getByRole('spinbutton', { name: 'Quantity', exact: true })
+      .fill('1');
+    await page.getByRole('button', { name: 'Save job and part' }).click();
+    if (number === 'BATCH-1') {
+      await page.getByRole('link', { name: 'Jobs' }).click();
+      await expect(
+        page.getByRole('heading', { name: 'Jobs and their parts status' })
+      ).toBeVisible();
+    }
+  }
+  await expect(
+    page.getByRole('heading', { name: 'Second batch job parts' })
+  ).toBeVisible();
+  await context.setOffline(false);
+  await expect(page.getByText('Shared workspace up to date.')).toBeVisible({
+    timeout: 15_000
+  });
+  expect(syncBodies).toHaveLength(1);
+  expect(syncBodies[0]).toMatchObject({
+    operations: [
+      expect.objectContaining({ sequence: 1 }),
+      expect.objectContaining({ sequence: 2 })
+    ]
+  });
+  const shared = await request.get('/api/v1/bootstrap', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': '198.51.100.173'
+    }
+  });
+  const text = JSON.stringify((await shared.json()).workspace);
+  expect(text.match(/BATCH-1/g)).toHaveLength(1);
+  expect(text.match(/BATCH-2/g)).toHaveLength(1);
+  await context.close();
+});
+
+test('@claim:double-allocation-opens-conflict The later device cannot spend the final quantity twice', async ({
+  browser,
+  request
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium', 'Claim evidence runs once.');
+  const token = testToken(`double-${Date.now()}-${Math.random()}`);
+  await apiOnboard(
+    request,
+    token,
+    'Double Allocation Firm',
+    undefined,
+    '198.51.100.181'
+  );
+  await setTestBilling(request, token, 'active', '198.51.100.182');
+  const now = new Date().toISOString();
+  const sharedWorkspace = {
+    schemaVersion: 1,
+    jobs: [
+      {
+        id: 'last-job',
+        number: 'LAST-1',
+        site: 'Last Item Site',
+        visitDate: '2026-10-01',
+        notes: '',
+        createdAt: now,
+        updatedAt: now
+      }
+    ],
+    requirements: [
+      {
+        id: 'last-requirement',
+        jobId: 'last-job',
+        description: 'Last relay',
+        sku: 'LAST-RELAY',
+        unit: 'each',
+        quantity: 1
+      }
+    ],
+    sources: [
+      {
+        id: 'last-source',
+        name: 'Van 9',
+        type: 'van',
+        partDescription: 'Last relay',
+        unit: 'each',
+        onHand: 1,
+        minimum: 0,
+        lastCheckedAt: now,
+        lastCheckedBy: 'Test'
+      }
+    ],
+    allocations: []
+  };
+  const initial = await request.post('/api/v1/sync', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': '198.51.100.183'
+    },
+    data: {
+      idempotency_key: crypto.randomUUID(),
+      expected_version: 0,
+      workspace: sharedWorkspace
+    }
+  });
+  expect(initial.ok(), await initial.text()).toBe(true);
+  const firstContext = await browser.newContext();
+  const secondContext = await browser.newContext();
+  for (const context of [firstContext, secondContext]) {
+    await context.addInitScript((value) => {
+      sessionStorage.setItem('parts-promise-e2e-token', value);
+    }, token);
+  }
+  const first = await firstContext.newPage();
+  const second = await secondContext.newPage();
+  await Promise.all([
+    first.goto('/jobs/last-job'),
+    second.goto('/jobs/last-job')
+  ]);
+  await Promise.all([
+    expect(first.locator('h1')).toHaveText('Last Item Site parts'),
+    expect(second.locator('h1')).toHaveText('Last Item Site parts')
+  ]);
+  await secondContext.setOffline(true);
+  await second.getByRole('button', { name: 'Allocate part' }).click();
+  await second.getByLabel(/Van 9/).check();
+  await second.getByRole('button', { name: 'Allocate this quantity' }).click();
+  await first.getByRole('button', { name: 'Allocate part' }).click();
+  await first.getByLabel(/Van 9/).check();
+  await first.getByRole('button', { name: 'Allocate this quantity' }).click();
+  await expect(first.getByText('Shared workspace up to date.')).toBeVisible({
+    timeout: 15_000
+  });
+  await secondContext.setOffline(false);
+  await expect(
+    second.getByRole('heading', {
+      name: 'Resolve the shared workspace conflict'
+    })
+  ).toBeVisible({ timeout: 15_000 });
+  await expect(second.locator('.status-plate').first()).toContainText(
+    'Date at risk'
+  );
+  await expect(
+    second.getByText('Another device used the same source first.')
+  ).toBeVisible();
+  await second.getByRole('button', { name: 'Use shared revision' }).click();
+  const latest = await request.get('/api/v1/bootstrap', {
+    headers: {
+      authorization: `Bearer ${token}`,
+      'x-forwarded-for': '198.51.100.184'
+    }
+  });
+  const latestWorkspace = (await latest.json()).workspace;
+  expect(latestWorkspace.allocations).toHaveLength(1);
+  expect(latestWorkspace.allocations[0].sourceId).toBe('last-source');
+  await Promise.all([firstContext.close(), secondContext.close()]);
 });
 
 test('@claim:release-order-boundary The release never places a supplier order', async ({

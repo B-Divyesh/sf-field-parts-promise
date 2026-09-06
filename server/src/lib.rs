@@ -223,6 +223,9 @@ fn is_document_path(path: &str) -> bool {
         path,
         "/" | "/demo"
             | "/jobs"
+            | "/scan"
+            | "/suppliers"
+            | "/conflicts"
             | "/privacy"
             | "/terms"
             | "/auth/callback"
@@ -233,6 +236,9 @@ fn is_document_path(path: &str) -> bool {
     ) || path
         .strip_prefix("/jobs/")
         .is_some_and(|job_id| !job_id.is_empty() && !job_id.contains('/'))
+        || path
+            .strip_prefix("/supplier-orders/")
+            .is_some_and(|order_id| !order_id.is_empty() && !order_id.contains('/'))
         || path.ends_with(".html")
 }
 
@@ -910,6 +916,8 @@ mod tests {
                     idempotency_key: Uuid::new_v4().to_string(),
                     expected_version: 0,
                     workspace: json!({"schemaVersion":1,"jobs":[],"requirements":[],"sources":[],"allocations":[]}),
+                    client_cursor: None,
+                    operations: vec![],
                 },
             )
             .await;
@@ -979,6 +987,8 @@ mod tests {
                 idempotency_key: Uuid::new_v4().to_string(),
                 expected_version: 0,
                 workspace: workspace.clone(),
+                client_cursor: None,
+                operations: vec![],
             },
         )
         .await
@@ -994,6 +1004,8 @@ mod tests {
                         idempotency_key: Uuid::new_v4().to_string(),
                         expected_version: 1,
                         workspace: workspace.clone(),
+                        client_cursor: None,
+                        operations: vec![],
                     },
                 )
                 .await;
@@ -1049,6 +1061,8 @@ mod tests {
                     idempotency_key: Uuid::new_v4().to_string(),
                     expected_version: 0,
                     workspace: json!({"schemaVersion":1,"jobs":[{"id":"restart-proof"}],"requirements":[],"sources":[],"allocations":[]}),
+                    client_cursor: None,
+                    operations: vec![],
                 },
             )
             .await

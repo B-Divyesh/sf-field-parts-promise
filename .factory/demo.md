@@ -12,9 +12,17 @@ Jobs, Privacy, and Terms links keep `demo=1` in their rendered URLs. Opening any
 
 **Scan a part** opens the barcode sheet. Camera access starts only after **Use camera**. **Enter barcode instead** accepts `CP-19`, finds the condensate pump, and continues to the same allocation sheet. Camera frames are not saved or sent.
 
+The `/scan?demo=1` route lets you choose the sample job before entering its barcode. The sample barcode `CP-19` finds the condensate pump stored in that job.
+
+Attach supplier evidence to the missing pump to see the expected-date status. A date after the visit date keeps the job **Date at risk**. Evidence older than 72 hours **Needs a check**. These are warnings, not arrival guarantees.
+
+Allocate the pump, then use **Move quantity** to select a matching source. Use **Mark fitted** after the quantity is on the job. The sample can record a draft order line or a dismissal reason. It never contacts a supplier or places an order.
+
 M2 account code does not run in demo mode. The demo does not open Microsoft sign-in, call `/api/v1`, check billing, or copy records into a firm.
 
 Switching modes clears notices, open forms, draft values, conflicts, and other workspace-derived interface state before the other workspace renders. In-flight live sync responses cannot replace demo data.
+
+Signed-in work batches offline changes on this device. Reconnecting applies that batch once. If two devices use the same last quantity, the later device gets a safe conflict and cannot overwrite the shared quantity.
 
 - **Reset demo** writes the bundled fixture back into the demo database.
 - **Start for real** confirms the boundary, deletes the demo database, and opens `/jobs` with live records unchanged.

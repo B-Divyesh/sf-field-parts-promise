@@ -12,11 +12,25 @@ The demo uses a separate browser database. Jobs, Privacy, and Terms keep sample 
 
 Use **Scan a part** to match a required part by barcode. Camera access begins only after **Use camera**. **Enter barcode instead** completes the same allocation without camera access. Camera frames stay on the device and are not sent.
 
+## Field updates and supplier dates
+
+Open `/scan` to choose a job and scan or enter its barcode. A barcode finds the matching required part stored in that job.
+
+A held quantity can move to another matching source. It can then be marked fitted on its job.
+
+Supplier dates are evidence, not arrival guarantees. A supplier expected date after the visit buffer marks the job **Date at risk**. Supplier evidence older than 72 hours **Needs a check**.
+
+The supplier screen lists recorded evidence and jobs that need a date check. A reorder suggestion can be dismissed with a reason. It can also be saved as a draft without contacting a supplier.
+
+When two devices allocate the final quantity, the later device opens a safe conflict. It does not overwrite the shared quantity.
+
 ## Accounts, sync, and billing
 
 Sign-in uses the Sociobot Microsoft Entra tenant. A saved firm workspace appears on another signed-in device. Retrying the same saved change does not create a duplicate.
 
 Offline signed-in edits stay queued in this browser. They survive reload, retry after reconnect, and back off after a temporary failure.
+
+Offline signed-in changes batch on this device and apply once after reconnect.
 
 Owners can record invitations by work email. The invitation becomes active when that email signs in. The firm plan costs $39 per month. Each active technician costs $8 per month. The owner is included in the base price without using a technician seat.
 

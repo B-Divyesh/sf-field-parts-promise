@@ -128,7 +128,10 @@ export function createDemoWorkspace(): Workspace {
         checkedAt: '2026-08-28T08:05:00.000Z',
         createdAt: '2026-08-28T08:16:00.000Z'
       }
-    ]
+    ],
+    supplierOrders: [],
+    reorderDecisions: [],
+    conflicts: []
   };
 }
 
@@ -138,6 +141,9 @@ export function createEmptyWorkspace(): Workspace {
     jobs: [],
     requirements: [],
     sources: [],
-    allocations: []
+    allocations: [],
+    supplierOrders: [],
+    reorderDecisions: [],
+    conflicts: []
   };
 }

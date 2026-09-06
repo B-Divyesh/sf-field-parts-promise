@@ -11,20 +11,29 @@
     formatQuantity,
     promiseStatus,
     reorderSuggestions,
-    sourcesForRequirement
+    sourcesForRequirement,
+    supplierOrders,
+    supplierRiskJobs,
+    isStaleEvidence
   } from './lib/domain/rules';
   import {
     addAllocation,
     addRequirement,
     addSource,
+    addSupplierOrder,
+    markAllocationFitted,
+    moveAllocation,
+    recordReorderDecision,
     removeAllocation
   } from './lib/domain/workspace';
   import type {
     Allocation,
     Job,
     PartRequirement,
+    ReorderDecision,
     SourceType,
     SupplierConfidence,
+    SupplierOrder,
     Workspace
   } from './lib/domain/types';
   import {
@@ -56,6 +65,10 @@
     | 'home'
     | 'jobs'
     | 'job'
+    | 'scan'
+    | 'suppliers'
+    | 'supplier-order'
+    | 'conflicts'
     | 'auth-callback'
     | 'onboarding'
     | 'team'
@@ -106,6 +119,8 @@
     sharedWorkspace: Workspace;
     sharedVersion: number;
     quantityChanged: boolean;
+    reason: 'version_changed' | 'quantity_spent';
+    affectedJobId?: string;
   };
 
   type BarcodeResult = { rawValue?: string };
@@ -144,6 +159,7 @@
   let showPartForm = false;
   let showSourceForm = false;
   let showSupplierForm = false;
+  let showMoveForm = false;
   let showImportForm = false;
   let showScanForm = false;
   let allocationRequirementId = '';
@@ -181,7 +197,14 @@
   let scanVideo: HTMLVideoElement | undefined;
   let scanStream: MediaStream | null = null;
   let scanDetectionTimer: number | undefined;
+  let scanJobId = '';
+  let moveAllocationId = '';
+  let moveSourceId = '';
+  let reorderSourceId = '';
+  let reorderReason = '';
+  let reorderAction: 'dismissed' | 'drafted' = 'dismissed';
   let workspaceModeGeneration = 0;
+  let routeGeneration = 0;
 
   type HistoryPosition = { scrollX: number; scrollY: number };
 
@@ -192,6 +215,8 @@
     | 'allocation'
     | 'source'
     | 'supplier'
+    | 'move'
+    | 'reorder'
     | 'import'
     | 'scan';
   const sheetTriggers: Partial<Record<SheetName, HTMLElement>> = {};
@@ -219,17 +244,49 @@
   $: routePage = getPage(currentPath, demo);
   $: activeJobId = routePage === 'job' ? jobIdFromPath(currentPath, demo) : '';
   $: activeJob = workspace?.jobs.find((job) => job.id === activeJobId);
+  $: scanJob =
+    workspace?.jobs.find((job) => job.id === scanJobId) ?? workspace?.jobs[0];
+  $: workJob = activeJob ?? (routePage === 'scan' ? scanJob : undefined);
   $: page =
     routePage === 'job' && !loading && workspace && !activeJob
       ? 'not-found'
-      : routePage;
+      : routePage === 'supplier-order' &&
+          !loading &&
+          workspace &&
+          !(workspace.supplierOrders ?? []).some(
+            (order) => order.id === supplierOrderIdFromPath(currentPath)
+          )
+        ? 'not-found'
+        : routePage;
   $: metadata = pageMetadata(page, activeJob);
   $: updateDocumentMetadata(metadata);
   $: activeStatus =
     activeJob && workspace ? promiseStatus(workspace, activeJob) : undefined;
   $: suggestions = workspace ? reorderSuggestions(workspace) : [];
+  $: supplierOrderList = workspace ? supplierOrders(workspace) : [];
+  $: selectedSupplierOrder =
+    routePage === 'supplier-order'
+      ? supplierOrderList.find(
+          (order) => order.id === supplierOrderIdFromPath(currentPath)
+        )
+      : undefined;
+  $: supplierRisks = workspace ? supplierRiskJobs(workspace) : [];
   $: sharedReadOnly = !demo && Boolean(idToken) && cloud?.role === 'viewer';
   $: document.documentElement.dataset.theme = theme;
+
+  function supplierLineAllocatedQuantity(
+    currentWorkspace: Workspace,
+    lineId: string
+  ): number {
+    return currentWorkspace.allocations
+      .filter(
+        (allocation) =>
+          currentWorkspace.sources.find(
+            (source) => source.id === allocation.sourceId
+          )?.supplierOrder?.lineId === lineId
+      )
+      .reduce((total, allocation) => total + allocation.quantity, 0);
+  }
 
   onMount(() => {
     const updateRoute = (event: PopStateEvent) =>
@@ -294,6 +351,10 @@
       if (path === '/' || path === '/demo') return 'job';
       if (path === '/jobs') return 'jobs';
       if (path.startsWith('/jobs/')) return 'job';
+      if (path === '/scan') return 'scan';
+      if (path === '/suppliers') return 'suppliers';
+      if (path.startsWith('/supplier-orders/')) return 'supplier-order';
+      if (path === '/conflicts') return 'conflicts';
       if (path === '/privacy') return 'privacy';
       if (path === '/terms') return 'terms';
       return 'not-found';
@@ -301,6 +362,10 @@
     if (path === '/') return 'home';
     if (path === '/jobs') return 'jobs';
     if (path.startsWith('/jobs/')) return 'job';
+    if (path === '/scan') return 'scan';
+    if (path === '/suppliers') return 'suppliers';
+    if (path.startsWith('/supplier-orders/')) return 'supplier-order';
+    if (path === '/conflicts') return 'conflicts';
     if (path === '/auth/callback') return 'auth-callback';
     if (path === '/onboarding') return 'onboarding';
     if (path === '/settings/team') return 'team';
@@ -316,6 +381,10 @@
     return path.split('/')[2] ?? '';
   }
 
+  function supplierOrderIdFromPath(path: string): string {
+    return path.split('/')[2] ?? '';
+  }
+
   function pageMetadata(currentPage: Page, job?: Job) {
     const canonical =
       demo && (currentPath === '/' || currentPath === '/demo')
@@ -325,6 +394,30 @@
       return {
         title: 'Jobs — Parts Promise',
         description: 'Jobs and their parts status.',
+        canonical
+      };
+    if (currentPage === 'scan')
+      return {
+        title: 'Scan a part — Parts Promise',
+        description: 'Find a job part by barcode or manual entry.',
+        canonical
+      };
+    if (currentPage === 'suppliers')
+      return {
+        title: 'Supplier dates — Parts Promise',
+        description: 'Supplier evidence and jobs that need a date check.',
+        canonical
+      };
+    if (currentPage === 'supplier-order')
+      return {
+        title: 'Supplier order — Parts Promise',
+        description: 'Supplier order evidence held for jobs.',
+        canonical
+      };
+    if (currentPage === 'conflicts')
+      return {
+        title: 'Sync conflicts — Parts Promise',
+        description: 'Records that need a safe choice before syncing.',
         canonical
       };
     if (
@@ -611,6 +704,9 @@
       syncRetryAttempt = 0;
       return;
     }
+    // Two online signals can both finish opening IndexedDB before either has
+    // started the request. Check again after that await so one batch is sent.
+    if (syncInFlight) return;
     syncInFlight = true;
     syncNotice = 'Sending changes…';
     try {
@@ -619,7 +715,9 @@
         body: JSON.stringify({
           idempotency_key: operation.idempotencyKey,
           expected_version: operation.expectedVersion,
-          workspace: operation.workspace
+          workspace: operation.workspace,
+          client_cursor: operation.cursor,
+          operations: operation.operations
         })
       });
       if (demo || requestedGeneration !== workspaceModeGeneration) return;
@@ -643,17 +741,7 @@
         if (shared.workspace && shared.version !== undefined) {
           cloud = shared;
           cloudVersion = shared.version;
-          syncConflict = {
-            operation,
-            sharedWorkspace: shared.workspace,
-            sharedVersion: shared.version,
-            quantityChanged: hasQuantityConflict(
-              operation.workspace,
-              shared.workspace
-            )
-          };
-          syncNotice =
-            'This device and the shared workspace changed. Choose a safe revision below.';
+          await recordSyncConflict(operation, shared.workspace, shared.version);
         }
       } else {
         syncNotice = `${error instanceof Error ? error.message : 'Sync failed.'} 1 change stays queued on this device.`;
@@ -675,15 +763,87 @@
     }, baseDelay + jitter);
   }
 
+  function findAffectedConflictJob(
+    device: Workspace,
+    shared: Workspace
+  ): string | undefined {
+    for (const allocation of device.allocations) {
+      const source = device.sources.find(
+        (item) => item.id === allocation.sourceId
+      );
+      if (!source) continue;
+      const sharedUsed = shared.allocations
+        .filter((item) => item.sourceId === source.id)
+        .reduce((total, item) => total + item.quantity, 0);
+      const deviceUsed = device.allocations
+        .filter((item) => item.sourceId === source.id)
+        .reduce((total, item) => total + item.quantity, 0);
+      if (sharedUsed + deviceUsed > source.onHand) return allocation.jobId;
+    }
+    return undefined;
+  }
+
+  async function recordSyncConflict(
+    operation: CloudOperation,
+    sharedWorkspace: Workspace,
+    sharedVersion: number
+  ) {
+    const affectedJobId = findAffectedConflictJob(
+      operation.workspace,
+      sharedWorkspace
+    );
+    const reason = affectedJobId ? 'quantity_spent' : 'version_changed';
+    const message = affectedJobId
+      ? 'Another device used this source first. Review the job before promising its visit date.'
+      : 'This record changed on another device. Review both revisions before sending a change.';
+    const next = structuredClone(operation.workspace);
+    next.conflicts = [
+      ...(next.conflicts ?? []),
+      {
+        id: crypto.randomUUID(),
+        reason,
+        jobId: affectedJobId,
+        message,
+        createdAt: new Date().toISOString()
+      }
+    ];
+    workspace = next;
+    await saveWorkspace('live', next);
+    syncConflict = {
+      operation,
+      sharedWorkspace,
+      sharedVersion,
+      quantityChanged: hasQuantityConflict(
+        operation.workspace,
+        sharedWorkspace
+      ),
+      reason,
+      affectedJobId
+    };
+    syncNotice =
+      reason === 'quantity_spent'
+        ? 'Another device used the same quantity. This job is at risk until you choose a safe revision.'
+        : 'This device and the shared workspace changed. Choose a safe revision below.';
+  }
+
   async function useSharedRevision() {
     if (!syncConflict || !cloud?.organization_id) return;
-    workspace = syncConflict.sharedWorkspace;
+    const resolvedConflicts = (workspace?.conflicts ?? []).map((conflict) =>
+      !conflict.resolvedAt
+        ? { ...conflict, resolvedAt: new Date().toISOString() }
+        : conflict
+    );
+    workspace = {
+      ...syncConflict.sharedWorkspace,
+      conflicts: resolvedConflicts
+    };
     cloudVersion = syncConflict.sharedVersion;
-    await saveWorkspace('live', syncConflict.sharedWorkspace);
+    await saveWorkspace('live', workspace);
     await clearCloudOperation(cloud.organization_id);
     queuedCount = 0;
     syncConflict = null;
-    syncNotice = 'The shared revision is now on this device.';
+    syncNotice =
+      'The shared revision is now on this device. The conflict is kept here as resolved.';
     if (page === 'job') await navigate('/jobs');
   }
 
@@ -879,6 +1039,7 @@
     showPartForm = false;
     showSourceForm = false;
     showSupplierForm = false;
+    showMoveForm = false;
     showImportForm = false;
     showScanForm = false;
     allocationRequirementId = '';
@@ -889,6 +1050,11 @@
     barcodeValue = '';
     scanMessage = '';
     scanMatchedRequirementId = '';
+    scanJobId = '';
+    moveAllocationId = '';
+    moveSourceId = '';
+    reorderSourceId = '';
+    reorderReason = '';
     jobNumber = '';
     jobSite = '';
     jobDate = '';
@@ -924,6 +1090,7 @@
     shouldFocus: boolean,
     restorePosition?: HistoryPosition
   ) {
+    const requestedRoute = ++routeGeneration;
     if (showScanForm) {
       stopCamera();
       showScanForm = false;
@@ -942,6 +1109,7 @@
     currentPath = nextPath;
     demo = nextDemo;
     await loadCurrentWorkspace();
+    if (requestedRoute !== routeGeneration) return;
     signalWorkspaceReady();
     if (modeChanged && !demo) {
       const pending = await readLatestCloudOperation();
@@ -1034,6 +1202,7 @@
     barcodeValue = '';
     scanMessage = '';
     scanMatchedRequirementId = '';
+    scanJobId = activeJob?.id ?? scanJob?.id ?? '';
     await revealSheet('scan', event.currentTarget as HTMLElement);
   }
 
@@ -1072,13 +1241,13 @@
       scanMessage = 'Enter the barcode printed on the part label.';
       return;
     }
-    const requirement = activeJob
-      ? requirementsFor(activeJob).find(
+    const requirement = workJob
+      ? requirementsFor(workJob).find(
           (item) => item.sku?.trim().toLocaleUpperCase() === normalized
         )
       : undefined;
     if (!requirement) {
-      scanMessage = `No required part on ${activeJob?.number ?? 'this job'} uses barcode ${barcodeValue}. Check the code or add the part manually.`;
+      scanMessage = `No required part on ${workJob?.number ?? 'this job'} uses barcode ${barcodeValue}. Check the code or add the part manually.`;
       return;
     }
     if (
@@ -1239,7 +1408,7 @@
   }
 
   async function saveAllocation() {
-    if (!workspace || !activeJob) return;
+    if (!workspace || !workJob) return;
     const requirement = workspace.requirements.find(
       (item) => item.id === allocationRequirementId
     );
@@ -1253,7 +1422,7 @@
     const now = new Date().toISOString();
     const allocation: Allocation = {
       id: crypto.randomUUID(),
-      jobId: activeJob.id,
+      jobId: workJob.id,
       requirementId: requirement.id,
       sourceId: source.id,
       sourceName: source.name,
@@ -1271,17 +1440,124 @@
     }
     await commit(
       result.workspace,
-      `${formatQuantity(allocation.quantity, allocation.unit)} from ${source.name} is held for ${activeJob.number}.`
+      `${formatQuantity(allocation.quantity, allocation.unit)} from ${source.name} is held for ${workJob.number}.`
     );
     await closeSheet('allocation', () => (allocationRequirementId = ''));
   }
 
   async function deallocate(allocationId: string) {
     if (!workspace) return;
+    const allocation = workspace.allocations.find(
+      (item) => item.id === allocationId
+    );
+    if (allocation?.state === 'fitted') {
+      toast = 'A fitted quantity stays recorded on this job.';
+      return;
+    }
     await commit(
       removeAllocation(workspace, allocationId),
       'The allocation was removed from this job.'
     );
+  }
+
+  async function fitAllocation(allocationId: string) {
+    if (!workspace) return;
+    const result = markAllocationFitted(workspace, allocationId);
+    if (result.error) {
+      toast = result.error;
+      return;
+    }
+    await commit(result.workspace, 'The held quantity is now marked fitted.');
+  }
+
+  async function openMoveForm(allocation: Allocation, trigger: HTMLElement) {
+    if (!workspace) return;
+    const requirement = workspace.requirements.find(
+      (item) => item.id === allocation.requirementId
+    );
+    if (!requirement) return;
+    moveAllocationId = allocation.id;
+    moveSourceId =
+      sourcesForRequirement(workspace, requirement).find(
+        (source) =>
+          source.id !== allocation.sourceId &&
+          availableQuantity(workspace!, source.id) >= allocation.quantity
+      )?.id ?? '';
+    formError = '';
+    showMoveForm = true;
+    await revealSheet('move', trigger);
+  }
+
+  async function saveMove() {
+    if (!workspace || !moveAllocationId || !moveSourceId) {
+      formError = 'Choose the source receiving this quantity.';
+      return;
+    }
+    const result = moveAllocation(
+      workspace,
+      moveAllocationId,
+      moveSourceId,
+      new Date().toISOString()
+    );
+    if (result.error) {
+      formError = result.error;
+      return;
+    }
+    await commit(
+      result.workspace,
+      'The held quantity was moved to the new source.'
+    );
+    await closeSheet('move', () => {
+      showMoveForm = false;
+      moveAllocationId = '';
+      moveSourceId = '';
+    });
+  }
+
+  async function openReorderDecision(
+    sourceId: string,
+    action: 'dismissed' | 'drafted',
+    trigger: HTMLElement
+  ) {
+    reorderSourceId = sourceId;
+    reorderAction = action;
+    reorderReason = '';
+    formError = '';
+    await revealSheet('reorder', trigger);
+  }
+
+  async function saveReorderDecision() {
+    if (!workspace || !reorderSourceId) return;
+    if (!reorderReason.trim()) {
+      formError =
+        'Add a short reason so the next person can review this suggestion.';
+      return;
+    }
+    const decision: ReorderDecision = {
+      id: crypto.randomUUID(),
+      sourceId: reorderSourceId,
+      action: reorderAction,
+      reason: reorderReason.trim(),
+      createdAt: new Date().toISOString()
+    };
+    const source = workspace.sources.find(
+      (item) => item.id === reorderSourceId
+    );
+    const next = recordReorderDecision(workspace, decision);
+    await commit(
+      next,
+      reorderAction === 'drafted'
+        ? `A draft order line was recorded for ${source?.partDescription ?? 'this part'}. No order was sent.`
+        : `The reorder suggestion for ${source?.partDescription ?? 'this part'} was dismissed with a reason.`
+    );
+    await closeSheet('reorder', () => {
+      reorderSourceId = '';
+      reorderReason = '';
+    });
+  }
+
+  function openConflictRoute() {
+    void navigate(href('/conflicts', demo));
   }
 
   async function undoLastAllocation() {
@@ -1327,7 +1603,7 @@
     jobSku = '';
     showAddJob = false;
     formError = '';
-    navigate(href(`/jobs/${job.id}`, demo));
+    await navigate(href(`/jobs/${job.id}`, demo));
   }
 
   async function updateJob() {
@@ -1527,7 +1803,7 @@
   async function createSupplierEvidence() {
     if (
       !workspace ||
-      !activeJob ||
+      !workJob ||
       !supplierReference.trim() ||
       !supplierDate ||
       !allocationRequirementId
@@ -1542,6 +1818,9 @@
     if (!requirement) return;
     const now = new Date().toISOString();
     const sourceId = crypto.randomUUID();
+    const orderId = crypto.randomUUID();
+    const lineId = crypto.randomUUID();
+    const supplierName = 'Supplier record';
     const source = {
       id: sourceId,
       name: `Supplier order ${supplierReference.trim()}`,
@@ -1553,15 +1832,38 @@
       lastCheckedAt: now,
       lastCheckedBy: demo ? 'Field demo' : 'You',
       supplierOrder: {
+        orderId,
+        lineId,
+        supplierName,
         reference: supplierReference.trim(),
         expectedDate: supplierDate,
         confidence: supplierConfidence
       }
     };
-    const next = addSource(workspace, source);
+    const order: SupplierOrder = {
+      id: orderId,
+      supplierName,
+      reference: supplierReference.trim(),
+      status: 'open',
+      createdAt: now,
+      lines: [
+        {
+          id: lineId,
+          partDescription: requirement.description,
+          unit: requirement.unit,
+          quantity: Number(allocationQuantity),
+          allocatedQuantity: 0,
+          expectedDate: supplierDate,
+          confidence: supplierConfidence,
+          checkedAt: now,
+          checkedBy: demo ? 'Field demo' : 'You'
+        }
+      ]
+    };
+    const next = addSupplierOrder(addSource(workspace, source), order);
     const allocationResult = addAllocation(next, {
       id: crypto.randomUUID(),
-      jobId: activeJob.id,
+      jobId: workJob.id,
       requirementId: requirement.id,
       sourceId,
       sourceName: source.name,
@@ -1576,8 +1878,13 @@
       formError = allocationResult.error;
       return;
     }
+    const withLineAllocation = structuredClone(allocationResult.workspace);
+    const line = withLineAllocation.supplierOrders
+      ?.find((item) => item.id === orderId)
+      ?.lines.find((item) => item.id === lineId);
+    if (line) line.allocatedQuantity = Number(allocationQuantity);
     await commit(
-      allocationResult.workspace,
+      withLineAllocation,
       `Supplier evidence ${supplierReference.trim()} was attached to ${requirement.description}.`
     );
     await closeSheet('supplier', () => {
@@ -1615,11 +1922,13 @@
       aria-current={page === 'jobs' || page === 'job' ? 'page' : undefined}
       on:click={follow}>Jobs</a
     >
-    {#if idToken && !demo}<a
-        href="/settings/team"
-        aria-current={page === 'team' ? 'page' : undefined}
-        on:click={follow}>Team</a
-      >{/if}
+    <a
+      href={href('/suppliers', demo)}
+      aria-current={page === 'suppliers' || page === 'supplier-order'
+        ? 'page'
+        : undefined}
+      on:click={follow}>Suppliers</a
+    >
     <a
       href={href('/privacy', demo)}
       aria-current={page === 'privacy' ? 'page' : undefined}
@@ -1721,8 +2030,15 @@
 
   {#if !demo && syncConflict}
     <section class="conflict-sheet" aria-labelledby="sync-conflict-title">
-      <p class="drawing-label">Two revisions need a choice</p>
+      <p class="drawing-label">Sync conflict</p>
       <h2 id="sync-conflict-title">Resolve the shared workspace conflict</h2>
+      {#if syncConflict.reason === 'quantity_spent'}<p
+          class="form-error"
+          role="alert"
+        >
+          Another device used the same source first. The affected job is marked
+          Date at risk until you use the shared revision.
+        </p>{/if}
       <p>
         This device has {syncConflict.operation.workspace.jobs.length} jobs. The shared
         revision has {syncConflict.sharedWorkspace.jobs.length} jobs.
@@ -1748,6 +2064,9 @@
           class="button"
           type="button"
           on:click={useSharedRevision}>Use shared revision</button
+        >
+        <button class="text-button" type="button" on:click={openConflictRoute}
+          >Review conflict details</button
         >
       </div>
     </section>
@@ -2139,7 +2458,13 @@
               <h2>{job.site}</h2>
               <p>Visit {formatDate(job.visitDate)}</p>
             </div>
-            <StatusPlate {status} compact /><a
+            <div class="job-status">
+              <StatusPlate {status} compact />
+              {#if workspace?.conflicts?.some((conflict) => conflict.jobId === job.id && !conflict.resolvedAt)}<span
+                  class="conflict-badge">Needs a sync choice</span
+                >{/if}
+            </div>
+            <a
               class="button secondary"
               href={href(`/jobs/${job.id}`, demo)}
               on:click={follow}>Review parts</a
@@ -2214,12 +2539,28 @@
                     <time datetime={allocation.checkedAt}
                       >{formatTime(allocation.checkedAt)}</time
                     ></span
-                  ><button
-                    type="button"
-                    class="text-button"
-                    disabled={sharedReadOnly}
-                    on:click={() => deallocate(allocation.id)}
-                    >Remove allocation</button
+                  >{#if allocation.state !== 'fitted'}<button
+                      type="button"
+                      class="text-button"
+                      disabled={sharedReadOnly}
+                      on:click={() => deallocate(allocation.id)}
+                      >Remove allocation</button
+                    ><button
+                      type="button"
+                      class="text-button"
+                      disabled={sharedReadOnly}
+                      on:click={() => fitAllocation(allocation.id)}
+                      >Mark fitted</button
+                    ><button
+                      type="button"
+                      class="text-button"
+                      disabled={sharedReadOnly}
+                      on:click={(event) =>
+                        openMoveForm(
+                          allocation,
+                          event.currentTarget as HTMLElement
+                        )}>Move quantity</button
+                    >{:else}<span class="fitted-label">Fitted</span>{/if}
                   >
                 </li>{/each}
             </ul>{/if}
@@ -2290,6 +2631,36 @@
               Minimum: {formatQuantity(suggestion.minimum, suggestion.unit)}. No
               supplier order has been placed.
             </p>
+            {#if workspace?.reorderDecisions?.find((decision) => decision.sourceId === suggestion.sourceId)}{@const decision =
+                workspace.reorderDecisions.find(
+                  (item) => item.sourceId === suggestion.sourceId
+                )}
+              <p class="decision-note">
+                {decision?.action === 'drafted'
+                  ? 'Draft order line recorded'
+                  : 'Suggestion dismissed'}:
+                {decision?.reason}
+              </p>{:else}<div class="part-actions">
+                <button
+                  class="button secondary"
+                  type="button"
+                  on:click={(event) =>
+                    openReorderDecision(
+                      suggestion.sourceId,
+                      'drafted',
+                      event.currentTarget as HTMLElement
+                    )}>Create draft order line</button
+                ><button
+                  class="text-button"
+                  type="button"
+                  on:click={(event) =>
+                    openReorderDecision(
+                      suggestion.sourceId,
+                      'dismissed',
+                      event.currentTarget as HTMLElement
+                    )}>Dismiss suggestion</button
+                >
+              </div>{/if}
           </article>{/each}
       </section>{/if}
     <section class="source-tools" aria-labelledby="source-tools-title">
@@ -2316,6 +2687,142 @@
         >
       </div>
     </section>
+  {:else if page === 'scan'}
+    <section class="page-heading">
+      <p class="drawing-label">Field update</p>
+      <h1 tabindex="-1">Scan a part for a job</h1>
+      <p>
+        Use a camera only when you choose it. You can always enter the barcode.
+      </p>
+      {#if workspace && workspace.jobs.length > 0}<label
+          >Job to update<select bind:value={scanJobId}
+            >{#each workspace.jobs as job}<option value={job.id}
+                >{job.number} · {job.site}</option
+              >{/each}</select
+          ></label
+        ><button class="button" type="button" on:click={openScanForm}
+          >Scan or enter a barcode</button
+        >{:else}<p>Add a job and a required part before scanning.</p>
+        <a class="button" href={href('/jobs', demo)} on:click={follow}
+          >Open jobs</a
+        >{/if}
+    </section>
+  {:else if page === 'suppliers'}
+    <section class="page-heading">
+      <p class="drawing-label">Supplier evidence</p>
+      <h1 tabindex="-1">Supplier dates to check</h1>
+      <p>Supplier dates are evidence, not arrival guarantees.</p>
+    </section>
+    {#if supplierOrderList.length === 0}<section class="empty-state">
+        <h2>No supplier orders are recorded</h2>
+        <p>
+          Attach supplier evidence from a required part when a job needs it.
+        </p>
+        <a class="button" href={href('/jobs', demo)} on:click={follow}
+          >Review jobs</a
+        >
+      </section>{:else}<section
+        class="supplier-list"
+        aria-labelledby="supplier-orders-title"
+      >
+        <h2 id="supplier-orders-title">Supplier order evidence</h2>
+        {#each supplierOrderList as order}<article class="supplier-row">
+            <div>
+              <strong>{order.reference}</strong><span>{order.supplierName}</span
+              >
+            </div>
+            <span
+              >{order.status === 'draft'
+                ? 'Draft only'
+                : 'Recorded evidence'}</span
+            >
+            <a
+              href={href(`/supplier-orders/${order.id}`, demo)}
+              on:click={follow}>Review order</a
+            >
+          </article>{/each}
+      </section>{/if}
+    <section class="risk-queue" aria-labelledby="risk-queue-title">
+      <h2 id="risk-queue-title">Jobs that need a date check</h2>
+      {#if supplierRisks.length === 0}<p>
+          No job currently needs supplier evidence checked.
+        </p>{:else}<ul>
+          {#each supplierRisks as item}<li>
+              <a href={href(`/jobs/${item.job.id}`, demo)} on:click={follow}
+                >{item.job.number} · {item.job.site}</a
+              > <strong>{item.status.label}</strong> — {item.status.reason}
+            </li>{/each}
+        </ul>{/if}
+    </section>
+  {:else if page === 'supplier-order' && selectedSupplierOrder && workspace}
+    <section class="page-heading">
+      <p class="drawing-label">Supplier order evidence</p>
+      <h1 tabindex="-1">Supplier order {selectedSupplierOrder.reference}</h1>
+      <p>
+        {selectedSupplierOrder.supplierName}. This record does not place an
+        order.
+      </p>
+    </section>
+    <section class="supplier-list" aria-labelledby="supplier-lines-title">
+      <h2 id="supplier-lines-title">Order lines and job allocations</h2>
+      {#each selectedSupplierOrder.lines as line}<article class="supplier-row">
+          <div>
+            <strong>{line.partDescription}</strong><span
+              >{formatQuantity(
+                supplierLineAllocatedQuantity(workspace, line.id),
+                line.unit
+              )} held of {formatQuantity(line.quantity, line.unit)}</span
+            >
+          </div>
+          <span
+            >{line.expectedDate ?? 'No expected date'} · {line.confidence ??
+              'Needs a check'}</span
+          >
+          {#if line.checkedAt}<span
+              >Checked {formatTime(line.checkedAt)}{isStaleEvidence(
+                line.checkedAt
+              )
+                ? ' · needs a check'
+                : ''}</span
+            >{/if}
+        </article>{/each}
+    </section>
+    <a href={href('/suppliers', demo)} on:click={follow}
+      >Back to supplier dates</a
+    >
+  {:else if page === 'conflicts'}
+    <section class="page-heading">
+      <p class="drawing-label">Safe sync choices</p>
+      <h1 tabindex="-1">Records that need your choice</h1>
+      <p>
+        Parts Promise does not overwrite quantity evidence when devices
+        disagree.
+      </p>
+    </section>
+    {#if workspace?.conflicts?.length}<section
+        class="conflict-list"
+        aria-labelledby="conflict-list-title"
+      >
+        <h2 id="conflict-list-title">Recorded conflicts</h2>
+        <ul>
+          {#each workspace.conflicts as conflict}<li>
+              <strong
+                >{conflict.reason === 'quantity_spent'
+                  ? 'Quantity already used'
+                  : 'Record changed'}</strong
+              >
+              <span>{conflict.message}</span>
+              <span
+                >{conflict.resolvedAt
+                  ? 'Resolved safely'
+                  : 'Needs a choice'}</span
+              >
+            </li>{/each}
+        </ul>
+      </section>{:else}<section class="empty-state">
+        <h2>No conflicts need a choice</h2>
+        <p>Changes can keep syncing when a connection returns.</p>
+      </section>{/if}
   {:else if page === 'privacy'}
     <section class="legal-copy">
       <p class="drawing-label">Privacy</p>
@@ -2589,6 +3096,105 @@
     </section>
   {/if}
 
+  {#if showMoveForm && moveAllocationId}
+    {@const movedAllocation = workspace?.allocations.find(
+      (allocation) => allocation.id === moveAllocationId
+    )}
+    {@const movedRequirement = workspace?.requirements.find(
+      (requirement) => requirement.id === movedAllocation?.requirementId
+    )}
+    <section
+      id="move-sheet"
+      class="work-sheet allocation-sheet"
+      aria-labelledby="move-title"
+    >
+      <div class="sheet-heading">
+        <h2 id="move-title" tabindex="-1">Move held quantity</h2>
+        <button
+          class="text-button"
+          type="button"
+          on:click={() =>
+            closeSheet('move', () => {
+              showMoveForm = false;
+              moveAllocationId = '';
+            })}>Close</button
+        >
+      </div>
+      <p>
+        Move {formatQuantity(
+          movedAllocation?.quantity ?? 0,
+          movedAllocation?.unit ?? 'each'
+        )}
+        for {movedRequirement?.description ?? 'this part'} to a different source.
+      </p>
+      <form on:submit|preventDefault={saveMove}>
+        <fieldset>
+          <legend>Source receiving the quantity</legend
+          >{#each movedRequirement && workspace ? sourcesForRequirement(workspace, movedRequirement) : [] as source}<label
+              class="source-option"
+              ><input
+                type="radio"
+                bind:group={moveSourceId}
+                value={source.id}
+                disabled={source.id === movedAllocation?.sourceId ||
+                  availableQuantity(workspace!, source.id) <
+                    (movedAllocation?.quantity ?? 0)}
+              /><span
+                ><strong>{source.name}</strong> · {formatQuantity(
+                  availableQuantity(workspace!, source.id),
+                  source.unit
+                )} available</span
+              ></label
+            >{/each}
+        </fieldset>
+        {#if formError}<p class="form-error" role="alert">{formError}</p>{/if}
+        <button class="button" type="submit">Move this quantity</button>
+      </form>
+    </section>
+  {/if}
+
+  {#if reorderSourceId}
+    <section
+      id="reorder-sheet"
+      class="work-sheet"
+      aria-labelledby="reorder-title"
+    >
+      <div class="sheet-heading">
+        <h2 id="reorder-title" tabindex="-1">
+          {reorderAction === 'drafted'
+            ? 'Create a draft order line'
+            : 'Dismiss this reorder suggestion'}
+        </h2>
+        <button
+          class="text-button"
+          type="button"
+          on:click={() =>
+            closeSheet('reorder', () => {
+              reorderSourceId = '';
+              reorderReason = '';
+            })}>Close</button
+        >
+      </div>
+      <p>
+        {reorderAction === 'drafted'
+          ? 'This creates a local draft only. It does not contact a supplier or place an order.'
+          : 'Keep a short reason with this suggestion so it can be reviewed later.'}
+      </p>
+      <form on:submit|preventDefault={saveReorderDecision}>
+        <label
+          >Reason<textarea bind:value={reorderReason} required
+          ></textarea></label
+        >
+        {#if formError}<p class="form-error" role="alert">{formError}</p>{/if}
+        <button class="button" type="submit"
+          >{reorderAction === 'drafted'
+            ? 'Save draft order line'
+            : 'Dismiss with reason'}</button
+        >
+      </form>
+    </section>
+  {/if}
+
   {#if showScanForm}
     <section
       id="scan-sheet"
@@ -2602,7 +3208,7 @@
         >
       </div>
       <p>
-        Match a barcode to a required part on {activeJob?.number}. Camera frames
+        Match a barcode to a required part on {workJob?.number}. Camera frames
         stay on this device and are never saved.
       </p>
       {#if scanMode === 'choice'}

@@ -7,6 +7,12 @@ export type CloudOperation = {
   workspace: Workspace;
   createdAt: string;
   updatedAt: string;
+  cursor?: string;
+  operations?: Array<{
+    id: string;
+    sequence: number;
+    createdAt: string;
+  }>;
 };
 
 const DATABASE = 'parts-promise-cloud-v1';
@@ -89,14 +95,34 @@ export async function queueCloudWorkspace(
   const pending = await readCloudOperation(organizationId);
   const now = new Date().toISOString();
   const operation: CloudOperation = pending
-    ? { ...pending, workspace: structuredClone(workspace), updatedAt: now }
+    ? {
+        ...pending,
+        workspace: structuredClone(workspace),
+        updatedAt: now,
+        operations: [
+          ...(pending.operations ?? [
+            {
+              id: pending.idempotencyKey,
+              sequence: 1,
+              createdAt: pending.createdAt
+            }
+          ]),
+          {
+            id: crypto.randomUUID(),
+            sequence: (pending.operations?.at(-1)?.sequence ?? 1) + 1,
+            createdAt: now
+          }
+        ].slice(-50)
+      }
     : {
         organizationId,
         idempotencyKey: crypto.randomUUID(),
         expectedVersion,
         workspace: structuredClone(workspace),
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
+        cursor: '0',
+        operations: [{ id: crypto.randomUUID(), sequence: 1, createdAt: now }]
       };
   await write(operation);
   return operation;

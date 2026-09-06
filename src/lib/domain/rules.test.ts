@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { createDemoWorkspace } from './fixture';
-import { addAllocation } from './workspace';
+import { createDemoWorkspace, DEMO_JOB_ID } from './fixture';
+import {
+  addAllocation,
+  markAllocationFitted,
+  moveAllocation,
+  recordReorderDecision
+} from './workspace';
 import { availableQuantity, promiseStatus, reorderSuggestions } from './rules';
 
 describe('promise rules', () => {
@@ -215,5 +220,122 @@ describe('promise rules', () => {
         new Date('2026-08-29T08:00:00.000Z')
       ).label
     ).toBe('Date at risk');
+  });
+
+  it('marks a supplier date after the visit as at risk and stale evidence as needing a check', () => {
+    const workspace = createDemoWorkspace();
+    workspace.sources.push({
+      id: 'late-supplier',
+      name: 'Supplier order LATE-1',
+      type: 'supplier_order',
+      partDescription: 'Condensate pump',
+      unit: 'each',
+      onHand: 1,
+      minimum: 0,
+      lastCheckedAt: '2026-08-28T08:00:00.000Z',
+      lastCheckedBy: 'Test',
+      supplierOrder: {
+        reference: 'LATE-1',
+        expectedDate: '2026-09-03',
+        confidence: 'Estimated'
+      }
+    });
+    const allocation = addAllocation(workspace, {
+      id: 'late-allocation',
+      jobId: DEMO_JOB_ID,
+      requirementId: 'req-pump',
+      sourceId: 'late-supplier',
+      sourceName: 'Supplier order LATE-1',
+      kind: 'supplier_order',
+      quantity: 1,
+      unit: 'each',
+      updater: 'Test',
+      checkedAt: '2026-08-28T08:00:00.000Z',
+      createdAt: '2026-08-28T08:00:00.000Z'
+    });
+    expect(
+      promiseStatus(
+        allocation.workspace,
+        allocation.workspace.jobs[0],
+        new Date('2026-08-29')
+      ).label
+    ).toBe('Date at risk');
+    allocation.workspace.sources[4].supplierOrder!.expectedDate = '2026-09-01';
+    expect(
+      promiseStatus(
+        allocation.workspace,
+        allocation.workspace.jobs[0],
+        new Date('2026-09-02T12:00:00Z')
+      ).label
+    ).toBe('Needs a check');
+  });
+
+  it('records fitted and moved quantities without making source availability negative', () => {
+    const workspace = createDemoWorkspace();
+    const added = addAllocation(workspace, {
+      id: 'pump-allocation',
+      jobId: DEMO_JOB_ID,
+      requirementId: 'req-pump',
+      sourceId: 'source-van-pump',
+      sourceName: 'Van 2',
+      kind: 'on_hand',
+      quantity: 1,
+      unit: 'each',
+      updater: 'Test',
+      checkedAt: '2026-08-28T08:05:00.000Z',
+      createdAt: '2026-08-28T10:00:00.000Z'
+    });
+    const fitted = markAllocationFitted(added.workspace, 'pump-allocation');
+    expect(fitted.error).toBeUndefined();
+    expect(
+      fitted.workspace.requirements.find((item) => item.id === 'req-pump')
+        ?.fittedQuantity
+    ).toBe(1);
+    expect(fitted.workspace.allocations.at(-1)?.state).toBe('fitted');
+    const moveFitted = moveAllocation(
+      fitted.workspace,
+      'pump-allocation',
+      'source-warehouse-contactor',
+      '2026-08-28T10:01:00.000Z'
+    );
+    expect(moveFitted.error).toBe('A fitted quantity cannot be moved.');
+    const decision = recordReorderDecision(fitted.workspace, {
+      id: 'draft-pump',
+      sourceId: 'source-van-pump',
+      action: 'drafted',
+      reason: 'Confirm supplier lead time first.',
+      createdAt: '2026-08-28T10:02:00.000Z'
+    });
+    expect(decision.reorderDecisions?.[0]).toMatchObject({ action: 'drafted' });
+    expect(availableQuantity(decision, 'source-van-pump')).toBe(0);
+  });
+
+  it('refuses to move a held quantity to a different part', () => {
+    const workspace = createDemoWorkspace();
+    const added = addAllocation(workspace, {
+      id: 'pump-allocation',
+      jobId: DEMO_JOB_ID,
+      requirementId: 'req-pump',
+      sourceId: 'source-van-pump',
+      sourceName: 'Van 2',
+      kind: 'on_hand',
+      quantity: 1,
+      unit: 'each',
+      updater: 'Test',
+      checkedAt: '2026-08-28T08:05:00.000Z',
+      createdAt: '2026-08-28T10:00:00.000Z'
+    });
+    const moved = moveAllocation(
+      added.workspace,
+      'pump-allocation',
+      'source-warehouse-contactor',
+      '2026-08-28T10:01:00.000Z'
+    );
+    expect(moved.error).toBe(
+      'Move this quantity only to a source for the same job part.'
+    );
+    expect(moved.workspace.allocations).toHaveLength(
+      added.workspace.allocations.length
+    );
   });
 });

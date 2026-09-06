@@ -98,6 +98,25 @@ The first-screen wording is unchanged because review 8 found that its job,
 audience, action, outcome, and three facts all pass at 390 px and desktop.
 The new demo sentence names observable behavior without implementation jargon.
 
+## M3 copy checks
+
+| Copy | Words | Result |
+| --- | ---: | --- |
+| Scan a part for a job | 6 | Pass: names the field task. |
+| Use a camera only when you choose it. | 9 | Pass: `camera-frames-not-sent`. |
+| You can always enter the barcode. | 6 | Pass: `manual-barcode-fallback`. |
+| Supplier dates are evidence, not arrival guarantees. | 8 | Pass: plain evidence boundary. |
+| A supplier expected date after the visit buffer marks the job Date at risk. | 15 | Pass: `supplier-eta-warns-date`. |
+| Supplier evidence older than 72 hours Needs a check. | 10 | Pass: `stale-evidence-needs-check`. |
+| A held quantity can move to another matching source. | 10 | Pass: `field-quantity-actions`. |
+| It can then be marked fitted on its job. | 10 | Pass: `field-quantity-actions`. |
+| A reorder suggestion can be dismissed with a reason. | 10 | Pass: `reorder-draft-boundary`. |
+| It can also be saved as a draft without contacting a supplier. | 12 | Pass: `reorder-draft-boundary`. |
+| When two devices allocate the final quantity, the later device opens a safe conflict. | 15 | Pass: `double-allocation-opens-conflict`. |
+
+All M3 reader-facing sentences remain at or below 22 words. The added terms
+are **supplier evidence**, **source**, **draft order line**, and **conflict**.
+
 An automated README sentence scan found no sentence above 22 words. A source scan found no banned plain-words term in the README, landing copy, demo guide, or catalog description.
 
 ## Canonical terminology
@@ -111,6 +130,9 @@ An automated README sentence scan found no sentence above 22 words. A source sca
 | Assigned quantity | allocation |
 | Van or warehouse evidence | source |
 | Supplier record | supplier evidence |
+| Supplier purchase reference | supplier order |
+| Local, unsent reorder record | draft order line |
+| Two records that need a safe choice | conflict |
 | Planned work day | visit date |
 | Result of the check | promise status |
 | Field worker | technician |

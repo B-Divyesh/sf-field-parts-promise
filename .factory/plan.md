@@ -1,6 +1,6 @@
 # Parts Promise venture plan
 
-Status: M2 repair implementation complete; the M3 barcode path is implemented. Recurring billing registration remains outside this repository.
+Status: M3 implementation complete; awaiting independent acceptance. Recurring billing registration remains outside this repository.
 
 Product: `field-parts-promise` · artifact: offline-first PWA with a backend
 
@@ -300,7 +300,7 @@ Recurring billing is still the only M2 acceptance blocker. On 2026-08-29 both pi
 
 ### M3 — Field scanning, supplier watch, and conflict resolution
 
-Status: barcode path implemented; remaining supplier-watch work is planned. Goal: complete jobs two and three without hiding uncertain or conflicting evidence.
+Status: **implementation complete; awaiting independent acceptance.** Goal: complete jobs two and three without hiding uncertain or conflicting evidence.
 
 Routes/screens added: `/scan`, `/suppliers`, `/supplier-orders/:orderId`, `/conflicts`; job card gains fitted/moved actions and conflict badges.
 

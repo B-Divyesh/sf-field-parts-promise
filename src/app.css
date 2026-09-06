@@ -39,8 +39,75 @@ body {
 }
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
+}
+textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+.job-status {
+  display: grid;
+  gap: var(--space-1);
+  justify-items: start;
+}
+.conflict-badge,
+.fitted-label,
+.decision-note {
+  color: var(--color-text);
+  font-size: var(--type-xs);
+  font-weight: 700;
+}
+.conflict-badge {
+  padding: 2px var(--space-2);
+  color: var(--color-danger);
+  border: 1px solid currentColor;
+}
+.fitted-label {
+  color: var(--color-success);
+}
+.decision-note {
+  padding: var(--space-2);
+  border-inline-start: 3px solid var(--color-blueprint);
+  background: var(--color-surface-raised);
+}
+.supplier-list,
+.risk-queue,
+.conflict-list {
+  display: grid;
+  gap: var(--space-3);
+  margin-block-start: var(--space-6);
+}
+.supplier-row,
+.conflict-list li {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+}
+.supplier-row div,
+.conflict-list li span {
+  display: grid;
+  gap: var(--space-1);
+}
+.supplier-row span,
+.conflict-list li span {
+  color: var(--color-text-muted);
+}
+.risk-queue ul,
+.conflict-list ul {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.risk-queue li {
+  padding: var(--space-3);
+  border-inline-start: 4px solid var(--color-warning);
+  background: var(--color-surface);
 }
 button,
 .button {
