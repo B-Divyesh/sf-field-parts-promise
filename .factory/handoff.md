@@ -1,4 +1,37 @@
-# Parts Promise M3 handoff
+# Parts Promise verification 23 handoff
+
+Independent M3 verification verdict: **PASS — 0 findings at every severity
+and 0 untested public claims.**
+
+Implementation reviewed: `b6a9c49dd239911807b4f7bcd22f63106244d3f3`.
+Documentation checkout: `40766071e5464eef46db29bf89eb69e818c86128`.
+Live `/health` now reports `40766071…`; that commit changes only the two M3
+handoff files. A normalized byte comparison of the live production chunks and
+a fresh `b6a9c49…` build confirmed implementation parity.
+
+Fresh 1440 × 900 desktop and 390 × 844 phone sessions showed the parts-held
+job, small-trade-firm audience, and **Try it with sample data** before scrolling.
+The isolated Riverside Dental sample matched barcode `CP-19`, allocated the
+pump to reach **Parts in hand**, showed the late supplier-date warning, reset to
+the original shortage, and created no live or cloud browser database.
+
+From a clean checkout, all 44 exact claim commands passed independently with no
+retry. `npm test`, check, format, Clippy, audit, release build, and the full
+browser suite passed. The suite reported 27 Vitest, 15 Rust, and 68 Playwright
+passes with 50 expected project skips. Live route/Axe, keyboard, focus, 200%
+text, privacy-request, offline/update, legal, link, designed 404, health,
+invalid-token, and 429/`Retry-After` checks passed. Lighthouse mobile scored
+96 performance and 100 for accessibility, best practices, and SEO.
+
+Detailed evidence is in `.factory/verification-23.md` and
+`.factory/verification-artifacts-23/`.
+
+Current milestone: **M3 accepted.** Recurring Sociobot billing registration
+remains an external operator dependency; checkout is unavailable and starts no
+charge. Supplier evidence and reorder drafts do not place supplier orders or
+guarantee availability. Messaging and later operations work remain unshipped.
+
+## Previous M3 handoff
 
 Current milestone: **M3 implementation complete; awaiting independent
 acceptance.**

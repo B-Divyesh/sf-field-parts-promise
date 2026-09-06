@@ -1,0 +1,6 @@
+command: npm audit --audit-level=high
+status: PASS
+exit: 0
+duration_ms: 1087
+
+found 0 vulnerabilities

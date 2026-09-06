@@ -1,0 +1,51 @@
+[
+  {
+    "id": "npm-test",
+    "command": "npm test",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 17840
+  },
+  {
+    "id": "check",
+    "command": "npm run check",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 6458
+  },
+  {
+    "id": "format-check",
+    "command": "npm run format:check",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 4021
+  },
+  {
+    "id": "clippy",
+    "command": "cargo clippy --manifest-path server/Cargo.toml --locked --all-targets -- -D warnings",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 29948
+  },
+  {
+    "id": "npm-audit",
+    "command": "npm audit --audit-level=high",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 1087
+  },
+  {
+    "id": "build",
+    "command": "BUILD_SHA=b6a9c49dd239911807b4f7bcd22f63106244d3f3 npm run build",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 162441
+  },
+  {
+    "id": "e2e-full",
+    "command": "BUILD_SHA=b6a9c49dd239911807b4f7bcd22f63106244d3f3 npm run test:e2e -- --retries=0 --reporter=list",
+    "status": "PASS",
+    "exit": 0,
+    "durationMs": 140587
+  }
+]

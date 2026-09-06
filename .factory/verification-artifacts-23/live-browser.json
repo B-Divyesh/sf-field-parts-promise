@@ -1,0 +1,204 @@
+{
+  "checkedAt": "2026-09-06T06:29:45.581Z",
+  "health": {
+    "status": "ok",
+    "build_sha": "40766071e5464eef46db29bf89eb69e818c86128",
+    "database": "sqlite",
+    "auth": "ready"
+  },
+  "firstRead": {
+    "desktop": {
+      "job": {
+        "text": "Promise dates from parts held for the job",
+        "bottom": 368
+      },
+      "audience": {
+        "text": "For small trade firms that need a parts check before agreeing a visit date.",
+        "bottom": 446
+      },
+      "action": {
+        "text": "Try it with sample data",
+        "bottom": 514
+      },
+      "outcome": {
+        "text": "Opens Riverside Dental with one missing pump.",
+        "bottom": 513
+      },
+      "noHorizontalOverflow": true
+    },
+    "mobile": {
+      "job": {
+        "text": "Promise dates from parts held for the job",
+        "bottom": 355
+      },
+      "audience": {
+        "text": "For small trade firms that need a parts check before agreeing a visit date.",
+        "bottom": 433
+      },
+      "action": {
+        "text": "Try it with sample data",
+        "bottom": 501
+      },
+      "outcome": {
+        "text": "Opens Riverside Dental with one missing pump.",
+        "bottom": 555
+      },
+      "noHorizontalOverflow": true,
+      "reducedMotion": true
+    }
+  },
+  "demo": {
+    "initialStatus": "⌁\nDate at risk\nCondensate pump needs 1 each.",
+    "allocatedStatus": "◎\nParts in hand\nEvery required quantity is held from a van or warehouse.",
+    "resetStatus": "⌁\nDate at risk\nCondensate pump needs 1 each.",
+    "demoLinks": [
+      {
+        "text": "Jobs",
+        "href": "/jobs?demo=1"
+      },
+      {
+        "text": "Privacy",
+        "href": "/privacy?demo=1"
+      },
+      {
+        "text": "Privacy",
+        "href": "/privacy?demo=1"
+      },
+      {
+        "text": "Terms",
+        "href": "/terms?demo=1"
+      }
+    ],
+    "databases": [
+      "parts-promise-demo-v1"
+    ]
+  },
+  "m3": {
+    "barcode": "CP-19 matched Condensate pump",
+    "allocatedStatus": "◎\nParts in hand\nEvery required quantity is held from a van or warehouse.",
+    "supplierWarning": "Date at risk"
+  },
+  "routes": [
+    {
+      "path": "/",
+      "title": "Parts Promise — Allocate parts to each job",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/demo",
+      "title": "Demo — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/jobs",
+      "title": "Jobs — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/scan?demo=1",
+      "title": "Scan a part — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/suppliers?demo=1",
+      "title": "Supplier dates — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/conflicts?demo=1",
+      "title": "Sync conflicts — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/auth/callback",
+      "title": "Sign-in return — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/onboarding",
+      "title": "Set up your firm — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/settings/team",
+      "title": "Team — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/settings/billing",
+      "title": "Billing — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/settings/data",
+      "title": "Data controls — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/privacy",
+      "title": "Privacy — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/terms",
+      "title": "Terms — Parts Promise",
+      "status": 200,
+      "axeSeriousCritical": 0
+    },
+    {
+      "path": "/not-on-this-drawing",
+      "title": "Page not found — Parts Promise",
+      "status": 404,
+      "axeSeriousCritical": 0
+    }
+  ],
+  "links": [
+    {
+      "href": "https://field-parts-promise.sociobot.in/#main",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/?demo=1",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/jobs",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/privacy",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/?signin=1",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/onboarding",
+      "status": 200
+    },
+    {
+      "href": "https://field-parts-promise.sociobot.in/terms",
+      "status": 200
+    }
+  ],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "passed": true
+}

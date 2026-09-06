@@ -1,0 +1,32 @@
+claim: reorder-after-allocation
+command: npm run test:e2e -- --grep @claim:reorder-after-allocation
+status: PASS
+exit: 0
+duration_ms: 14894
+
+
+> field-parts-promise@0.0.0 test:e2e
+> node scripts/ensure-e2e-dependencies.mjs && playwright test --grep @claim:reorder-after-allocation
+
+
+Running 2 tests using 1 worker
+·°
+  1 skipped
+  1 passed (13.5s)
+::notice title=🎭 Playwright Run Summary::  1 skipped%0A  1 passed (13.5s)
+
+[WebServer] (node:5461) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5479) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5523) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer]     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s
+(node:5552) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5552) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5622) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5622) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

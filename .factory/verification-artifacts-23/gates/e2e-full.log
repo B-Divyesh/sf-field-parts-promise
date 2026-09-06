@@ -1,0 +1,150 @@
+command: BUILD_SHA=b6a9c49dd239911807b4f7bcd22f63106244d3f3 npm run test:e2e -- --retries=0 --reporter=list
+status: PASS
+exit: 0
+duration_ms: 140587
+
+
+> field-parts-promise@0.0.0 test:e2e
+> node scripts/ensure-e2e-dependencies.mjs && playwright test --retries=0 --reporter=list
+
+
+Running 118 tests using 1 worker
+
+  ✓    1 [chromium] › e2e/claims.spec.ts:181:1 › @claim:sample-fixture The demo opens Riverside Dental RD-1042 with one missing condensate pump (543ms)
+  ✓    2 [chromium] › e2e/claims.spec.ts:197:1 › @claim:promise-status-from-allocation The sample needs every required quantity before it is in hand (769ms)
+  ✓    3 [chromium] › e2e/claims.spec.ts:213:1 › @claim:allocation-keeps-source Allocation evidence survives a reload (1.0s)
+  ✓    4 [chromium] › e2e/claims.spec.ts:238:1 › @claim:supplier-quantity-conserved One supplier-order unit cannot cover two jobs (1.4s)
+  ✓    5 [chromium] › e2e/claims.spec.ts:309:1 › @claim:reorder-after-allocation The last spare suggests review and never orders (610ms)
+  ✓    6 [chromium] › e2e/claims.spec.ts:330:1 › @claim:demo-reset-isolated Demo reset restores the fixture and leaving preserves live records (5.1s)
+  ✓    7 [chromium] › e2e/claims.spec.ts:545:1 › @claim:workspace-backup-roundtrip A versioned backup restores every workspace record (1.2s)
+  ✓    8 [chromium] › e2e/claims.spec.ts:601:1 › @claim:csv-import-validation CSV import previews valid rows and identifies invalid rows (794ms)
+  ✓    9 [chromium] › e2e/claims.spec.ts:639:1 › @claim:demo-transfer-isolated Importing or exporting sample data never changes the live workspace (1.6s)
+  ✓   10 [chromium] › e2e/claims.spec.ts:696:1 › @claim:csv-template-download The CSV template downloads with a valid import example (605ms)
+  ✓   11 [chromium] › e2e/claims.spec.ts:754:1 › @claim:offline-reload The sample allocation works after an offline reload (1.1s)
+  ✓   12 [chromium] › e2e/claims.spec.ts:842:1 › @claim:local-workspace-flow A local job can be created, sourced, allocated, and undone (1.9s)
+  ✓   13 [chromium] › e2e/claims.spec.ts:896:1 › @claim:demo-feature-boundaries The demo stays account-free and cannot sync, place an order, or pay (647ms)
+  ✓   14 [chromium] › e2e/claims.spec.ts:923:1 › @claim:indexeddb-local-storage Workspace records are written to the named local databases (1.3s)
+  ✓   15 [chromium] › e2e/claims.spec.ts:968:1 › @claim:demo-network-privacy The normal demo flow stays same-origin and does not request the camera (885ms)
+  ✓   16 [chromium] › e2e/claims.spec.ts:1023:1 › @claim:manual-barcode-fallback Manual barcode entry finds and allocates a required part (1.2s)
+  ✓   17 [chromium] › e2e/claims.spec.ts:1047:1 › @claim:camera-frames-not-sent Camera starts only on request and frames stay on the device (865ms)
+  ✓   18 [chromium] › e2e/claims.spec.ts:1133:1 › @claim:scan-finds-local-part A barcode finds the matching required part in the selected local job (800ms)
+  ✓   19 [chromium] › e2e/claims.spec.ts:1152:1 › @claim:supplier-eta-warns-date A late supplier date keeps the visit date at risk (701ms)
+  ✓   20 [chromium] › e2e/claims.spec.ts:1176:1 › @claim:stale-evidence-needs-check Old supplier evidence needs a check before the date is promised (900ms)
+  ✓   21 [chromium] › e2e/claims.spec.ts:1227:1 › @claim:field-quantity-actions A held quantity moves to a matching source and can be marked fitted (1.4s)
+  ✓   22 [chromium] › e2e/claims.spec.ts:1255:1 › @claim:reorder-draft-boundary A reorder draft stays in the isolated browser workspace (672ms)
+  ✓   23 [chromium] › e2e/claims.spec.ts:1280:1 › @claim:offline-write-syncs-once Offline changes batch and apply once after reconnect (1.4s)
+  ✓   24 [chromium] › e2e/claims.spec.ts:1355:1 › @claim:double-allocation-opens-conflict The later device cannot spend the final quantity twice (1.7s)
+  ✓   25 [chromium] › e2e/claims.spec.ts:1472:1 › @claim:release-order-boundary The release never places a supplier order (2.7s)
+  ✓   26 [chromium] › e2e/claims.spec.ts:1519:1 › @claim:clear-local-records Browser site-data removal clears the live workspace (925ms)
+  ✓   27 [chromium] › e2e/claims.spec.ts:1554:1 › @claim:entra-sign-in Sign-in uses Sociobot CIAM and rejects every invalid token property (775ms)
+  ✓   28 [chromium] › e2e/claims.spec.ts:1602:1 › @claim:tenant-data-isolation One firm cannot read another firm workspace (87ms)
+  ✓   29 [chromium] › e2e/claims.spec.ts:1642:1 › @claim:two-device-sync A saved workspace appears on a second signed-in device (719ms)
+  ✓   30 [chromium] › e2e/claims.spec.ts:1702:1 › @claim:idempotent-sync Retrying one sync operation applies it once (94ms)
+  ✓   31 [chromium] › e2e/claims.spec.ts:1744:1 › @claim:offline-signed-in-sync A signed-in offline edit survives reload and syncs on reconnect (3.6s)
+  ✓   32 [chromium] › e2e/claims.spec.ts:1848:1 › @claim:sync-conflict-resolution Quantity conflicts cannot overwrite the shared revision (2.3s)
+  ✓   33 [chromium] › e2e/claims.spec.ts:1941:1 › @claim:invitation-email-activation An invitation activates only for its matching verified email (116ms)
+  ✓   34 [chromium] › e2e/claims.spec.ts:1981:1 › @claim:account-service-boundaries Signed-in data uses this API and sign-in redirects to Microsoft Entra (1.1s)
+  ✓   35 [chromium] › e2e/claims.spec.ts:2028:1 › @claim:sensitive-input-boundary Parts Promise never asks for a password or card number (2.7s)
+  ✓   36 [chromium] › e2e/claims.spec.ts:2083:1 › @claim:audit-log-recording Firm export includes auditable onboarding, invitation, and sync events (124ms)
+  ✓   37 [chromium] › e2e/claims.spec.ts:2133:1 › @claim:firm-deletion-hold Owners can schedule and cancel a 14-day firm deletion hold (1.6s)
+  ✓   38 [chromium] › e2e/claims.spec.ts:2187:1 › @claim:response-policy Export allows five requests per minute and metrics expose operations signals (158ms)
+  ✓   39 [chromium] › e2e/claims.spec.ts:2234:1 › @claim:subscription-checkout Checkout is explicit and stops before a charge (584ms)
+  ✓   40 [chromium] › e2e/claims.spec.ts:2287:1 › @claim:technician-seat-charge Pricing and the seat total count technicians but exclude the owner (444ms)
+  ✓   41 [chromium] › e2e/claims.spec.ts:2335:1 › @claim:expired-plan-keeps-export An unpaid firm can export while cloud writes are blocked (99ms)
+  ✓   42 [chromium] › e2e/claims.spec.ts:2373:1 › @claim:durable-runtime-storage Runtime files and firm state survive a server restart (353ms)
+  ✓   43 [chromium] › e2e/claims.spec.ts:2448:1 › @claim:visible-build-identity Every app route shows the server build identity (2.7s)
+  ✓   44 [chromium] › e2e/claims.spec.ts:2476:1 › @claim:container-runtime The production server starts with only PORT and serves its identity and app (807ms)
+  ✓   45 [chromium] › e2e/product.spec.ts:4:1 › public and app routes have no serious accessibility findings (21.7s)
+  ✓   46 [chromium] › e2e/product.spec.ts:46:1 › public routes load without console errors and internal links resolve (806ms)
+  ✓   47 [chromium] › e2e/product.spec.ts:72:1 › the public landing defers workspace and account bundles until a workspace action (945ms)
+  -   48 [chromium] › e2e/product.spec.ts:102:1 › the full first-screen promise and action fit at 390 by 844
+  ✓   49 [chromium] › e2e/product.spec.ts:135:1 › each route owns one correct metadata set (3.4s)
+  -   50 [chromium] › e2e/product.spec.ts:257:1 › each work form expands, becomes visible, receives focus, and restores its trigger
+  ✓   51 [chromium] › e2e/product.spec.ts:331:1 › forward and browser-history route changes focus the new heading (1.1s)
+  ✓   52 [chromium] › e2e/product.spec.ts:367:1 › Back and Forward restore reading position while keeping the new heading focused (714ms)
+  -   53 [chromium] › e2e/product.spec.ts:417:1 › demo deep link, history focus, keyboard allocation, and reset work on a phone
+  ✓   54 [chromium] › e2e/product.spec.ts:453:1 › demo confirmation dialogs are modal and restore keyboard focus (795ms)
+  -   55 [chromium] › e2e/product.spec.ts:496:1 › all phone links and verifier-reported controls provide separated 44px touch targets
+  -   56 [chromium] › e2e/product.spec.ts:601:1 › how-it-works descriptions use the mobile card width
+  ✓   57 [chromium] › e2e/product.spec.ts:618:1 › privacy copy states the registered network and camera behavior (411ms)
+  ✓   58 [chromium] › e2e/product.spec.ts:633:1 › reduced motion declares an instant transition path (397ms)
+  ✓   59 [chromium] › e2e/product.spec.ts:648:1 › the current service worker controls the app without a pending update (339ms)
+  -   60 [mobile-chromium] › e2e/claims.spec.ts:181:1 › @claim:sample-fixture The demo opens Riverside Dental RD-1042 with one missing condensate pump
+  -   61 [mobile-chromium] › e2e/claims.spec.ts:197:1 › @claim:promise-status-from-allocation The sample needs every required quantity before it is in hand
+  -   62 [mobile-chromium] › e2e/claims.spec.ts:213:1 › @claim:allocation-keeps-source Allocation evidence survives a reload
+  -   63 [mobile-chromium] › e2e/claims.spec.ts:238:1 › @claim:supplier-quantity-conserved One supplier-order unit cannot cover two jobs
+  -   64 [mobile-chromium] › e2e/claims.spec.ts:309:1 › @claim:reorder-after-allocation The last spare suggests review and never orders
+  -   65 [mobile-chromium] › e2e/claims.spec.ts:330:1 › @claim:demo-reset-isolated Demo reset restores the fixture and leaving preserves live records
+  -   66 [mobile-chromium] › e2e/claims.spec.ts:545:1 › @claim:workspace-backup-roundtrip A versioned backup restores every workspace record
+  -   67 [mobile-chromium] › e2e/claims.spec.ts:601:1 › @claim:csv-import-validation CSV import previews valid rows and identifies invalid rows
+  -   68 [mobile-chromium] › e2e/claims.spec.ts:639:1 › @claim:demo-transfer-isolated Importing or exporting sample data never changes the live workspace
+  -   69 [mobile-chromium] › e2e/claims.spec.ts:696:1 › @claim:csv-template-download The CSV template downloads with a valid import example
+  -   70 [mobile-chromium] › e2e/claims.spec.ts:754:1 › @claim:offline-reload The sample allocation works after an offline reload
+  -   71 [mobile-chromium] › e2e/claims.spec.ts:842:1 › @claim:local-workspace-flow A local job can be created, sourced, allocated, and undone
+  -   72 [mobile-chromium] › e2e/claims.spec.ts:896:1 › @claim:demo-feature-boundaries The demo stays account-free and cannot sync, place an order, or pay
+  -   73 [mobile-chromium] › e2e/claims.spec.ts:923:1 › @claim:indexeddb-local-storage Workspace records are written to the named local databases
+  -   74 [mobile-chromium] › e2e/claims.spec.ts:968:1 › @claim:demo-network-privacy The normal demo flow stays same-origin and does not request the camera
+  -   75 [mobile-chromium] › e2e/claims.spec.ts:1023:1 › @claim:manual-barcode-fallback Manual barcode entry finds and allocates a required part
+  -   76 [mobile-chromium] › e2e/claims.spec.ts:1047:1 › @claim:camera-frames-not-sent Camera starts only on request and frames stay on the device
+  -   77 [mobile-chromium] › e2e/claims.spec.ts:1133:1 › @claim:scan-finds-local-part A barcode finds the matching required part in the selected local job
+  -   78 [mobile-chromium] › e2e/claims.spec.ts:1152:1 › @claim:supplier-eta-warns-date A late supplier date keeps the visit date at risk
+  -   79 [mobile-chromium] › e2e/claims.spec.ts:1176:1 › @claim:stale-evidence-needs-check Old supplier evidence needs a check before the date is promised
+  -   80 [mobile-chromium] › e2e/claims.spec.ts:1227:1 › @claim:field-quantity-actions A held quantity moves to a matching source and can be marked fitted
+  -   81 [mobile-chromium] › e2e/claims.spec.ts:1255:1 › @claim:reorder-draft-boundary A reorder draft stays in the isolated browser workspace
+  -   82 [mobile-chromium] › e2e/claims.spec.ts:1280:1 › @claim:offline-write-syncs-once Offline changes batch and apply once after reconnect
+  -   83 [mobile-chromium] › e2e/claims.spec.ts:1355:1 › @claim:double-allocation-opens-conflict The later device cannot spend the final quantity twice
+  -   84 [mobile-chromium] › e2e/claims.spec.ts:1472:1 › @claim:release-order-boundary The release never places a supplier order
+  -   85 [mobile-chromium] › e2e/claims.spec.ts:1519:1 › @claim:clear-local-records Browser site-data removal clears the live workspace
+  -   86 [mobile-chromium] › e2e/claims.spec.ts:1554:1 › @claim:entra-sign-in Sign-in uses Sociobot CIAM and rejects every invalid token property
+  -   87 [mobile-chromium] › e2e/claims.spec.ts:1602:1 › @claim:tenant-data-isolation One firm cannot read another firm workspace
+  -   88 [mobile-chromium] › e2e/claims.spec.ts:1642:1 › @claim:two-device-sync A saved workspace appears on a second signed-in device
+  -   89 [mobile-chromium] › e2e/claims.spec.ts:1702:1 › @claim:idempotent-sync Retrying one sync operation applies it once
+  -   90 [mobile-chromium] › e2e/claims.spec.ts:1744:1 › @claim:offline-signed-in-sync A signed-in offline edit survives reload and syncs on reconnect
+  -   91 [mobile-chromium] › e2e/claims.spec.ts:1848:1 › @claim:sync-conflict-resolution Quantity conflicts cannot overwrite the shared revision
+  -   92 [mobile-chromium] › e2e/claims.spec.ts:1941:1 › @claim:invitation-email-activation An invitation activates only for its matching verified email
+  -   93 [mobile-chromium] › e2e/claims.spec.ts:1981:1 › @claim:account-service-boundaries Signed-in data uses this API and sign-in redirects to Microsoft Entra
+  -   94 [mobile-chromium] › e2e/claims.spec.ts:2028:1 › @claim:sensitive-input-boundary Parts Promise never asks for a password or card number
+  -   95 [mobile-chromium] › e2e/claims.spec.ts:2083:1 › @claim:audit-log-recording Firm export includes auditable onboarding, invitation, and sync events
+  -   96 [mobile-chromium] › e2e/claims.spec.ts:2133:1 › @claim:firm-deletion-hold Owners can schedule and cancel a 14-day firm deletion hold
+  -   97 [mobile-chromium] › e2e/claims.spec.ts:2187:1 › @claim:response-policy Export allows five requests per minute and metrics expose operations signals
+  -   98 [mobile-chromium] › e2e/claims.spec.ts:2234:1 › @claim:subscription-checkout Checkout is explicit and stops before a charge
+  -   99 [mobile-chromium] › e2e/claims.spec.ts:2287:1 › @claim:technician-seat-charge Pricing and the seat total count technicians but exclude the owner
+  -  100 [mobile-chromium] › e2e/claims.spec.ts:2335:1 › @claim:expired-plan-keeps-export An unpaid firm can export while cloud writes are blocked
+  -  101 [mobile-chromium] › e2e/claims.spec.ts:2373:1 › @claim:durable-runtime-storage Runtime files and firm state survive a server restart
+  -  102 [mobile-chromium] › e2e/claims.spec.ts:2448:1 › @claim:visible-build-identity Every app route shows the server build identity
+  -  103 [mobile-chromium] › e2e/claims.spec.ts:2476:1 › @claim:container-runtime The production server starts with only PORT and serves its identity and app
+  ✓  104 [mobile-chromium] › e2e/product.spec.ts:4:1 › public and app routes have no serious accessibility findings (20.9s)
+  ✓  105 [mobile-chromium] › e2e/product.spec.ts:46:1 › public routes load without console errors and internal links resolve (822ms)
+  ✓  106 [mobile-chromium] › e2e/product.spec.ts:72:1 › the public landing defers workspace and account bundles until a workspace action (936ms)
+  ✓  107 [mobile-chromium] › e2e/product.spec.ts:102:1 › the full first-screen promise and action fit at 390 by 844 (366ms)
+  ✓  108 [mobile-chromium] › e2e/product.spec.ts:135:1 › each route owns one correct metadata set (3.1s)
+  ✓  109 [mobile-chromium] › e2e/product.spec.ts:257:1 › each work form expands, becomes visible, receives focus, and restores its trigger (2.6s)
+  ✓  110 [mobile-chromium] › e2e/product.spec.ts:331:1 › forward and browser-history route changes focus the new heading (778ms)
+  ✓  111 [mobile-chromium] › e2e/product.spec.ts:367:1 › Back and Forward restore reading position while keeping the new heading focused (619ms)
+  ✓  112 [mobile-chromium] › e2e/product.spec.ts:417:1 › demo deep link, history focus, keyboard allocation, and reset work on a phone (636ms)
+  ✓  113 [mobile-chromium] › e2e/product.spec.ts:453:1 › demo confirmation dialogs are modal and restore keyboard focus (704ms)
+  ✓  114 [mobile-chromium] › e2e/product.spec.ts:496:1 › all phone links and verifier-reported controls provide separated 44px touch targets (6.4s)
+  ✓  115 [mobile-chromium] › e2e/product.spec.ts:601:1 › how-it-works descriptions use the mobile card width (363ms)
+  ✓  116 [mobile-chromium] › e2e/product.spec.ts:618:1 › privacy copy states the registered network and camera behavior (362ms)
+  ✓  117 [mobile-chromium] › e2e/product.spec.ts:633:1 › reduced motion declares an instant transition path (369ms)
+  -  118 [mobile-chromium] › e2e/product.spec.ts:648:1 › the current service worker controls the app without a pending update
+
+  50 skipped
+  68 passed (2.3m)
+
+[WebServer] (node:21348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:21366) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:21410) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer]    Compiling parts-promise-api v0.0.0 (/tmp/field-parts-promise-verify23.JdxLUM/repo/server)
+[WebServer]     Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.46s
+(node:21709) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:21709) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22748) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22748) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

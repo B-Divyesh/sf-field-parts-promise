@@ -1,0 +1,32 @@
+claim: sync-conflict-resolution
+command: npm run test:e2e -- --grep @claim:sync-conflict-resolution
+status: PASS
+exit: 0
+duration_ms: 17350
+
+
+> field-parts-promise@0.0.0 test:e2e
+> node scripts/ensure-e2e-dependencies.mjs && playwright test --grep @claim:sync-conflict-resolution
+
+
+Running 2 tests using 1 worker
+·°
+  1 skipped
+  1 passed (15.9s)
+::notice title=🎭 Playwright Run Summary::  1 skipped%0A  1 passed (15.9s)
+
+[WebServer] (node:13182) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:13219) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:13263) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer]     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.15s
+(node:13292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:13292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:13373) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:13373) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

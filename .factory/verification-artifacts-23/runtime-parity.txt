@@ -1,0 +1,23 @@
+Candidate implementation: b6a9c49dd239911807b4f7bcd22f63106244d3f3
+Documentation checkout: 40766071e5464eef46db29bf89eb69e818c86128
+Observed live /health build: 40766071e5464eef46db29bf89eb69e818c86128
+
+git diff --name-status b6a9c49..4076607:
+A .factory/handoff-m3.md
+M .factory/handoff.md
+
+The commit delta contains no product or runtime source changes.
+
+Fresh production web build used BUILD_SHA=b6a9c49dd239911807b4f7bcd22f63106244d3f3.
+The live build label and resulting chunk references were normalized from
+40766071/40766071e5464eef46db29bf89eb69e818c86128 to
+b6a9c49d/b6a9c49dd239911807b4f7bcd22f63106244d3f3 before comparison.
+
+ciam chunk: exact byte match
+index chunk after build-label/chunk-name normalization: exact byte match
+app chunk after build-label normalization: exact byte match
+
+Normalized SHA-256 pairs:
+3866189783be50b49d83489b16a6c2e32c7ebc79c2efcdcb164e2111dd321a41  live/local ciam
+87ede267ae1204a5142f3c954fbc46b498ee4abafd450fc346e97d8589d0e320  live/local index
+78c09220d26b209fc0923e7748bdd439fdbfca5f8ceffb42e49179626cce15c9  live/local app

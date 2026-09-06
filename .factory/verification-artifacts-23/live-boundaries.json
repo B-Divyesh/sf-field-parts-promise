@@ -1,0 +1,64 @@
+{
+  "checkedAt": "2026-09-06T06:25:35.991Z",
+  "recovery": {
+    "invalidMessage": "Only 1 each is still needed for this job.",
+    "resetStatus": "Date at risk",
+    "dialogFocusContained": true
+  },
+  "privacy": {
+    "requestCount": 9,
+    "crossOriginCount": 0,
+    "writeCount": 0,
+    "cameraRequested": false
+  },
+  "keyboard": {
+    "skip": {
+      "name": "Skip to main content",
+      "step": 1
+    },
+    "focus": {
+      "outline": "rgb(107, 53, 195) solid 3px",
+      "offset": "3px"
+    },
+    "sample": {
+      "name": "Try it with sample data",
+      "step": 1
+    },
+    "allocate": {
+      "name": "Allocate part",
+      "step": 35
+    },
+    "van": {
+      "name": "Van 2 · 1 each available · checked Aug 28, 2026, 8:05 AM",
+      "step": 2
+    },
+    "submit": {
+      "name": "Allocate this quantity",
+      "step": 2
+    },
+    "outcome": "Parts in hand"
+  },
+  "reducedMotion": {
+    "fast": "0s",
+    "row": "0s",
+    "status": "0s"
+  },
+  "pwa": {
+    "controlled": true,
+    "installing": false,
+    "waiting": false,
+    "caches": [
+      "parts-promise-shell-v6"
+    ],
+    "offlineOutcome": "Parts in hand"
+  },
+  "textResize": {
+    "overflow": 10,
+    "innerWidth": 390,
+    "clientWidth": 390,
+    "scrollWidth": 400,
+    "h1Visible": true,
+    "offenders": []
+  },
+  "passed": true
+}

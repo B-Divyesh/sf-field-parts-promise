@@ -1,0 +1,32 @@
+claim: offline-signed-in-sync
+command: npm run test:e2e -- --grep @claim:offline-signed-in-sync
+status: PASS
+exit: 0
+duration_ms: 19019
+
+
+> field-parts-promise@0.0.0 test:e2e
+> node scripts/ensure-e2e-dependencies.mjs && playwright test --grep @claim:offline-signed-in-sync
+
+
+Running 2 tests using 1 worker
+·°
+  1 skipped
+  1 passed (17.6s)
+::notice title=🎭 Playwright Run Summary::  1 skipped%0A  1 passed (17.6s)
+
+[WebServer] (node:12906) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:12924) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:12968) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer]     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.16s
+(node:12997) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:12997) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:13067) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:13067) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

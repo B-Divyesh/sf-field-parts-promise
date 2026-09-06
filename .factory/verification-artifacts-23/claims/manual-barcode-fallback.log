@@ -1,0 +1,32 @@
+claim: manual-barcode-fallback
+command: npm run test:e2e -- --grep @claim:manual-barcode-fallback
+status: PASS
+exit: 0
+duration_ms: 15468
+
+
+> field-parts-promise@0.0.0 test:e2e
+> node scripts/ensure-e2e-dependencies.mjs && playwright test --grep @claim:manual-barcode-fallback
+
+
+Running 2 tests using 1 worker
+·°
+  1 skipped
+  1 passed (14.0s)
+::notice title=🎭 Playwright Run Summary::  1 skipped%0A  1 passed (14.0s)
+
+[WebServer] (node:7505) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:7523) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:7567) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer]     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.14s
+(node:7609) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7609) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7687) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7687) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

@@ -1,0 +1,289 @@
+{
+  "checkedAt": "2026-09-06T06:24:01.867Z",
+  "health": {
+    "status": 200,
+    "body": {
+      "status": "ok",
+      "build_sha": "40766071e5464eef46db29bf89eb69e818c86128",
+      "database": "sqlite",
+      "auth": "ready"
+    }
+  },
+  "invalidToken": {
+    "status": 401,
+    "wwwAuthenticate": "Bearer"
+  },
+  "readBurst": [
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 429,
+      "retryAfter": "2"
+    }
+  ],
+  "exportBurst": [
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 429,
+      "retryAfter": "60"
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 401,
+      "retryAfter": null
+    },
+    {
+      "status": 429,
+      "retryAfter": "60"
+    }
+  ],
+  "passed": true
+}
