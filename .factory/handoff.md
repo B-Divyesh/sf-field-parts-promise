@@ -1,3 +1,33 @@
+# Parts Promise M3 handoff
+
+Current milestone: **M3 implementation complete; awaiting independent
+acceptance.**
+
+Implementation and deployed SHA:
+`b6a9c49dd239911807b4f7bcd22f63106244d3f3`. It adds only the planned M3
+field scanning, supplier evidence, fitted/move actions, draft-only reorder
+records, offline operation batching, and safe quantity conflict flows. It
+preserves the accepted M1/M2 behavior and product SQLite storage.
+
+Verification: 44/44 exact manifest claim commands passed separately; full
+Playwright passed 68 checks with 50 intentional skips; 27 Vitest and 15 Rust
+tests passed; build, format, Clippy, high-severity audit, live verifier, live
+Axe matrix, phone/desktop sample flow, designed 404, and live 429 with
+`Retry-After` passed. HTTPS `/health` reports this implementation SHA.
+
+The deployment retained one replica and the
+`sf-field-parts-promise-data` `/data` mount. The full M3 record, including
+commands, live evidence, and honest boundaries, is in
+`.factory/handoff-m3.md`.
+
+External dependencies: recurring Sociobot billing registration for the public
+$39/month Firm plan plus $8/month active technician remains unavailable.
+Checkout stays disabled and starts no charge. Supplier evidence remains local;
+no supplier order or availability guarantee is claimed. The M4 operations work
+is still planned, not shipped.
+
+## Previous handoffs
+
 # Parts Promise review 9 handoff
 
 ## Strict review 9 — 2026-09-06 UTC
